@@ -64,6 +64,8 @@
   => (throws Exception))
 
 
+()
+
 (def link-map
   (flatten-keys
    {:link {:next  [{:type        :ref

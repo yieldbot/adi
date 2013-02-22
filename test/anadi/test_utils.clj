@@ -52,3 +52,28 @@
   => {:a {:b {:c 3 :d 4}
           :e {:f 5 :g 6}}
       :h {:i 7}})
+
+
+(fact "extend-key-ns will extend a map with given namespace keys"
+  (ut/extend-key-ns {:a 1 :b 2} [:hello] [])
+  => {:hello {:a 1 :b 2}}
+
+  (ut/extend-key-ns {:a 1 :b 2} [:hello] [:a])
+  => {:hello {:b 2} :a 1}
+
+  (ut/extend-key-ns {:a 1 :b 2} [:hello] [:a :b])
+  => {:hello {} :a 1 :b 2})
+
+
+(fact "contract-key-ns will make a treefied map only"
+  (ut/contract-key-ns {:hello/a 1
+                       :hello/b 2
+                       :there/a 3
+                       :there/b 4} [:hello] [] )
+  => {:a 1 :b 2 :there {:a 3 :b 4}}
+
+  (ut/contract-key-ns {:hello/a 1
+                       :hello/b 2
+                       :there/a 3
+                       :there/b 4} [:hello] [:+])
+  => {:a 1 :b 2 :+ {:there {:a 3 :b 4}}})

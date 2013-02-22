@@ -82,3 +82,6 @@
     (merge e-map (if (empty? kns)
                    x-map
                    (assoc-in {} kns x-map)))))
+
+(defn contract-key-ns [m kns ex]
+  (let []))

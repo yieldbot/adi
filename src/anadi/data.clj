@@ -32,12 +32,7 @@
 
 
 (declare process-data
-         process-assoc process-ref)
-
-(defn process-default [meta k data]
-  (let [n  (seperate-keys (key-ns k))
-        m (treeify-keys data)]
-    (if (get-in m n) (:default meta))))
+         process-assoc process-ref process-default)
 
 (defn process-data
   "Processes the data according to the schema specified to form a tree-like
@@ -57,6 +52,11 @@
          (assoc output :db/id (get-in data ks))
          output))))
 
+(defn process-default [meta k data]
+  (let [n  (seperate-keys (key-ns k))
+        m (treeify-keys data)]
+    (if (get-in m n) (:default meta))))
+
 (defn process-ref [fm meta v defaults?]
   (let [kns   (seperate-keys (:ref-ns meta))
         refv (extend-key-ns v kns [:+])]
@@ -75,6 +75,8 @@
             (= c :many)
             (assoc output k (set (map #(process-ref fm meta % defaults?) v)))))))
 
+(declare deprocess-data
+         deprocess-assoc process-ref)
 
 (defn characterise
   "Characterises the data into datomic specific format so that converting
