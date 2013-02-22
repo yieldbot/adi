@@ -76,7 +76,40 @@
             (assoc output k (set (map #(process-ref fm meta % defaults?) v)))))))
 
 (declare deprocess-data
-         deprocess-assoc process-ref)
+         deprocess-assoc deprocess-ref)
+
+(defn deprocess-data
+  "The opposite of process-data. Takes a map and turns it into a nicer looking
+   data-structure"
+  ([fm pdata] (deprocess-data fm pdata {}))
+  ([fm pdata output]
+     (if-let [[k v] (first pdata)]
+       (if-let [[meta] (k fm)]
+         (deprocess-data fm (next pdata) (deprocess-assoc fm meta output k v))
+         (deprocess-data fm (next pdata) output))
+       output)))
+
+(defn deprocess-assoc [fm meta output k v]
+  (if (correct-type? meta v)
+    (let [t (:type meta)
+          c (or (:cardinality meta) :one)
+          kns (seperate-keys k)]
+      (cond (not= t :ref)
+            (assoc-in output kns v)
+
+            (= c :one)
+            (assoc-in output kns (deprocess-ref fm meta v))
+
+            (= c :many)
+            (assoc-in output kns (set (map #(deprocess-ref fm meta %) v)))))))
+
+(defn deprocess-ref [fm meta v]
+  (let [nks (seperate-keys (:ref-ns meta))
+        nm  (deprocess-data fm v)
+        cm  (get-in nm nks)
+        xm  (dissoc-in nm nks)]
+    (if (empty? xm) cm
+      (merge cm (assoc {} :+ xm)) )))
 
 (defn characterise
   "Characterises the data into datomic specific format so that converting

@@ -3,9 +3,9 @@
   (:require [anadi.utils :as ut]))
 
 (fact "kname returns the string representation with the colon"
-  (ut/kname nil) => ""
-  (ut/kname :hello) => "hello"
-  (ut/kname :hello/there) => "hello/there")
+  (ut/key-str nil) => ""
+  (ut/key-str :hello) => "hello"
+  (ut/key-str :hello/there) => "hello/there")
 
 (fact "merge-keys merges a sequence of keys together to form a keyword"
   (ut/merge-keys []) => nil

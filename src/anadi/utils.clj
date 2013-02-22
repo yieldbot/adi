@@ -24,6 +24,12 @@
 (defn bytes? [x] (= (Class/forName "[B")
                     (.getClass x)))
 
+(defn dissoc-in
+  [m [k & ks]]
+  (if-not ks
+    (dissoc m k)
+    (assoc m k (dissoc-in (m k) ks))))
+
 (defn key-str
   "Returns the string representation without the colon.\n
    (key-str :hello/there) ;;=> \"hello/there\""
@@ -84,4 +90,9 @@
                    (assoc-in {} kns x-map)))))
 
 (defn contract-key-ns [m kns ex]
-  (let []))
+  (let [tm     (treeify-keys m)
+        c-map  (get-in tm kns)
+        x-map  (dissoc-in tm kns)]
+    (merge c-map (if (empty? ex)
+                   x-map
+                   (assoc-in {} ex x-map)))))
