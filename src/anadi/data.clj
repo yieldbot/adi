@@ -102,9 +102,9 @@
 
                :else
                (characterise fm (next pdata) (assoc-in output [:data-one k] v))))
-       (if (not (:db/id output))
-         (assoc output :db/id (iid))
-         output))))
+       (if (:db/id output)
+         output
+         (assoc output :db/id (iid))))))
 
 (declare build
          build-data-one build-data-many
@@ -113,16 +113,17 @@
 (defn build
   "Builds the datomic query structure from the
   characterised result"
-  [chdata]
-  (cond (nil? (seq chdata)) []
+  ([chdata]
+    (concat (build chdata build-data-one build-data-many)
+            (build chdata build-refs-one build-refs-many)))
+  ([chdata f1 f2]
+    (cond (nil? (seq chdata)) []
         :else
-        (concat (mapcat (fn [x] (build (second x))) (:refs-one chdata))
+        (concat (mapcat (fn [x] (build (second x) f1 f2)) (:refs-one chdata))
                 (mapcat (fn [x]
-                          (mapcat #(build %) (second x))) (:refs-many chdata))
-                (build-data-one chdata)
-                (build-data-many chdata)
-                (build-refs-one chdata)
-                (build-refs-many chdata))))
+                          (mapcat #(build % f1 f2) (second x))) (:refs-many chdata))
+                (f1 chdata)
+                (f2 chdata)))))
 
 ;; Build Helper Functions
 

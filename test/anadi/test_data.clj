@@ -71,6 +71,20 @@
            :value [{:type        :string
                     :default     "undefined"}]}}))
 
+(def link-data
+  {:link {:value "1"
+          :next {:value "2"
+                 :next  {:value "3"
+                         :next {:value "4"}}}}})
+
+(def link-circular
+  {:db/id (dt/iid :start)
+   :link {:value "1"
+          :next {:value "2"
+                 :next  {:value "3"
+                         :next {:value "4"
+                                :next {:+ {:db/id (dt/iid :start)}}}}}}})
+
 (def link-res
   {:link/value "1"
    :link/next {:link/value "2"
@@ -80,10 +94,7 @@
 (fact "Different types of data links are allowed"
   (dt/process-data
    link-map
-   {:link {:value "1"
-           :next {:value "2"
-                  :next  {:value "3"
-                          :next {:value "4"}}}}})
+   link-data)
   => link-res
 
   (dt/process-data
@@ -133,5 +144,6 @@
                     {:link/next
                      {:data-one {:link/value "4"}}}}}}}})
 
-(dt/generate-data (flatten-keys link-map)
-                  link-data)
+(dt/generate-data link-map link-data)
+
+(pprint (dt/generate-data link-map link-circular))
