@@ -4,10 +4,10 @@
   (:require [adi.data :as dt]))
 
 (fact "trial keys will return the key sequence that gives the value of the map"
-  (dt/trial-keys :a/b {:a/b 1}) => [:a/b]
-  (dt/trial-keys :a/b {:+ {:a {:b 1}}}) => [:+ :a :b]
-  (dt/trial-keys :a/b {:+ {:a/b 1}}) => [:+ :a/b]
-  (dt/trial-keys :a/b {:a {:b 1}}) => [:a :b])
+  (dt/try-keys :a/b {:a/b 1}) => [:a/b]
+  (dt/try-keys :a/b {:+ {:a {:b 1}}}) => [:+ :a :b]
+  (dt/try-keys :a/b {:+ {:a/b 1}}) => [:+ :a/b]
+  (dt/try-keys :a/b {:a {:b 1}}) => [:a :b])
 
 (def account-map
   (flatten-keys

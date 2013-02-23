@@ -25,7 +25,7 @@
           (throw (Exception. (format "Not every value in %s is not of type %s" v t))))
     true))
 
-(defn trial-keys [k data]
+(defn try-keys [k data]
   (let [kns (seperate-keys k)
         trials [[:+ k] (cons :+ kns) [k] kns]]
     (->> trials
@@ -43,14 +43,14 @@
   ([fm data defaults?] (process-data fm fm data {} defaults?))
   ([fm nfm data output defaults?]
      (if-let [[k [meta]] (first nfm)]
-       (let [tk     (trial-keys k data)
+       (let [tk     (try-keys k data)
              v      (cond tk (get-in data tk)
                           defaults? (process-default meta k data))
              output (if v
                       (process-assoc fm meta output k v defaults?)
                       output)]
          (process-data fm (rest nfm) data output defaults?))
-       (if-let [ks (trial-keys :db/id data)]
+       (if-let [ks (try-keys :db/id data)]
          (assoc output :db/id (get-in data ks))
          output))))
 
@@ -118,6 +118,7 @@
                       (set (map #(deprocess-ref fm rset meta % seen-ids) v)))))))
 
 (defn deprocess-ref [fm rset meta v seen-ids]
+  (println rset)
   (let [id (:db/id v)]
       (cond (seen-ids id)
             {:+ {:db/id id}}

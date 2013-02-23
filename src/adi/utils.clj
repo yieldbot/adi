@@ -52,11 +52,11 @@
 (defn key-ns? [k]
   (< 0 (.indexOf (str k) "/")))
 
-(defn key-ns [k]
-  (merge-keys (key-kns k)))
-
 (defn key-kns [k]
   (or (butlast (seperate-keys k)) []))
+
+(defn key-ns [k]
+  (merge-keys (key-kns k)))
 
 (defn key-name [k]
   (last (seperate-keys k)))
