@@ -1,13 +1,15 @@
-(ns anadi.data
+(ns adi.data
   (:use [datomic.api :only [tempid]]
-        [anadi.schema :as sm]
-        anadi.utils))
+        [adi.schema :as as]
+        adi.utils))
 
 (defn iid
   "Constructs a new id"
   ([] (tempid :db.part/user))
   ([obj]
-     (tempid :db.part/user (hash obj))))
+     (let [v (hash obj)
+           v (if (< 0 v) (- v) v)]
+       (tempid :db.part/user v ))))
 
 (defn correct-type? [meta v]
   "Checks to see if v matches the description in the meta.
@@ -78,18 +80,29 @@
 (declare deprocess-data
          deprocess-assoc deprocess-ref)
 
+
 (defn deprocess-data
   "The opposite of process-data. Takes a map and turns it into a nicer looking
    data-structure"
-  ([fm pdata] (deprocess-data fm pdata {}))
-  ([fm pdata output]
+  ([fm pdata] (deprocess-data fm pdata () (as/make-rset fm)))
+  ([fm pdata rset]
+     (if-let [id (:db/id pdata)]
+       (deprocess-data fm pdata rset {:db/id id} #{id})
+       (deprocess-data fm pdata rset {} #{})))
+  ([fm pdata rset seen-ids]
+     (deprocess-data fm pdata rset {} seen-ids))
+  ([fm pdata rset output seen-ids]
      (if-let [[k v] (first pdata)]
        (if-let [[meta] (k fm)]
-         (deprocess-data fm (next pdata) (deprocess-assoc fm meta output k v))
-         (deprocess-data fm (next pdata) output))
+         (deprocess-data fm
+                         (next pdata)
+                         rset
+                         (deprocess-assoc fm rset meta output k v seen-ids)
+                         seen-ids)
+         (deprocess-data fm (next pdata) rset output seen-ids))
        output)))
 
-(defn deprocess-assoc [fm meta output k v]
+(defn deprocess-assoc [fm rset meta output k v seen-ids]
   (if (correct-type? meta v)
     (let [t (:type meta)
           c (or (:cardinality meta) :one)
@@ -98,18 +111,27 @@
             (assoc-in output kns v)
 
             (= c :one)
-            (assoc-in output kns (deprocess-ref fm meta v))
+            (assoc-in output kns (deprocess-ref fm rset meta v seen-ids))
 
             (= c :many)
-            (assoc-in output kns (set (map #(deprocess-ref fm meta %) v)))))))
+            (assoc-in output kns
+                      (set (map #(deprocess-ref fm rset meta % seen-ids) v)))))))
 
-(defn deprocess-ref [fm meta v]
-  (let [nks (seperate-keys (:ref-ns meta))
-        nm  (deprocess-data fm v)
-        cm  (get-in nm nks)
-        xm  (dissoc-in nm nks)]
-    (if (empty? xm) cm
-      (merge cm (assoc {} :+ xm)) )))
+(defn deprocess-ref [fm rset meta v seen-ids]
+  (let [id (:db/id v)]
+      (cond (seen-ids id)
+            {:+ {:db/id id}}
+
+            (not (-> meta :type rset))
+            (if id {:+ {:db/id id}} {})
+
+            :else
+            (let [nks (seperate-keys (:ref-ns meta))
+                  nm  (deprocess-data fm v rset)
+                  cm  (get-in nm nks)
+                  xm  (dissoc-in nm nks)]
+              (if (empty? xm) cm
+                  (merge cm (assoc {} :+ xm)))))))
 
 (defn characterise
   "Characterises the data into datomic specific format so that converting
@@ -200,3 +222,100 @@
           build))
   ([fm data & more]
      (concat (generate-data fm data) (apply generate-data fm more))))
+
+
+
+
+
+
+
+
+
+
+
+;; Scratch
+
+
+
+
+(comment
+  (defn deprocess-data
+    "The opposite of process-data. Takes a map and turns it into a nicer looking
+   data-structure"
+    ([fm pdata] (deprocess-data fm pdata {}))
+    ([fm pdata output]
+       (if-let [[k v] (first pdata)]
+         (if-let [[meta] (k fm)]
+           (deprocess-data fm (next pdata) (deprocess-assoc fm meta output k v))
+           (deprocess-data fm (next pdata) output))
+         output)))
+
+  (defn deprocess-assoc [fm meta output k v]
+    (if (correct-type? meta v)
+      (let [t (:type meta)
+            c (or (:cardinality meta) :one)
+            kns (seperate-keys k)]
+        (cond (not= t :ref)
+              (assoc-in output kns v)
+
+              (= c :one)
+              (assoc-in output kns (deprocess-ref fm meta v))
+
+              (= c :many)
+              (assoc-in output kns (set (map #(deprocess-ref fm meta %) v)))))))
+
+  (defn deprocess-ref [fm meta v]
+    (let [nks (seperate-keys (:ref-ns meta))
+          nm  (deprocess-data fm v)
+          cm  (get-in nm nks)
+          xm  (dissoc-in nm nks)]
+      (if (empty? xm) cm
+          (merge cm (assoc {} :+ xm)) ))))
+
+
+(comment
+
+
+(defn deprocess-data
+  "The opposite of process-data. Takes a map and turns it into a nicer looking
+   data-structure"
+  ([fm pdata]
+     (if-let [id (:db/id pdata)]
+       (deprocess-data fm pdata {:db/id id} #{id})
+       (deprocess-data fm pdata {} #{})))
+  ([fm pdata seen-ids]
+     (deprocess-data fm pdata {} seen-ids))
+  ([fm pdata output seen-ids]
+     (if-let [[k v] (first pdata)]
+       (if-let [[meta] (k fm)]
+         (deprocess-data fm
+                         (next pdata)
+                         (deprocess-assoc fm meta output k v seen-ids)
+                         seen-ids)
+         (deprocess-data fm (next pdata) output seen-ids))
+       output)))
+
+(defn deprocess-assoc [fm meta output k v seen-ids]
+  (if (correct-type? meta v)
+    (let [t (:type meta)
+          c (or (:cardinality meta) :one)
+          kns (seperate-keys k)]
+      (cond (not= t :ref)
+            (assoc-in output kns v)
+
+            (= c :one)
+            (assoc-in output kns (deprocess-ref fm meta v seen-ids))
+
+            (= c :many)
+            (assoc-in output kns (set (map #(deprocess-ref fm meta % seen-ids) v)))))))
+
+(defn deprocess-ref [fm meta v seen-ids]
+  (if (seen-ids (:db/id v))
+    (assoc-in {} [:+ :db/id] (:db/id v))
+    (let [nks (seperate-keys (:ref-ns meta))
+          nm  (deprocess-data fm v)
+          cm  (get-in nm nks)
+          xm  (dissoc-in nm nks)]
+      (if (empty? xm) cm
+          (merge cm (assoc {} :+ xm))))))
+)

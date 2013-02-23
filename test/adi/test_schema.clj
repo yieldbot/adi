@@ -1,6 +1,7 @@
-(ns anadi.test-schema
-  (:use midje.sweet)
-  (:require [anadi.schema :as sm]))
+(ns adi.test-schema
+  (:use midje.sweet
+        adi.utils)
+  (:require [adi.schema :as as]))
 
 (defn ex-id [m]
   (fn [val]
@@ -42,7 +43,7 @@
 
 (fact "gen-schema takes a datamap and turns it into a schema
        that is installable into datomic"
-  (sm/gen-schemas
+  (sm/generate-schemas
    {:account
     {:username  [{:type        :string
                   :unique      :value
@@ -60,3 +61,12 @@
                :db/valueType :db.type/string,
                :db/unique :db.unique/value,
                :db/cardinality :db.cardinality/one}]))
+
+(def link-map
+  (flatten-keys
+   {:link {:next  [{:type        :ref
+                    :ref-ns      :link}]
+           :value [{:type        :string
+                    :default     "undefined"}]}}))
+
+(as/make-rset link-map)

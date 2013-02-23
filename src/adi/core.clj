@@ -1,7 +1,7 @@
-(ns anadi.core
-  (:require [anadi.data :as ad]
-            [anadi.schema :as as]
-            [anadi.query :as aq]
+(ns adi.core
+  (:require [adi.data :as ad]
+            [adi.schema :as as]
+            [adi.query :as aq]
             [datomic.api :as d]))
 
 (defn connect-ds [dm uri]

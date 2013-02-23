@@ -1,6 +1,6 @@
-(ns anadi.schema
+(ns adi.schema
   (:use [datomic.api :only [tempid]]
-        anadi.utils))
+        adi.utils))
 
 (defn- enum-property [val kns]
   "Makes the keyword enumeration for datomic schemas properties.
@@ -73,3 +73,8 @@
    in the datomic database."
   ([dm] (map ->schema (linearise dm)))
   ([dm & dms] (generate-schemas (apply merge dm dms))))
+
+(defn make-rset [fm]
+  (let [ks (keys fm)
+        rks (filter #(= :ref (:type (first (fm %)))) ks)]
+    (set rks)))

@@ -1,7 +1,7 @@
-(ns anadi.test-data
+(ns adi.test-data
   (:use midje.sweet
-        anadi.utils)
-  (:require [anadi.data :as dt]))
+        adi.utils)
+  (:require [adi.data :as dt]))
 
 (fact "trial keys will return the key sequence that gives the value of the map"
   (dt/trial-keys :a/b {:a/b 1}) => [:a/b]
@@ -63,9 +63,6 @@
                  {:account/tags ["fun" 3 "still"]})
   => (throws Exception))
 
-
-()
-
 (def link-map
   (flatten-keys
    {:link {:next  [{:type        :ref
@@ -86,12 +83,38 @@
                  :next  {:value "3"
                          :next {:value "4"
                                 :next {:+ {:db/id (dt/iid :start)}}}}}}})
+(def link-circular2
+  {:db/id (dt/iid :start)
+   :link {:value "1"
+          :next {:value "2"
+                 :+ {:db/id (dt/iid :start)}
+                 :next  {:value "3"
+                         :next {:value "4"
+                                :next {}}}}}})
 
 (def link-res
   {:link/value "1"
    :link/next {:link/value "2"
                :link/next {:link/value "3"
                            :link/next {:link/value "4"}}}})
+
+
+(fact "deprocess-data will reverse the effect of process data"
+  (dt/deprocess-data account-map account-res)
+  => {:account {:username "chris"
+                :password "hello"}}
+
+  (dt/deprocess-data link-map link-res)
+  => link-data
+
+  #_(dt/deprocess-data
+   link-map
+   (dt/process-data link-map link-circular))
+
+  (dt/deprocess-data
+   link-map
+   (dt/process-data link-map link-circular2))
+  => nil)
 
 (fact "Different types of data links are allowed"
   (dt/process-data
@@ -148,4 +171,4 @@
 
 (dt/generate-data link-map link-data)
 
-(pprint (dt/generate-data link-map link-circular))
+(dt/generate-data link-map link-circular)

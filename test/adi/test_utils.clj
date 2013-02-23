@@ -1,6 +1,6 @@
-(ns anadi.test-utils
+(ns adi.test-utils
   (:use midje.sweet)
-  (:require [anadi.utils :as ut]))
+  (:require [adi.utils :as ut]))
 
 (fact "kname returns the string representation with the colon"
   (ut/key-str nil) => ""
@@ -23,11 +23,29 @@
   (ut/key-ns? :hello/there) => true
   (ut/key-ns? :hello/there/again) => true)
 
+(fact "keys-kns will output the key namespace"
+  (ut/key-kns nil) => []
+  (ut/key-kns :hello) => []
+  (ut/key-kns :hello/there) => [:hello]
+  (ut/key-kns :hello/there/again) => [:hello :there])
+
 (fact "keys-ns will output the key namespace"
   (ut/key-ns nil) => nil
   (ut/key-ns :hello) => nil
   (ut/key-ns :hello/there) => :hello
   (ut/key-ns :hello/there/again) => :hello/there)
+
+(fact "list-ns will output all unique kns namespace"
+  (ut/list-ns {:hello/a 1
+               :hello/b 2
+               :there/a 3
+               :there/b 4}) => #{:hello :there})
+
+(fact "list-ns-keys will output al"
+  (ut/list-ns-keys {:hello/a 1
+                    :hello/b 2
+                    :there/a 3
+                    :there/b 4} :hello) => #{:hello/a :hello/b})
 
 (fact "keys-name vill output the key name"
   (ut/key-name nil) => nil

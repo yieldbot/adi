@@ -1,6 +1,6 @@
-(ns anadi.core-test
+(ns adi.core-test
   (:use clojure.test
-        anadi.core))
+        adi.core))
 
 (deftest a-test
   (testing "FIXME, I fail."

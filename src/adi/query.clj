@@ -1,12 +1,12 @@
-(ns anadi.query
-  (:use [anadi.data :only [iid]]
-        anadi.utils)
+(ns adi.query
+  (:use [adi.data :only [iid]]
+        adi.utils)
   (:require [datomic.api :as d]))
 
 (defn find-ids [db val]
   (cond (number? val) (find-ids {:db/id val})
 
-        (hash-map?)
+        (hash-map? val)
         (->> (d/q (concat '[:find ?e :where]
                           (mapv (fn [pair] (cons '?e pair)) val))
                   db)

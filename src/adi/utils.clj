@@ -1,4 +1,4 @@
-(ns anadi.utils
+(ns adi.utils
   (:require [clojure.string :as st]))
 
 (def leaf? vector?)
@@ -53,10 +53,23 @@
   (< 0 (.indexOf (str k) "/")))
 
 (defn key-ns [k]
-  (merge-keys (butlast (seperate-keys k))))
+  (merge-keys (key-kns k)))
+
+(defn key-kns [k]
+  (or (butlast (seperate-keys k)) []))
 
 (defn key-name [k]
   (last (seperate-keys k)))
+
+(defn list-ns [fm]
+  (let [ks (keys fm)]
+    (set (map key-ns ks))))
+
+(defn list-ns-keys [fm nsp]
+  (let [nspks (keys fm)]
+    (->> nspks
+         (filter #(= nsp (key-ns %)))
+         set)))
 
 (defn flatten-keys
   "flatten-keys will take a map of maps and make it into a single map"
