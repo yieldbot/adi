@@ -107,14 +107,15 @@
   (dt/deprocess-data link-map link-res)
   => link-data
 
-  #_(dt/deprocess-data
+  (dt/deprocess-data
    link-map
    (dt/process-data link-map link-circular))
 
   (dt/deprocess-data
    link-map
    (dt/process-data link-map link-circular2))
-  => nil)
+  => {:link {:next {:+ {:db/id #db/id[:db.part/user -499580692]}}, :value "1"},
+      :db/id #db/id[:db.part/user -499580692]})
 
 (fact "Different types of data links are allowed"
   (dt/process-data

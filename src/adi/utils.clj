@@ -7,7 +7,7 @@
 
 (defn hash-map? [x] (instance? clojure.lang.IPersistentMap x))
 
-(defn ref? [x] (hash-map? x))
+(defn ref? [x] (or (hash-map? x) (instance? datomic.query.EntityMap x)))
 
 (defn long? [x] (instance? java.lang.Long x))
 

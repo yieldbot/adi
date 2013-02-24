@@ -4,12 +4,12 @@
         [adi.data :only [iid]])
   (:require [adi.data :as ad]
             [adi.schema :as as]
-            [adi.query :as aq]
+            [adi.api :as aa]
             [datomic.api :as d]))
 
 (def *uri* "datomic:mem://test-adi-query")
 (d/create-database *uri*)
-;;  (d/delete-database *uri*)
+(d/delete-database *uri*)
 (def *conn* (d/connect *uri*))
 
 (def account-map
@@ -90,8 +90,62 @@
                     :line2   ""
                     :postcode "3122"}}}}})
 
-(d/transact *conn* (ad/generate-data account-map account-info))
-(d/transact *conn* (as/generate-schemas account-map))
+(def account-info-2
+  {:account
+   {:username    "titan"
+    :hash        "c27e8090a3ae"
+    :joined      (java.util.Date.)
+    :isActivated true
+    :isVerified  true
+    :firstName   "Chris"
+    :lastName    "Strong"
+    :email       {:+ {:db/id (iid :main-email)}}
+    :contacts    #{{:type :twitter :field "titicular"}
+                   {:type :skype   :field "titicular"}
+                   {:+ {:db/id (iid :main-email)}
+                    :type :email   :field "titi@cul.ar"}}
 
-(aq/find-ids (d/db *conn*) {:account/username "chris"})
-(seq (first (aq/find-entities (d/db *conn*) {:account/username "chris"})))
+    :business
+    {:name       "titicular"
+     :abn        "38923433"
+     :desc       "muscles work"
+     :industry   #{"moving" "storms"}}
+
+    :address
+    {:billing    {:+ {:db/id (iid :main-address)}}
+     :shipping   {:+ {:db/id (iid :main-address)}}
+     :all        #{{:+ {:db/id (iid :main-address)}
+                    :country "Australia"
+                    :region  "Victoria"
+                    :city    "Melbourne"
+                    :line1   "101 Olympus Dr"
+                    :line2   ""
+                    :postcode "3000"}}}}})
+
+(d/transact *conn* (as/generate-schemas account-map))
+(d/transact *conn* (ad/generate-data account-map account-info))
+(d/transact *conn* (ad/generate-data account-map account-info-2))
+
+
+
+(comment
+  (aq/find-ids (d/db *conn*) {:account/firstName "Chris"})
+  (aq/find-ids (d/db *conn*) {:account.address/city '_})
+
+  (aa/find-ids (d/db *conn*)
+               (aa/find (d/db *conn*) {:account/firstName "Chris"}))
+
+  (pprint
+   (ad/deprocess-data account-map
+                      (aa/find-first (d/db *conn*) {:account/firstName "Chris"})))
+
+  (aa/delete! *conn* {:account/firstName "Chris"})
+
+  (aa/delete-linked! *conn* account-map {:account/firstName "Chris"} )
+
+
+  (type (first (aq/find-entities (d/db *conn*) {:account/firstName "Chris"}))))
+
+
+
+(seq (first (aq/find-entities (d/db *conn*) {:account/firstName "Chris"})))
