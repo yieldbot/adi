@@ -25,12 +25,17 @@
 (defn find-first [db val]
   (first (find db val)))
 
-(defn all-ref-ids [ent rset]
-  (concat [(:db/id ent)]
-          (->> rset
-               (mapcat (fn [k] (if-let [v (k ent)]
-                                (all-ref-ids v rset))))
-               (filter identity))))
+(defn all-ref-ids
+  ([ent rset] (set (all-ref-ids ent rset #{})))
+  ([ent rset exclude]
+     (concat [(:db/id ent)]
+             (->> rset
+                  (mapcat (fn [k] (let [v (k ent)
+                                       id (:id/id v)]
+                                   (if (and (ref? v)
+                                            (not (exclude id)))
+                                     (all-ref-ids v rset (conj exclude id))))))
+                  (filter identity)))))
 
 (defn delete!
   [conn val]

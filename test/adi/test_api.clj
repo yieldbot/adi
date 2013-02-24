@@ -9,7 +9,7 @@
 
 (def *uri* "datomic:mem://test-adi-query")
 (d/create-database *uri*)
-(d/delete-database *uri*)
+(comment (d/delete-database *uri*))
 (def *conn* (d/connect *uri*))
 
 (def account-map
@@ -122,18 +122,54 @@
                     :line2   ""
                     :postcode "3000"}}}}})
 
-(d/transact *conn* (as/generate-schemas account-map))
-(d/transact *conn* (ad/generate-data account-map account-info))
-(d/transact *conn* (ad/generate-data account-map account-info-2))
+@(d/transact *conn* (as/generate-schemas account-map))
+@(d/transact *conn* (ad/generate-data account-map account-info))
+@(d/transact *conn* (ad/generate-data account-map account-info-2))
+
+(def link-map
+  (flatten-keys
+   {:link {:next  [{:type        :ref
+                    :ref-ns      :link}]
+           :value [{:type        :string
+                    :default     "undefined"}]}}))
+
+(def link-data
+  {:link {:value "1"
+          :next {:value "2"
+                 :next  {:value "3"
+                         :next {:value "4"}}}}})
+
+(def link-circular
+  {:db/id (iid :start)
+   :link {:value "1C"
+          :next {:value "2C"
+                 :next  {:value "3C"
+                         :next {:value "4C"
+                                :next {:+ {:db/id (iid :start)}}}}}}})
 
 
+@(d/transact *conn* (as/generate-schemas link-map))
+@(d/transact *conn* (ad/generate-data link-map link-data))
+@(d/transact *conn* (ad/generate-data link-map link-circular))
+
+(aa/delete-linked! *conn* link-map {:link/value "2"} #{:link/_next})
+(aa/delete-linked! *conn* link-map {:link/value "2C"} #{:link/next})
+
+(aa/all-ref-ids
+ (aa/find-first (d/db *conn*) {:link/value "1"}) #{:link/next})
+(aa/all-ref-ids
+ (aa/find-first (d/db *conn*) {:link/value "4C"}) #{:link/next})
 
 (comment
-  (aq/find-ids (d/db *conn*) {:account/firstName "Chris"})
-  (aq/find-ids (d/db *conn*) {:account.address/city '_})
+  (aa/find-ids (d/db *conn*) {:account/firstName "Chris"})
+  (aa/find-ids (d/db *conn*) {:account.address/city '_})
 
   (aa/find-ids (d/db *conn*)
                (aa/find (d/db *conn*) {:account/firstName "Chris"}))
+
+  (aa/all-ref-ids
+   (aa/find-first (d/db *conn*) {:account/firstName "Chris"})
+   #{:account/email})
 
   (pprint
    (ad/deprocess-data account-map
@@ -141,7 +177,7 @@
 
   (aa/delete! *conn* {:account/firstName "Chris"})
 
-  (aa/delete-linked! *conn* account-map {:account/firstName "Chris"} )
+  (aa/delete-linked! *conn* account-map {:account/firstName "Chris"} #{:account/email})
 
 
   (type (first (aq/find-entities (d/db *conn*) {:account/firstName "Chris"}))))
