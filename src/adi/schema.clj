@@ -7,7 +7,7 @@
    (enum-property :string :type) ;;=> :db.type/string"
   (keyword (str "db." (key-str kns) "/" (key-str val))))
 
-(def meta-schema
+(def meta-scheme-map
   {:ident        {:required true
                   :check keyword?}
    :type         {:required true
@@ -27,23 +27,21 @@
    :no-history   {:check boolean?}})
 
 (def type-checks
-  (let [types (-> meta-schema :type :check)]
+  (let [types (-> meta-scheme-map :type :check)]
     (zipmap types (map #(resolve (symbol (str (name %) "?"))) types))))
 
-
-(defn- linearise [dm]
-  (let [fm (flatten-keys dm)
+(defn- linearise [sm]
+  (let [fsm (flatten-keys sm)
         get-props (fn [[v]] v)]
-    (map (fn [[k v]] (assoc (get-props v) :ident k)) fm)))
+    (map (fn [[k v]] (assoc (get-props v) :ident k)) fsm)))
 
-
-(defn- property-pair
+(defn- sm-property-pair
   [attr k val f]
   (list (keyword (str "db/" (key-str attr)))
         (f val k)))
 
-(defn- schema-property [prm kns params res]
-  (let [val (or (prm kns) (:default params))]
+(defn- sm-property [lsm kns params res]
+  (let [val (or (lsm kns) (:default params))]
     (cond (nil? val)
           (if (:required params)
             (throw (Exception. (str "property " kns " is required")))
@@ -54,27 +52,30 @@
                 f    (or (:fn params) (fn [x & xs] x))
                 attr (or (:attr params) kns)]
             (if (chk val)
-              (apply assoc res (property-pair attr kns val f))
+              (apply assoc res (sm-property-pair attr kns val f))
               (throw (Exception. (str "value " val " failed check"))))))))
 
-(defn- ->schema
-  ([prm] (->schema prm meta-schema {}))
-  ([prm meta output]
+(defn- lsm->schema
+  ([lsm] (lsm->schema lsm meta-scheme-map {}))
+  ([lsm meta output]
      (if-let [[k v] (first meta)]
-       (->schema prm
+       (lsm->schema lsm
                    (rest meta)
-                   (schema-property prm k v output))
+                   (sm-property lsm k v output))
        (assoc output
          :db.install/_attribute :db.part/db
          :db/id (tempid :db.part/db)))))
 
-(defn generate-schemas
+(defn emit-schema
   "Generates all schemas using a datamap that can be installed
    in the datomic database."
-  ([dm] (map ->schema (linearise dm)))
-  ([dm & dms] (generate-schemas (apply merge dm dms))))
+  ([sm] 
+    (->> (linearise sm)
+         (map lsm->schema)))
+  ([sm & sms] (emit-schema (apply merge sm sms))))
 
-(defn make-rset [fm]
-  (let [ks (keys fm)
-        rks (filter #(= :ref (:type (first (fm %)))) ks)]
+(defn rset [sm]
+  (let [fsm (flatten-keys sm)
+        ks (keys fsm)
+        rks (filter #(= (-> fsm first :type) :ref) ks)]
     (set rks)))

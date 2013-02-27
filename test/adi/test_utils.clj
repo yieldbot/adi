@@ -35,14 +35,14 @@
   (ut/key-ns :hello/there) => :hello
   (ut/key-ns :hello/there/again) => :hello/there)
 
-(fact "list-ns will output all unique kns namespace"
-  (ut/list-ns {:hello/a 1
+(fact "fsm-ns will output all unique kns namespace"
+  (ut/fsm-ns {:hello/a 1
                :hello/b 2
                :there/a 3
                :there/b 4}) => #{:hello :there})
 
-(fact "list-ns-keys will output al"
-  (ut/list-ns-keys {:hello/a 1
+(fact "fsm-ns-keys will output al"
+  (ut/fsm-ns-keys {:hello/a 1
                     :hello/b 2
                     :there/a 3
                     :there/b 4} :hello) => #{:hello/a :hello/b})

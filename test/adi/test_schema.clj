@@ -28,8 +28,8 @@
          :type :string,
          :doc "The password associated with the account"}]))
 
-(fact "->schema takes a property map and converts it into a datomic schema"
-  (#'sm/->schema  {:ident :account/password,
+(fact "lsm->schema takes a property map and converts it into a datomic schema"
+  (#'sm/lsm->schema  {:ident :account/password,
                    :type :string,
                    :doc "The password associated with the account"})
   =>
@@ -43,7 +43,7 @@
 
 (fact "gen-schema takes a datamap and turns it into a schema
        that is installable into datomic"
-  (sm/generate-schemas
+  (sm/emit-schema
    {:account
     {:username  [{:type        :string
                   :unique      :value
@@ -69,4 +69,4 @@
            :value [{:type        :string
                     :default     "undefined"}]}}))
 
-(as/make-rset link-map)
+(as/rset link-map)

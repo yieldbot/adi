@@ -1,17 +1,17 @@
 (ns adi.test-query
   (:use midje.sweet
-        adi.utils)
+        adi.utils
+        adi.core)
   (:require [adi.data :as ad]
             [adi.schema :as as]
-            [adi.query :as aq]
             [datomic.api :as d]))
 
 (def *uri* "datomic:mem://test-adi-query")
 (d/create-database *uri*)
-;;  (d/delete-database *uri*)
-(def *conn* (d/connect *uri*))
+(comment (d/delete-database *uri*))
+(def $ds (ds *uri* ))
 
 
 
 
-(d/transact )
+(transact )

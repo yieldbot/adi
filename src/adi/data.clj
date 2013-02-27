@@ -32,39 +32,48 @@
          (filter #(get-in data %))
          first)))
 
+(defn get-id [val]
+  (cond (integer? val) val
 
-(declare process-data
+         (ref? val)
+         (if-let [kns (try-keys :db/id val)]
+           ((merge-keys kns) val))
+
+         :else (throw (Exception. (str "Not an integer, entity nor hashmap")))))
+
+
+(declare process
          process-assoc process-ref process-default)
 
-(defn process-data
+(defn process
   "Processes the data according to the schema specified to form a tree-like
    structure of refs and values for the next step of characterisation."
-  ([fm data] (process-data fm data true))
-  ([fm data defaults?] (process-data fm fm data {} defaults?))
-  ([fm nfm data output defaults?]
-     (if-let [[k [meta]] (first nfm)]
+  ([fsm data] (process fsm data true))
+  ([fsm data defaults?] (process fsm fsm data {} defaults?))
+  ([fsm nfsm data output defaults?]
+     (if-let [[k [meta]] (first nfsm)]
        (let [tk     (try-keys k data)
              v      (cond tk (get-in data tk)
                           defaults? (process-default meta k data))
              output (if v
-                      (process-assoc fm meta output k v defaults?)
+                      (process-assoc fsm meta output k v defaults?)
                       output)]
-         (process-data fm (rest nfm) data output defaults?))
+         (process fsm (rest nfsm) data output defaults?))
        (if-let [ks (try-keys :db/id data)]
          (assoc output :db/id (get-in data ks))
          output))))
 
-(defn process-default [meta k data]
+(defn- process-default [meta k data]
   (let [n  (seperate-keys (key-ns k))
         m (treeify-keys data)]
     (if (get-in m n) (:default meta))))
 
-(defn process-ref [fm meta v defaults?]
+(defn- process-ref [fsm meta v defaults?]
   (let [kns   (seperate-keys (:ref-ns meta))
         refv (extend-key-ns v kns [:+])]
-    (process-data fm refv defaults?)))
+    (process fsm refv defaults?)))
 
-(defn process-assoc [fm meta output k v defaults?]
+(defn- process-assoc [fsm meta output k v defaults?]
   (if (correct-type? meta v)
     (let [t (:type meta)
           c (or (:cardinality meta) :one)]
@@ -72,37 +81,35 @@
             (assoc output k v)
 
             (= c :one)
-            (assoc output k (process-ref fm meta v defaults?))
+            (assoc output k (process-ref fsm meta v defaults?))
 
             (= c :many)
-            (assoc output k (set (map #(process-ref fm meta % defaults?) v)))))))
+            (assoc output k (set (map #(process-ref fsm meta % defaults?) v)))))))
 
-(declare deprocess-data
-         deprocess-assoc deprocess-ref)
+(declare unprocess
+         unprocess-assoc unprocess-ref)
 
-
-(defn deprocess-data
-  "The opposite of process-data. Takes a map and turns it into a nicer looking
+(defn unprocess
+  "The opposite of process. Takes a map and turns it into a nicer looking
    data-structure"
-  ([fm pdata] (deprocess-data fm pdata (as/make-rset fm)))
-  ([fm pdata rset]
+  ([fsm pdata rset]
      (if-let [id (:db/id pdata)]
-       (deprocess-data fm pdata rset {:db/id id} #{id})
-       (deprocess-data fm pdata rset {} #{})))
-  ([fm pdata rset seen-ids]
-     (deprocess-data fm pdata rset {} seen-ids))
-  ([fm pdata rset output seen-ids]
+       (unprocess fsm pdata rset {:db/id id} #{id})
+       (unprocess fsm pdata rset {} #{})))
+  ([fsm pdata rset exclude]
+     (unprocess fsm pdata rset {} exclude))
+  ([fsm pdata rset output exclude]
      (if-let [[k v] (first pdata)]
-       (if-let [[meta] (k fm)]
-         (deprocess-data fm
+       (if-let [[meta] (k fsm)]
+         (unprocess fsm
                          (next pdata)
                          rset
-                         (deprocess-assoc fm rset meta output k v seen-ids)
-                         seen-ids)
-         (deprocess-data fm (next pdata) rset output seen-ids))
+                         (unprocess-assoc fsm rset meta output k v exclude)
+                         exclude)
+         (unprocess fsm (next pdata) rset output exclude))
        output)))
 
-(defn deprocess-assoc [fm rset meta output k v seen-ids]
+(defn- unprocess-assoc [fsm rset meta output k v exclude]
   (if (correct-type? meta v)
     (let [t (:type meta)
           c (or (:cardinality meta) :one)
@@ -111,21 +118,20 @@
             (assoc-in output kns v)
 
             (= c :one)
-            (assoc-in output kns (deprocess-ref fm rset meta k v seen-ids))
+            (assoc-in output kns (unprocess-ref fsm rset meta k v exclude))
 
             (= c :many)
             (assoc-in output kns
-                      (set (map #(deprocess-ref fm rset meta k % seen-ids) v)))))))
+                      (set (map #(unprocess-ref fsm rset meta k % exclude) v)))))))
 
-(defn deprocess-ref [fm rset meta k v seen-ids]
-  (println meta)
+(defn- unprocess-ref [fsm rset meta k v exclude]
   (let [id (:db/id v)]
-      (cond (seen-ids id)
+      (cond (exclude id)
             {:+ {:db/id id}}
 
             (rset k)
             (let [nks (seperate-keys (:ref-ns meta))
-                  nm  (deprocess-data fm v rset)
+                  nm  (unprocess fsm v rset)
                   cm  (get-in nm nks)
                   xm  (dissoc-in nm nks)]
               (if (empty? xm) cm
@@ -137,29 +143,29 @@
 (defn characterise
   "Characterises the data into datomic specific format so that converting
    into datomic datastructures become easy."
-  ([fm pdata] (characterise fm pdata {}))
-  ([fm pdata output]
+  ([fsm pdata] (characterise fsm pdata {}))
+  ([fsm pdata output]
      (if-let [[k v] (first pdata)]
-       (let [t (-> fm k first :type)]
+       (let [t (-> fsm k first :type)]
          (cond (= k :db/id)
-               (characterise fm (next pdata) (assoc output k v))
+               (characterise fsm (next pdata) (assoc output k v))
 
                (and (set? v) (= :ref t))
-               (characterise fm (next pdata)
+               (characterise fsm (next pdata)
                              (assoc-in output
                                        [:refs-many k]
-                                       (set (map #(characterise fm %) v))))
+                                       (set (map #(characterise fsm %) v))))
                (set? v)
-               (characterise fm (next pdata) (assoc-in output [:data-many k] v))
+               (characterise fsm (next pdata) (assoc-in output [:data-many k] v))
 
                (= :ref t)
-               (characterise fm (next pdata)
+               (characterise fsm (next pdata)
                              (assoc-in output
                                        [:refs-one k]
-                                       (characterise fm v)))
+                                       (characterise fsm v)))
 
                :else
-               (characterise fm (next pdata) (assoc-in output [:data-one k] v))))
+               (characterise fsm (next pdata) (assoc-in output [:data-one k] v))))
        (if (:db/id output)
          output
          (assoc output :db/id (iid))))))
@@ -205,21 +211,32 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
-;;  GENERATE-DATA FUNCTIONS
+;;  EMIT FUNCTIONS
 ;;
-;;
-;;              *---------------------------------------*
-;;  fm, data -> | process-data -> characterize -> build | -> datomic structures
-;;              *---------------------------------------*
+;;                              emit
+;;               *----------------------------------*
+;;  fsm, data -> | process -> characterize -> build | -> datomic structures
+;;               *----------------------------------*
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 
-(defn generate-data
+(defn emit
   "Generates the datomic data given a datamap and refs"
-  ([fm data]
-     (->> (process-data fm data)
-          (characterise fm)
+  ([fsm data]
+     (->> (process fsm data)
+          (characterise fsm)
           build))
-  ([fm data & more]
-     (concat (generate-data fm data) (apply generate-data fm more))))
+  ([fsm data & more]
+     (concat (emit fsm data)
+             (apply emit fsm more))))
+
+(defn emit-no-defaults
+  "Generates the datomic data given a datamap and refs with no defaulst"
+  ([fsm data]
+     (->> (process fsm data false)
+          (characterise fsm)
+          build))
+  ([fsm defaults? data & more]
+     (concat (emit-no-defaults fsm data)
+             (apply emit-no-defaults fsm defaults? more))))

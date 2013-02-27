@@ -61,13 +61,13 @@
 (defn key-name [k]
   (last (seperate-keys k)))
 
-(defn list-ns [fm]
-  (let [ks (keys fm)]
+(defn fsm-ns [fsm]
+  (let [ks (keys fsm)]
     (set (map key-ns ks))))
 
-(defn list-ns-keys [fm nsp]
-  (let [nspks (keys fm)]
-    (->> nspks
+(defn fsm-ns-keys [fsm nsp]
+  (let [ks (keys fsm)]
+    (->> ks
          (filter #(= nsp (key-ns %)))
          set)))
 
