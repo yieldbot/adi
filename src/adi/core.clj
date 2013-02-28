@@ -6,22 +6,26 @@
             [datomic.api :as d]))
 
 (defn init-scheme-map [ds]
-  (d/transact (:conn ds) (as/emit-schemas (:fsm ds))))
+  (d/transact (:conn ds) (as/emit-schema (:fsm ds))))
 
-(defn datastore [sm uri & [install? recreate?]]
-  (if recreate? (d/delete-database uri)
-      (d/create-database uri))
+(defn datastore [uri sm & [install? recreate?]]
+  (if recreate? (d/delete-database uri))
+  (d/create-database uri)
   (let [ds {:conn (d/connect uri)
-            :fsm   (flatten-keys sm)}]
+            :fsm  (flatten-keys sm)}]
     (if install? (init-scheme-map ds))
     ds))
 
 (defn transact [ds data]
   (d/transact (:conn ds) data))
 
-(defn query
-  [ds qu & args]
+(defn q
+  [ds qu args]
   (apply d/q qu (d/db (:conn ds)) args))
+
+(defn q-select
+  [ds rset qu & args]
+  (apply aa/q-select (d/db (:conn ds)) (:fsm ds) rset qu args))
 
 (defn select-ids [ds val]
   (aa/select-ids (d/db (:conn ds)) val))
@@ -39,8 +43,8 @@
   (let [rs (as/rset (:fsm ds))]
     (aa/delete! (:conn ds) val rs)))
 
-(defn insert! [ds data & more]
-  (apply aa/insert! (:conn ds) (:fsm ds) data more))
+(defn insert! [ds data]
+  (aa/insert! (:conn ds) (:fsm ds) data))
 
 (defn update! [ds val data]
   (aa/update! (:conn ds) (:fsm ds) val data))

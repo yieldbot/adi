@@ -7,6 +7,8 @@
 
 (defn hash-map? [x] (instance? clojure.lang.IPersistentMap x))
 
+(defn hash-set? [x] (instance? clojure.lang.PersistentHashSet x))
+
 (defn ref? [x] (or (hash-map? x) (instance? datomic.query.EntityMap x)))
 
 (defn long? [x] (instance? java.lang.Long x))
@@ -29,6 +31,20 @@
   (if-not ks
     (dissoc m k)
     (assoc m k (dissoc-in (m k) ks))))
+
+
+(defn unique-seq
+  ([coll] (unique-seq coll identity))
+  ([coll f] (unique-seq coll f [] last))
+  ([coll f output last]
+     (if-let [v (first coll)]
+       (cond (and last (= (f last) (f v)))
+             (unique-seq (next coll) f output last)
+             :else (unique-seq (next coll) f (conj output v) v))
+       output)))
+
+;;(unique-seq [1 1 3 4 5 5 6 7]) => [1 3 4 5 6 7]
+
 
 (defn key-str
   "Returns the string representation without the colon.\n
@@ -109,3 +125,6 @@
     (merge c-map (if (empty? ex)
                    x-map
                    (assoc-in {} ex x-map)))))
+
+(defn gen-dsym []
+  (symbol (str "?" (name (gensym)))))

@@ -224,9 +224,12 @@
 (defn emit
   "Generates the datomic data given a datamap and refs"
   ([fsm data]
-     (->> (process fsm data)
-          (characterise fsm)
-          build))
+    (cond (hash-map? data)
+          (->> (process fsm data)
+               (characterise fsm)
+               build)
+          (vector? data)
+          (apply emit fsm data)))
   ([fsm data & more]
      (concat (emit fsm data)
              (apply emit fsm more))))
@@ -234,9 +237,12 @@
 (defn emit-no-defaults
   "Generates the datomic data given a datamap and refs with no defaulst"
   ([fsm data]
-     (->> (process fsm data false)
-          (characterise fsm)
-          build))
-  ([fsm defaults? data & more]
+    (cond (hash-map? data)
+          (->> (process fsm data false)
+               (characterise fsm)
+               build)
+          (vector? data)
+          (apply emit fsm data)))
+  ([fsm data & more]
      (concat (emit-no-defaults fsm data)
-             (apply emit-no-defaults fsm defaults? more))))
+             (apply emit-no-defaults fsm data more))))

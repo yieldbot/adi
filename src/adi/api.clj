@@ -5,26 +5,137 @@
             [adi.data :as ad]
             [adi.schema :as as]))
 
-(defn make-clause [pair]
-  (let [[k v] pair]
-    (if (not= :+ (key-ns k)) ['?e k v])))
+(defn q-select [db fsm rset query & args]
+  (let [res  (apply d/q query db args)
+        ids  (map first res)
+        ents (map #(d/entity db %) ids)]
+    (map #(ad/unprocess fsm % rset) ents)))
 
-(defn id-query [arr]
-  (let [clauses (->> arr
-                     (map make-clause)
-                     (filter identity)
-                     vec)]
-    (concat '[:find ?e :where] clauses)))
+(declare select-ids
+         select-ids-query make-clauses append-clauses)
 
 (defn select-ids [db val]
-  (cond (number? val) [val]
+  (cond (number? val) (hash-set val)
+
+        (keyword? val) (select-ids db {val '_})
 
         (or (hash-map? val) (vector? val) (list? val))
-        (->> (d/q (id-query val) db)
-             (map first))
+        (->> (d/q (select-ids-query val) db)
+             (map first)
+             set)
 
         (or (set? val))
-        (set (mapcat select-ids val))))
+        (set (mapcat #(select-ids db %) val))))
+
+(defn select-ids-query [arr]
+  (let [dsym     (gen-dsym)
+        clauses  (make-clauses dsym arr)]
+    (concat [:find dsym :where] clauses)))
+
+(defn not-clause [dsym k v output]
+  (let [nsym (gen-dsym)]
+    (conj output [dsym k nsym] [(list 'not= v nsym)])))
+
+(defn append-not-clauses [dsym arr output]
+  (if-let [[k v] (first arr)]
+    (append-not-clauses dsym (next arr)
+                        (not-clause dsym k v output))
+    output))
+
+(defn fulltext-clause [dsym k v output]
+  (let [fsym (name (gen-dsym))]
+    (conj output [(list 'fulltext '$ k v) [[dsym fsym]]])))
+
+(defn append-fulltext-clauses [dsym arr output]
+  (if-let [[k v] (first arr)]
+    (append-fulltext-clauses dsym (next arr)
+                             (fulltext-clause dsym k v output))
+    output))
+
+(defn not-all-clause [dsym k v output]
+  (let [fsym (name (gen-dsym))]
+    (conj output [(list 'fulltext '$ k v) [[dsym fsym]]])))
+
+(defn append-not-all-clauses [dsym arr output]
+  (if-let [[k v] (first arr)]
+    (append-not-all-clauses dsym (next arr)
+                             (fulltext-clause dsym k v output))
+    output))
+
+
+(defn append-clauses [dsym k v output]
+  (cond (not= :+ (key-ns k))
+        (conj output [dsym k v])
+
+        (= :+/not k)
+        (append-not-clauses dsym v output)
+
+        (= :+/fulltext k)
+        (append-fulltext-clauses dsym v output)
+
+        :else (throw (Exception. (str "Cannot interpret key: " k)))))
+
+(defn make-clauses
+    ([dsym arr] (make-clauses dsym arr []))
+    ([dsym arr output]
+       (if-let [[k v] (first arr)]
+         (make-clauses dsym (next arr) (append-clauses dsym k v output))
+         output)))
+
+
+
+(comment
+  (defn select-ids-query [arr]
+    (let [dsym     (name (gen-dsym))
+          clauses  (make-clauses dsym arr)]
+      (format "[:find %s :where %s]" dsym clauses)))
+
+  (defn to-string [v]
+    (cond (string? v) (str \" v \")
+          (keyword v) (format "(keyword \"%s\")" (key-str v))
+          :else v))
+
+  (defn not-clause [dsym k v]
+    (let [nsym (name (gen-dsym))]
+      (format "[%s %s %s] [(not= %s %s)]"
+              dsym k nsym (to-string v) nsym)))
+
+  (defn append-not-clauses [dsym arr output]
+    (if-let [[k v] (first arr)]
+      (append-not-clauses dsym (next arr)
+                          (str output " " (not-clause dsym k v)))
+      output))
+
+  (defn fulltext-clause [dsym k v]
+    (let [fsym (name (gen-dsym))]
+      (format "[(fulltext $ %s %s) [[%s %s]]]" k (to-string v) dsym fsym)))
+
+  (defn append-fulltext-clauses [dsym arr output]
+    (if-let [[k v] (first arr)]
+      (append-fulltext-clauses dsym (next arr)
+                               (str output " " (fulltext-clause dsym k v)))
+      output))
+
+  (defn append-clauses [dsym k v output]
+    (cond (not= :+ (key-ns k))
+          (str output " " (format "[%s %s %s]" dsym k (to-string v)))
+
+          (= :+/not k)
+          (append-not-clauses dsym v output)
+
+          (= :+/fulltext k)
+          (append-fulltext-clauses dsym v output)
+
+          :else (throw (Exception. (str "Cannot interpret key: " k)))))
+
+
+  (defn make-clauses
+    ([dsym arr] (make-clauses dsym arr ""))
+    ([dsym arr output]
+       (if-let [[k v] (first arr)]
+         (make-clauses dsym (next arr) (append-clauses dsym k v output))
+         output))))
+
 
 (defn select-entities [db val]
   (map #(d/entity db %) (select-ids db val)))
@@ -35,12 +146,6 @@
 (defn select [db fsm val rset]
   (map #(ad/unprocess fsm % rset)
        (select-entities db val)))
-
-(defn selectq [db fsm rset query & args]
-  (let [res  (apply d/q query db args)
-        ids  (map first res)
-        ents (map #(d/entity db %) ids)]
-    (map #(ad/unprocess fsm % rset) ents)))
 
 (defn all-ref-ids
   ([ent rset] (set (all-ref-ids ent rset #{})))
@@ -62,8 +167,8 @@
         data (map (fn [x] [:db.fn/retractEntity x]) ids)]
     (d/transact conn data)))
 
-(defn insert! [conn fsm data & more]
-  (let [cmd (apply ad/emit fsm data more)]
+(defn insert! [conn fsm data]
+  (let [cmd (ad/emit fsm data)]
     (d/transact conn cmd)))
 
 (defn update! [conn fsm val data]
@@ -89,23 +194,7 @@
     (if (and id val) [:db/retract id k val])))
 
 
-(def rule-db-attrs
-  '[[dbAttrs ?e ?ident ?ns]
-    [?e :db/ident ?ident]
-    ;;[_ :db.install/attribute ?e]
-    [(.toString ?ident) ?val]
-    [(.startsWith ?val ?ns)]])
-
 ;; Database Specific
-
-(defn db-attrs
-  ([db & [ns]]
-     (->> (d/q '[:find ?e ?ident :in $ % ?ns :where
-                (dbAttrs ?e ?ident ?ns)]
-               db
-               [rule-db-attrs]
-               (if ns (str ns "/") ""))
-          (sort #(compare (first %1) (first %2))))))
 
 (defn db-doc
   [db attr]
@@ -121,17 +210,21 @@
             db)
        (sort #(compare (second %1) (second %2)))))
 
+(declare db-attrs
+         rule-db-attrs)
 
+(defn db-attrs
+  ([db & [ns]]
+     (->> (d/q '[:find ?e ?ident :in $ % ?ns :where
+                (dbAttrs ?e ?ident ?ns)]
+               db
+               [rule-db-attrs]
+               (if ns (str ns "/") ""))
+          (sort #(compare (first %1) (first %2))))))
 
-
-(defn unique-seq
-  ([coll] (unique-seq coll identity))
-  ([coll f] (unique-seq coll f [] last))
-  ([coll f output last]
-     (if-let [v (first coll)]
-       (cond (and last (= (f last) (f v)))
-             (unique-seq (next coll) f output last)
-             :else (unique-seq (next coll) f (conj output v) v))
-       output)))
-
-(unique-seq [1 1 3 4 5 5 6 7])
+(def rule-db-attrs
+  '[[dbAttrs ?e ?ident ?ns]
+    [?e :db/ident ?ident]
+    ;;[_ :db.install/attribute ?e]
+    [(.toString ?ident) ?val]
+    [(.startsWith ?val ?ns)]])
