@@ -19,3 +19,11 @@
   ([m]
      (fn [x]
        (every? #((apply results-contain %) x) m))))
+
+(defn exclude-id [m]
+  (fn [val]
+    (= (dissoc val :db/id) m)))
+
+(defn exclude-ids [ms]
+  (fn [val]
+    (= (map #(dissoc % :db/id) val) ms)))

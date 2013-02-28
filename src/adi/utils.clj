@@ -1,6 +1,7 @@
 (ns adi.utils
   (:require [clojure.string :as st]))
 
+
 (def leaf? vector?)
 
 (defn boolean? [x] (instance? java.lang.Boolean x))
@@ -13,7 +14,7 @@
 
 (defn long? [x] (instance? java.lang.Long x))
 
-(defn bigint? [x] (instance? java.math.BigInteger x))
+(defn bigint? [x] (instance? clojure.lang.BigInt x))
 
 (defn bigdec? [x] (instance? java.math.BigDecimal x))
 
@@ -26,81 +27,110 @@
 (defn bytes? [x] (= (Class/forName "[B")
                     (.getClass x)))
 
+
+;; Misc Methods
+
+(defn gen-?sym []
+  (symbol (str "?" (name (gensym)))))
+
 (defn dissoc-in
   [m [k & ks]]
   (if-not ks
     (dissoc m k)
     (assoc m k (dissoc-in (m k) ks))))
 
-
-(defn unique-seq
-  ([coll] (unique-seq coll identity))
-  ([coll f] (unique-seq coll f [] last))
-  ([coll f output last]
+(defn no-repeats
+  ([coll] (no-repeats identity coll))
+  ([f coll] (no-repeats f coll [] nil))
+  ([f coll output last]
      (if-let [v (first coll)]
        (cond (and last (= (f last) (f v)))
-             (unique-seq (next coll) f output last)
-             :else (unique-seq (next coll) f (conj output v) v))
+             (no-repeats f (next coll) output last)
+             :else (no-repeats f (next coll) (conj output v) v))
        output)))
 
-;;(unique-seq [1 1 3 4 5 5 6 7]) => [1 3 4 5 6 7]
+;; Keyword Manipulation
 
-
-(defn key-str
+(defn k-str
   "Returns the string representation without the colon.\n
-   (key-str :hello/there) ;;=> \"hello/there\""
+   (k-str :hello/there) ;;=> \"hello/there\""
   [k]
-  (if (nil? k) "" (subs (str k) 1)))
+  (if (nil? k) "" (#'st/replace-first-char (str k) \: "")))
 
-(defn merge-keys
+(defn k-merge
   "Merges a vector of keywords into one keyword"
   [ks]
   (if (empty? ks) nil
       (->> (filter identity ks)
-           (map key-str)
+           (map k-str)
            (st/join "/")
            keyword)))
 
-(defn seperate-keys [k]
+(defn k-unmerge [k]
   (if (nil? k) []
-      (mapv keyword (st/split (key-str k) #"/"))))
+      (mapv keyword (st/split (k-str k) #"/"))))
 
-(defn key-ns? [k]
-  (< 0 (.indexOf (str k) "/")))
+(defn k-nsv [k]
+  (or (butlast (k-unmerge k)) []))
 
-(defn key-kns [k]
-  (or (butlast (seperate-keys k)) []))
+(defn k-nsv? [k nsv]
+  (= nsv (k-nsv k)))
 
-(defn key-ns [k]
-  (merge-keys (key-kns k)))
+(defn k-ns [k]
+  (k-merge (k-nsv k)))
 
-(defn key-name [k]
-  (last (seperate-keys k)))
+(defn k-ns?
+  ([k] (< 0 (.indexOf (str k) "/")))
+  ([k ns] (= ns (k-ns k))))
 
-(defn fsm-ns [fsm]
+(defn k-z [k]
+  (last (k-unmerge k)))
+
+(defn k-z? [k z]
+  (= z (k-z k)))
+
+(defn list-ns [fsm]
   (let [ks (keys fsm)]
-    (set (map key-ns ks))))
+    (set (map k-ns ks))))
 
-(defn fsm-ns-keys [fsm nsp]
+(defn list-ks [fsm ns]
   (let [ks (keys fsm)]
     (->> ks
-         (filter #(= nsp (key-ns %)))
+         (filter #(= ns (k-ns %)))
          set)))
+
+;; Map Manipulation
 
 (defn flatten-keys
   "flatten-keys will take a map of maps and make it into a single map"
   ([m] (flatten-keys m [] {}))
-  ([m kns output]
+  ([m nskv output]
      (if-let [[k v] (first m)]
        (cond (hash-map? v)
              (->> output
-                  (flatten-keys (next m) kns)
-                  (flatten-keys v (conj kns k)))
+                  (flatten-keys (next m) nskv)
+                  (flatten-keys v (conj nskv k)))
              :else
              (flatten-keys (next m)
-                           kns
-                           (assoc output (merge-keys (conj kns k)) v)))
+                           nskv
+                           (assoc output (k-merge (conj nskv k)) v)))
        output)))
+
+(defn flatten-once-keys
+  "flatten-once-keys will flatten only one layer"
+  ([m] (flatten-once-keys m {}))
+  ([m output]
+     (if-let [[k v] (first m)]
+       (cond (hash-map? v)
+            (flatten-once-keys 
+              (next m) 
+              (merge (zipmap (map #(k-merge [k %]) (keys v))
+                            (vals v))
+                      output))
+
+             :else
+             (flatten-once-keys (next m) (assoc output k v)))
+      output)))
 
 (defn treeify-keys
   "treeify-keys will take a single map of compound keys and make it into a tree"
@@ -108,23 +138,20 @@
   ([m output]
      (if-let [[k v] (first m)]
        (recur (rest m)
-              (assoc-in output (seperate-keys k) v))
+              (assoc-in output (k-unmerge k) v))
        output)))
 
-(defn extend-key-ns [m kns ex]
+(defn extend-keys [m nskv ex]
   (let [e-map (select-keys m ex)
         x-map (apply dissoc m ex)]
-    (merge e-map (if (empty? kns)
+    (merge e-map (if (empty? nskv)
                    x-map
-                   (assoc-in {} kns x-map)))))
+                   (assoc-in {} nskv x-map)))))
 
-(defn contract-key-ns [m kns ex]
+(defn contract-keys [m nskv ex]
   (let [tm     (treeify-keys m)
-        c-map  (get-in tm kns)
-        x-map  (dissoc-in tm kns)]
+        c-map  (get-in tm nskv)
+        x-map  (dissoc-in tm nskv)]
     (merge c-map (if (empty? ex)
                    x-map
                    (assoc-in {} ex x-map)))))
-
-(defn gen-dsym []
-  (symbol (str "?" (name (gensym)))))

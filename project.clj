@@ -8,5 +8,5 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [com.datomic/datomic-free "0.8.3789"]]
-  :profiles {:dev {:dependencies [[midje "1.4.0"]
+  :profiles {:dev {:dependencies [[midje "1.5-beta2"]
                                   [clj-time "0.4.4"]]}})
