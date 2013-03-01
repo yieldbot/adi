@@ -27,7 +27,6 @@
 (defn bytes? [x] (= (Class/forName "[B")
                     (.getClass x)))
 
-
 ;; Misc Methods
 
 (defn gen-?sym []
@@ -48,6 +47,23 @@
              (no-repeats f (next coll) output last)
              :else (no-repeats f (next coll) (conj output v) v))
        output)))
+
+(defn what-is-different
+  ([d1 d2] (what-is-different d1 d2 []))
+  ([d1 d2 trail]
+     (cond
+      (and (hash-map? d1) (hash-map? d2))
+      (let [ks1 (set (keys d1)) ks2 (set (keys d2))]
+        (if (= ks1 ks2)
+          (mapv what-is-different  (map d1 ks1) (map d2 ks1) )
+          (throw (Exception. (format "keys are different at %s %s %s" trail ks1 ks2 )))))
+
+      (and (hash-set? d1) (hash-set? d2))
+      (map #(what-is-different %1 %2 trail) d1 d2)
+
+      (not= d1 d2)
+      (throw (Exception. (format "different at %s, %s, %s " trail d1 d2))))))
+
 
 ;; Keyword Manipulation
 
@@ -122,8 +138,8 @@
   ([m output]
      (if-let [[k v] (first m)]
        (cond (hash-map? v)
-            (flatten-once-keys 
-              (next m) 
+            (flatten-once-keys
+              (next m)
               (merge (zipmap (map #(k-merge [k %]) (keys v))
                             (vals v))
                       output))

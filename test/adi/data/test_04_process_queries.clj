@@ -4,9 +4,9 @@
         adi.checkers)
   (:require [adi.data :as ad]))
 
-(fact 
-  (ad/process {:name [{:type :string}]}
-              {:#/not     {:name "chris"}
-               :#/not-any {:name #{"chris" "adam"}}})
+(fact
+  (ad/process {:#/not     {:name "chris"}
+               :#/not-any {:name #{"chris" "adam"}}}
+              {:name [{:type :string}]})
   => {:# {:not {:name "chris"}
           :not-any {:name #{"chris" "adam"}}}})

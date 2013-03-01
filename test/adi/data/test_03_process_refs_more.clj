@@ -20,17 +20,17 @@
               :value   [{:type        :string}]}}))
 
 (fact "process will produces the most basic data structures"
-  (ad/process account-map {:account {}})
+  (ad/process {:account {}} account-map)
   => {:account/tags #{"personal"}}
 
-        (ad/process account-map {:account.address {}})
+        (ad/process {:account.address {}} account-map)
         => {:account.address/type :email}
 
-  (ad/process account-map
-                  {:account {:name "chris"
+  (ad/process {:account {:name "chris"
                              :tags #{"work" "business"}
                              :contacts #{{:value "z@caudate.me"}
-                                         {:type :skype :value "zcaudate"}}}})
+                                         {:type :skype :value "zcaudate"}}}}
+                  account-map)
   => {:account/name "chris",
       :account/tags #{"work" "business"}
       :account/contacts #{{:account.address/type :email,
@@ -38,9 +38,9 @@
                               {:account.address/type :skype,
                                :account.address/value "zcaudate"}}}
 
-  (ad/process account-map
-              {:account {:name "chris"
+  (ad/process {:account {:name "chris"
                          :contacts #{{:value "z@caudate.me"}}}}
+              account-map
               {:add-defaults? false})
   => {:account/name "chris"
       :account/contacts #{{:account.address/value "z@caudate.me"}}})
@@ -71,7 +71,7 @@
 
 
 (fact "testing on nested refs"
-    (ad/process category-map category-data {:add-defaults? false})
+    (ad/process category-data category-map {:add-defaults? false})
   => {:category/name "root"
       :category/children
       #{{:category/name "crystals"
@@ -87,7 +87,7 @@
          #{{:category/name "jasmin"}
            {:category/name "rose"}}}}}
 
-  (ad/process category-map category-data)
+  (ad/process category-data category-map)
   => {:category/name "root"
       :category/enabled true
       :category/priority 0

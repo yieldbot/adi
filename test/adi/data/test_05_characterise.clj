@@ -1,4 +1,4 @@
-(ns adi.data.test-05-characterize.clj
+(ns adi.data.test-05-characterise
   (:use midje.sweet
         adi.utils
         adi.checkers)
@@ -41,26 +41,22 @@
                           {:name "flowers"
                            :tags #{"perfume" "red"}}}}})
 
-(def category-data-3
-  {:category {:name "root"
-              :tags #{"shop" "new"}
-              }})
 
-(pprint
- (ad/characterise category-map
-                  (ad/process category-map category-data-3)
-                  {:generate-ids false}))
+(fact "characterise will sort out the data into different piles depending upon options"
+  (-> {:category {:name "root" :tags #{"shop" "new"}}}
+       (ad/process category-map )
+       (ad/characterise category-map {:generate-ids false}))
+  => {:data-many {:category/tags #{"new" "shop"}} :data-one {:category/name "root"}}
 
-(pprint
- (ad/characterise category-map
-                  (ad/process category-map category-data-2 {:add-defaults? false})
-                  {:generate-ids false}))
+  (-> {:category {:name "root" :tags #{"shop" "new"}}}
+      (ad/process category-map {:use-sets true})
+      (ad/characterise category-map {:generate-ids false}))
+  => {:data-many {:category/tags #{"new" "shop"}, :category/name #{"root"}}})
 
-
-(fact
-  (ad/characterise category-map
-                   (ad/process category-map category-data-1 {:add-defaults? false})
-                   {:generate-ids false})
+(fact "more complex results"
+  (-> category-data-1
+      (ad/process category-map  {:add-defaults? false})
+      (ad/characterise category-map {:generate-ids false}))
   => {:data-one {:category/name "root"},
       :refs-many
       {:category/children
@@ -79,3 +75,46 @@
                  {:data-one {:category/name "clear"}}}}}
              {:data-one {:category/name "citrine"}}
              {:data-one {:category/name "aquamarine"}}}}}}}})
+
+
+(fact "more complex scenarios of data many"
+  (-> category-data-2
+              (ad/process category-map {:add-defaults? false})
+              (ad/characterise category-map {:generate-ids false}))
+
+  {:data-one {:category/name "root"}
+            :data-many {:category/tags #{"new" "shop"}}
+            :refs-one {:category/image {:data-one {:image/type :big
+                                                   :image/url "www.example.com/root"}}}
+            :refs-many {:category/children
+                        #{{:data-one {:category/name "flowers"}
+                           :data-many {:category/tags #{"perfume" "red"}}}
+                          {:data-one {:category/name "crystals"}
+                           :data-many {:category/tags #{"shiny"}}
+                           :refs-one
+                           {:category/image {:data-one {:image/type :big
+                                                        :image/url "www.example.com/crystals"}}}
+                           :refs-many
+                           {:category/children
+                            #{{:data-one {:category/name "rose"}}
+                              {:data-one {:category/name "jasmin"}}}}}}}}
+
+
+  (-> category-data-2
+      (ad/process category-map {:add-defaults? false :use-sets true})
+      (ad/characterise category-map {:generate-ids false}))
+
+  => {:data-many {:category/tags #{"new" "shop"}, :category/name #{"root"}},
+      :refs-many
+      {:category/image
+       #{{:data-many {:image/type #{:big}, :image/url #{"www.example.com/root"}}}}
+       :category/children
+       #{{:data-many {:category/tags #{"perfume" "red"} :category/name #{"flowers"}}}
+         {:data-many {:category/tags #{"shiny"}, :category/name #{"crystals"}},
+          :refs-many {:category/image
+                      #{{:data-many
+                         {:image/type #{:big},
+                          :image/url #{"www.example.com/crystals"}}}},
+                      :category/children
+                      #{{:data-many {:category/name #{"jasmin"}}}
+                        {:data-many {:category/name #{"rose"}}}}}}}}})

@@ -5,31 +5,28 @@
   (:require [adi.data :as ad]))
 
 (fact "process basic usage"
-  (ad/process {:name [{:type :string}]}
-              {})
+  (ad/process {} {:name [{:type :string}]})
   => {}
 
-  (ad/process {:name [{:type :string}]}
-              {:name "chris"})
+  (ad/process {:name "chris"} {:name [{:type :string}]})
   => {:name "chris"}
 
-  (ad/process {:name [{:type :string}]}
-              {:other-value "something else"})
+  (ad/process {:other-value "something else"} {:name [{:type :string}]})
   => {}
 
-  (ad/process {:name [{:type :string}]}
-              {:name :wrong-type})
+  (ad/process {:name :wrong-type}
+              {:name [{:type :string}]})
   => (throws Exception)
 
-  (ad/process {:name [{:type :string}]}
-              {:+ {:name "chris"}})
+  (ad/process {:+ {:name "chris"}}
+              {:name [{:type :string}]})
   => {:name "chris"}
 
-  (ad/process {:name [{:type :string}]}
-              {:name "chris"
+  (ad/process {:name "chris"
                :#/not     {:name "chris"}
                :#/not-any [[:name "chris"]
-                           [:name "adam"]] })
+                           [:name "adam"]] }
+              {:name [{:type :string}]})
   => {:name "chris"
       :# {:not {:name "chris"}
           :not-any [[:name "chris"]
@@ -48,51 +45,50 @@
 
 
 (fact "process will produces the most basic data structures"
-  (ad/process account-map
-                 {:ac {:name nil
-                       :pass nil}})
+  (ad/process {:ac {:name nil
+                       :pass nil}}
+                 account-map)
   => {}
 
-  (ad/process account-map
-                 {:ac {:name nil
-                       :pass "hello"}})
+  (ad/process {:ac {:name nil
+                       :pass "hello"}}
+                 account-map)
   => {:ac/pass "hello"}
 
-  (ad/process account-map
-                 {:ac {:name "chris"
-                       :pass "hello"}})
+  (ad/process {:ac {:name "chris"
+                       :pass "hello"}}
+                 account-map)
   => account-res
 
-  (ad/process account-map
-                 {:ac/name "chris"
-                  :ac {:pass "hello"}})
+  (ad/process {:ac/name "chris"
+                  :ac {:pass "hello"}}
+                 account-map)
   => account-res
 
-  (ad/process  account-map
-                  {:+ {:ac/name "chris"}
-                   :ac {:pass "hello"}})
+  (ad/process {:+ {:ac/name "chris"}
+               :ac {:pass "hello"}}
+              account-map)
   => account-res
 
-  (ad/process account-map
-                 {:+ {:ac {:name "chris"}}
-                  :ac/pass "hello"})
+  (ad/process {:+ {:ac {:name "chris"}}
+               :ac/pass "hello"}
+              account-map)
   => account-res
 
-  (ad/process account-map
-              {:ac/tags #{"fun" "happy" "still"}})
+  (ad/process {:ac/tags #{"fun" "happy" "still"}} account-map)
   => {:ac/tags #{"fun" "happy" "still"}})
 
 (fact "process exceptions. what makes it blow up"
-  (ad/process account-map
-                 {:ac {:name 1 ;; wrong data type
-                       :pass "hello"}})
+  (ad/process {:ac {:name 1 ;; wrong data type
+                       :pass "hello"}}
+                 account-map)
   => (throws Exception)
 
-  (ad/process account-map
-              {:ac/tags #{"fun" 3 "still"}}) ;; not all strings
+  (ad/process {:ac/tags #{"fun" 3 "still"}}
+              account-map) ;; not all strings
   => (throws Exception)
-  (ad/process account-map
-              {:ac/tags ["fun" "happy" "still"]}) ;; not a set
+  (ad/process {:ac/tags ["fun" "happy" "still"]}
+              account-map) ;; not a set
   => (throws Exception))
 
 
@@ -105,21 +101,22 @@
                         :default :human}]}}))
 
 (fact "checking defaults"
-  (ad/process game-map {})
+  (ad/process {} game-map)
   => {}
 
-  (ad/process game-map
-              {:game {:name "adam"}})
+  (ad/process {:game {:name "adam"}}
+              game-map)
   => {:game/name "adam"
       :game/score 0}
 
-  (ad/process game-map {:profile {} :game {}} {:add-defaults? true
-                                               :default-nss #{:profile :game}})
+  (ad/process {:profile {} :game {}} game-map
+              {:add-defaults? true
+               :default-nss #{:profile :game}})
   => {:profile/avatar :human
       :game/score 0}
 
-  (ad/process game-map
-              {:game {:name "adam"} :profile {}} {:add-defaults? true
-                                                  :default-nss #{:profile}})
+  (ad/process {:game {:name "adam"} :profile {}}
+              game-map {:add-defaults? true
+                        :default-nss #{:profile}})
   => {:game/name "adam"
       :profile/avatar :human})

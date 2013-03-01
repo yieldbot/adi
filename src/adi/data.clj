@@ -52,7 +52,7 @@
               :else (throw (Exception. (format "The value/s [%s] are not of type %s" v t))))))
 
 (declare process
-         process-id process-fns process-ref
+         process-id process-sym process-# process-ref
          process-assoc process-assoc-value process-assoc-default)
 
 (defn find-nskv [k data]
@@ -78,29 +78,32 @@
 (defn process
     "Processes the data according to the schema specified to form a tree-like
    structure of refs and values for the next step of characterisation."
-    ([fsm data] (process fsm data {:add-defaults? true
-                                   :default-nss (get-default-nss fsm)
-                                   :use-sets false}))
-    ([fsm data opts] (process fsm data (merge {:fsm fsm} opts) {}))
-    ([fsm data opts output]
+    ([data fsm] (process data fsm {}))
+    ([data fsm opts]
+       (let [opts (merge {:fsm fsm
+                          :add-defaults? true
+                          :default-nss (get-default-nss fsm)
+                          :use-sets false} opts)]
+         (process data fsm opts {})))
+    ([data fsm opts output]
        (if-let [[k [meta]] (first fsm)]
          (->> output
-              (process-assoc meta data k opts)
-              (process (rest fsm) data opts))
+              (process-assoc data meta k opts)
+              (process data (rest fsm) opts))
          (->> output
               (process-id data)
-              (process-fns data)))))
+              (process-# data)))))
 
 (defn- process-ref [meta v opts]
   (let [nsv   (k-unmerge (:ref-ns meta))
-        data  (extend-keys (treeify-keys v) nsv [:+])]
-    (process (:fsm opts) data opts)))
+        data  (extend-keys (treeify-keys v) nsv [:+ :#])]
+    (process data (:fsm opts) opts)))
 
-(defn process-assoc [meta data k opts output]
+(defn process-assoc [data meta k opts output]
   (let [dfs?   (:add-defaults? opts)
         tk     (find-nskv k data)
         v      (cond tk (get-in data tk)
-                     dfs? (process-assoc-default meta data k opts))]
+                     dfs? (process-assoc-default data meta k opts))]
     (if v (process-assoc-value meta k v opts output)
         output)))
 
@@ -115,7 +118,7 @@
             (assoc output k (set (map #(process-ref meta % opts) v)))
             (assoc output k (process-ref meta v opts))))))
 
-(defn- process-assoc-default [meta data k opts]
+(defn- process-assoc-default [data meta k opts]
   (let [dfnss (or (:default-nss opts) [])
         n  (k-unmerge (k-ns k))
         m  (treeify-keys data)]
@@ -127,7 +130,7 @@
     (assoc output :db/id (get-in data ks))
     output))
 
-(defn- process-fns [data output]
+(defn- process-# [data output]
   (let [fn-m (select-keys (treeify-keys data) [:#])]
     (merge output fn-m)))
 
@@ -187,34 +190,152 @@
             (if id {:+ {:db/id id}} {}))))
 
 
+(defn pretty-gen [s]
+  (let [r (atom 0)]
+    (fn []
+      (swap! r inc)
+      (symbol (str "?" s @r)))))
+
+
 (defn characterise
   "Characterises the data into datomic specific format so that converting
    into datomic datastructures become easy."
-  ([fsm pdata] (characterise fsm pdata {:generate-ids true}))
-  ([fsm pdata opts] (characterise fsm pdata opts {}))
-  ([fsm pdata opts output]
+  ([pdata fsm] (characterise pdata fsm {}))
+  ([pdata fsm opts] (characterise pdata fsm opts {}))
+  ([pdata fsm opts output]
      (if-let [[k v] (first pdata)]
        (let [t (-> fsm k first :type)]
          (cond (or (= k :db/id) (= k :#))
-               (characterise fsm (next pdata) opts (assoc output k v))
+               (characterise (next pdata) fsm opts (assoc output k v))
 
                (and (set? v) (= :ref t))
-               (characterise fsm (next pdata) opts
+               (characterise (next pdata) fsm opts
                              (assoc-in output
                                        [:refs-many k]
-                                       (set (map #(characterise fsm % opts) v))))
+                                       (set (map #(characterise % fsm opts) v))))
 
                (set? v)
-               (characterise fsm (next pdata) opts (assoc-in output [:data-many k] v))
+               (characterise (next pdata) fsm opts (assoc-in output [:data-many k] v))
 
                (= :ref t)
-               (characterise fsm (next pdata) opts
+               (characterise (next pdata) fsm opts
                              (assoc-in output
                                        [:refs-one k]
-                                       (characterise fsm v opts)))
+                                       (characterise v fsm opts)))
 
                :else
-               (characterise fsm (next pdata) opts (assoc-in output [:data-one k] v))))
-       (if (and (nil? (:db/id output))(:generate-ids opts))
-         (assoc output :db/id (iid))
-         output))))
+               (characterise (next pdata) fsm opts (assoc-in output [:data-one k] v))))
+       (cond
+        (and (nil? (:db/id output)) (:generate-ids opts))
+        (assoc output :db/id (iid))
+
+        (and (nil? (get-in output [:# :sym])) (:generate-syms opts))
+        (assoc-in output [:# :sym] (if (:p-gen opts) ((:p-gen opts)) (gen-?sym)))
+
+        :else output))))
+
+(declare build
+         build-data-one build-data-many
+         build-refs-one build-refs-many)
+
+(defn build
+  "Builds the datomic query structure from the
+  characterised result"
+  ([chdata]
+    (concat (build chdata build-data-one build-data-many)
+            (build chdata build-refs-one build-refs-many)))
+  ([chdata f1 f2]
+    (cond (nil? (seq chdata)) []
+        :else
+        (concat (mapcat (fn [x] (build (second x) f1 f2)) (:refs-one chdata))
+                (mapcat (fn [x]
+                          (mapcat #(build % f1 f2) (second x))) (:refs-many chdata))
+                (f1 chdata)
+                (f2 chdata)))))
+
+;; Build Helper Functions
+
+(defn- build-data-one [chd]
+  [(assoc (:data-one chd) :db/id (:db/id chd))])
+
+(defn- build-data-many [chd]
+  (for [[k vs] (:data-many chd)
+        v vs]
+    [:db/add (:db/id chd) k v]))
+
+(defn- build-refs-one [chd]
+  (for [[k ref] (:refs-one chd)]
+    [:db/add (:db/id chd) k (:db/id ref)]))
+
+(defn- build-refs-many [chd]
+  (for [[k refs] (:refs-many chd)
+        ref refs]
+    [:db/add (:db/id chd) k (:db/id ref)]))
+
+
+
+(declare clauses
+         clauses-data clauses-refs
+         clauses-not clauses-fulltext clauses-q)
+
+(defn get-sym [chdata] (get-in chdata [:# :sym]))
+
+(defn build-query [chdata fsm & [pretty]]
+  (concat [:find (get-sym chdata) :where]
+          (clauses chdata)
+          (clauses-not chdata fsm pretty)
+          (clauses-fulltext chdata fsm pretty)
+          (clauses-q chdata)))
+
+(defn clauses
+  "Builds the datomic query structure from the
+  characterised result"
+  ([chdata]
+     (cond
+      (nil? (seq chdata)) []
+      :else
+      (concat  (clauses-data chdata)
+               (clauses-refs chdata)
+               (mapcat (fn [x]
+                         (mapcat clauses (second x))) (:refs-many chdata))))))
+
+(defn- clauses-data [chdata]
+  (let [sym (get-sym chdata)]
+    (for [[k vs] (:data-many chdata)
+           v     vs]
+      [sym k v])))
+
+(defn- clauses-refs [chdata]
+  (let [sym (get-sym chdata)]
+    (for [[k rs] (:refs-many chdata)
+           r     rs]
+      [sym k (get-in r [:# :sym]) ])))
+
+(defn clauses-not [chdata fsm & [pretty]]
+  (if-let [chdn (get-in chdata [:# :not])]
+    (let [p-gen (if pretty (pretty-gen "ng") gen-?sym)
+          ndata (-> (process chdn fsm {:use-sets true})
+                    (characterise fsm {:generate-syms true}))
+          sym  (get-sym chdata)]
+      (apply concat
+             (for [[k vs] (:data-many ndata)
+                   v      vs]
+               (let [tsym (p-gen)]
+                 [[sym k tsym]
+                  [(list 'not= tsym v)]])
+               )))
+    []))
+
+(defn clauses-fulltext [chdata fsm & [pretty]]
+  (if-let [chdn (get-in chdata [:# :fulltext])]
+    (let [p-gen (if pretty (pretty-gen "ft") gen-?sym)
+          ndata (-> (process chdn fsm {:use-sets true})
+                    (characterise fsm {:generate-syms true}))
+          sym  (get-sym chdata)]
+      (for [[k vs] (:data-many ndata)
+            v      vs]
+        (let [tsym (p-gen)]
+          [(list 'fulltext '$ k v) [[sym tsym]]])))
+    []))
+(defn clauses-q [chdata]
+  (if-let [chdn (get-in chdata [:# :q])] chdn []))

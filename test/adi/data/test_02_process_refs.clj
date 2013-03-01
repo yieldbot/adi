@@ -16,7 +16,7 @@
                  :next {:value 4}}}})
 
 (fact "t0 - process does not change"
-    (ad/process t0-map t0-data)
+    (ad/process t0-data t0-map)
     => t0-data)
 
 
@@ -38,21 +38,21 @@
                               :link/next {:link/value 4}}}})
 
 (fact "t1 - the ref-ns is expanded"
-  (ad/process t1a-map
-              {:link {:value 1
+  (ad/process {:link {:value 1
                       :next {:value 2
                              :next  {:value 3
-                                     :next {:value 4}}}}})
+                                     :next {:value 4}}}}}
+              t1a-map)
   => t1-res
-
-  (ad/process t1b-map  ;; if ref-ns is not avaliable, the links have to be make explicit
-              {:link {:value 1
+  ;; if ref-ns is not avaliable, the links have to be make explicit
+  (ad/process {:link {:value 1
                       :next {:link {:value 2
                                     :next {:link {:value 3
-                                                   :next {:link {:value 4}}}}}}}})
+                                                   :next {:link {:value 4}}}}}}}}
+              t1b-map)
   => t1-res
 
-  (ad/process t1b-map t1-res) ;; or there is no change when using a flatmap
+  (ad/process t1-res t1b-map) ;; or there is no change when using a flatmap
   => t1-res)
 
 (def t2-map
@@ -69,7 +69,7 @@
 
 (fact "Different types of data links are allowed"
 
-  (ad/process t2-map t2-data)
+  (ad/process t2-data t2-map)
   => {:value 1
       :link/next {:value 2
                   :link/next {:value 3
@@ -84,30 +84,28 @@
 
 
 (fact
-  (ad/process t3-map {:value 1})
+  (ad/process {:value 1} t3-map)
   => {:value 1}
 
-  (ad/process t3-map
-              {:value 1
-               :link {:next {:+ {:value 2}}}})
+  (ad/process {:value 1
+               :link {:next {:+ {:value 2}}}}
+              t3-map)
   => {:value 1
       :link/next {:value 2}}
 
-   (ad/process t3-map
-              {:+/value 1
-               :link/next {:+/value 2}})
+   (ad/process {:+/value 1
+               :link/next {:+/value 2}}
+              t3-map)
   => {:value 1
       :link/next {:value 2}}
 
 
-  (ad/process t3-map
-              {:value 1
+  (ad/process {:value 1
                :link {:next {:+ {:value 2}
                              :next {:+ {:value 3}
-                                    :next {:+ {:value 4}}}}}})
+                                    :next {:+ {:value 4}}}}}}
+              t3-map)
   => {:value 1
       :link/next {:value 2
                   :link/next {:value 3
                               :link/next {:value 4}}}})
-
-
