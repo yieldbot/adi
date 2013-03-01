@@ -66,6 +66,16 @@
                  :link {:next  {:value 3
                                 :link {:next {:value 4}}}}}}})
 
+
+(fact "Different types of data links are allowed"
+
+  (ad/process t2-map t2-data)
+  => {:value 1
+      :link/next {:value 2
+                  :link/next {:value 3
+                              :link/next {:value 4}}}})
+
+
 (def t3-map
   (flatten-keys
    {:link  {:next  [{:type        :ref
@@ -101,14 +111,3 @@
                               :link/next {:value 4}}}})
 
 
-
-(fact "Different types of data links are allowed"
-
-
-  (ad/process t2-map t2-data)
-  => {:value 1
-      :link/next {:value 2
-                  :link/next {:value 3
-                              :link/next {:value 4}}}}
-
-)

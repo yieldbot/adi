@@ -25,8 +25,35 @@
           (throw (Exception. (format "Not every value in %s is not of type %s" v t))))
     true))
 
-(def k-ns-global :+)
-(def k-ns-fn :#)
+(declare correct-value
+         correct-value-sets correct-value-normal)
+
+(defn correct-value [meta v opts]
+  (let [t     (:type meta)
+        c     (or (:cardinality meta) :one)
+        chk   (as/type-checks t)]
+    (if (:use-sets opts)
+      (correct-value-sets t chk v)
+      (correct-value-normal t c chk v))))
+
+(defn- correct-value-sets [t chk v]
+  (cond (chk v) #{v}
+        (and (set? v) (every? chk v)) v
+        :else (throw (Exception. (format "The value/s [%s] are of type %s" v t)))))
+
+(defn- correct-value-normal [t c chk v]
+  (cond (= c :one)
+        (if (chk v) v
+            (throw (Exception. (format "The value %s is not of type %s" v t))))
+
+        (= c :many)
+        (cond (and (set? v) (every? chk v)) v
+              (chk v) #{v}
+              :else (throw (Exception. (format "The value/s [%s] are not of type %s" v t))))))
+
+(declare process
+         process-id process-fns process-ref
+         process-assoc process-assoc-value process-assoc-default)
 
 (defn find-nskv [k data]
   (let [nskv (k-unmerge k)
@@ -45,27 +72,55 @@
 
          :else (throw (Exception. (str "Not an integer, entity nor hashmap")))))
 
-
-(declare process
-         process-id process-fns process-assoc process-ref process-default)
+(defn get-default-nss [data]
+  (disj (set (keys (treeify-keys data))) :#))
 
 (defn process
-  "Processes the data according to the schema specified to form a tree-like
+    "Processes the data according to the schema specified to form a tree-like
    structure of refs and values for the next step of characterisation."
-  ([fsm data] (process fsm data true))
-  ([fsm data defaults?] (process fsm fsm data {} defaults?))
-  ([fsm nfsm data output defaults?]
-     (if-let [[k [meta]] (first nfsm)]
-       (let [tk     (find-nskv k data)
-             v      (cond tk (get-in data tk)
-                          defaults? (process-default meta k data))
-             output (if v
-                      (process-assoc fsm meta output k v defaults?)
-                      output)]
-         (process fsm (rest nfsm) data output defaults?))
-       (->> output
-            (process-id data)
-            (process-fns data)))))
+    ([fsm data] (process fsm data {:add-defaults? true
+                                   :default-nss (get-default-nss fsm)
+                                   :use-sets false}))
+    ([fsm data opts] (process fsm data (merge {:fsm fsm} opts) {}))
+    ([fsm data opts output]
+       (if-let [[k [meta]] (first fsm)]
+         (->> output
+              (process-assoc meta data k opts)
+              (process (rest fsm) data opts))
+         (->> output
+              (process-id data)
+              (process-fns data)))))
+
+(defn- process-ref [meta v opts]
+  (let [nsv   (k-unmerge (:ref-ns meta))
+        data  (extend-keys (treeify-keys v) nsv [:+])]
+    (process (:fsm opts) data opts)))
+
+(defn process-assoc [meta data k opts output]
+  (let [dfs?   (:add-defaults? opts)
+        tk     (find-nskv k data)
+        v      (cond tk (get-in data tk)
+                     dfs? (process-assoc-default meta data k opts))]
+    (if v (process-assoc-value meta k v opts output)
+        output)))
+
+(defn- process-assoc-value [meta k v opts output]
+  (let [v (correct-value meta v opts)
+        t (:type meta)]
+    (cond (not= t :ref)
+          (assoc output k v)
+
+          (= t :ref)
+          (if (set? v)
+            (assoc output k (set (map #(process-ref meta % opts) v)))
+            (assoc output k (process-ref meta v opts))))))
+
+(defn- process-assoc-default [meta data k opts]
+  (let [dfnss (or (:default-nss opts) [])
+        n  (k-unmerge (k-ns k))
+        m  (treeify-keys data)]
+    (if (and (get-in m n) (dfnss (first n)))
+      (:default meta))))
 
 (defn- process-id [data output]
   (if-let [ks (find-nskv :db/id data)]
@@ -74,28 +129,92 @@
 
 (defn- process-fns [data output]
   (let [fn-m (select-keys (treeify-keys data) [:#])]
-    (merge output (flatten-once-keys fn-m))))
+    (merge output fn-m)))
 
-(defn- process-default [meta k data]
-  (let [n  (k-unmerge (k-ns k))
-        m (treeify-keys data)]
-    (if (get-in m n) (:default meta))))
 
-(defn- process-ref [fsm meta v defaults?]
-  (let [nsv   (k-unmerge (:ref-ns meta))
+(declare unprocess
+         unprocess-assoc unprocess-ref)
 
-        refv (extend-keys (treeify-keys v) nsv [:+])]
-    (process fsm refv defaults?)))
+(defn unprocess
+  "The opposite of process. Takes a map or an entity and turns it into a nicer looking
+   data-structure"
+  ([fsm rrs pdata]
+     (if-let [id (:db/id pdata)]
+       (unprocess fsm rrs pdata {:db/id id} #{id})
+       (unprocess fsm rrs pdata {} #{})))
+  ([fsm rrs pdata exclude]
+     (unprocess fsm rrs pdata {} exclude))
+  ([fsm rrs pdata output exclude]
+     (if-let [[k v] (first pdata)]
+       (if-let [[meta] (k fsm)]
+         (unprocess fsm
+                    rrs
+                    (next pdata)
+                    (unprocess-assoc fsm rrs meta output k v exclude)
+                    exclude)
+         (unprocess fsm rrs (next pdata) output exclude))
+       output)))
 
-(defn- process-assoc [fsm meta output k v defaults?]
+(defn- unprocess-assoc [fsm rrs meta output k v exclude]
   (if (correct-type? meta v)
     (let [t (:type meta)
-          c (or (:cardinality meta) :one)]
+          c (or (:cardinality meta) :one)
+          kns (k-unmerge k)]
       (cond (not= t :ref)
-            (assoc output k v)
+            (assoc-in output kns v)
 
             (= c :one)
-            (assoc output k (process-ref fsm meta v defaults?))
+            (assoc-in output kns (unprocess-ref fsm rrs meta k v exclude))
 
             (= c :many)
-            (assoc output k (set (map #(process-ref fsm meta % defaults?) v)))))))
+            (assoc-in output kns
+                      (set (map #(unprocess-ref fsm rrs meta k % exclude) v)))))))
+
+(defn- unprocess-ref [fsm rrs meta k v exclude]
+  (let [id (:db/id v)]
+      (cond (exclude id)
+            {:+ {:db/id id}}
+
+            (get rrs k)
+            (let [nks (k-unmerge (:ref-ns meta))
+                  nm  (unprocess fsm rrs v)
+                  cm  (get-in nm nks)
+                  xm  (dissoc-in nm nks)]
+              (if (empty? xm) cm
+                  (merge cm (assoc {} :+ xm))))
+
+            :else
+            (if id {:+ {:db/id id}} {}))))
+
+
+(defn characterise
+  "Characterises the data into datomic specific format so that converting
+   into datomic datastructures become easy."
+  ([fsm pdata] (characterise fsm pdata {:generate-ids true}))
+  ([fsm pdata opts] (characterise fsm pdata opts {}))
+  ([fsm pdata opts output]
+     (if-let [[k v] (first pdata)]
+       (let [t (-> fsm k first :type)]
+         (cond (or (= k :db/id) (= k :#))
+               (characterise fsm (next pdata) opts (assoc output k v))
+
+               (and (set? v) (= :ref t))
+               (characterise fsm (next pdata) opts
+                             (assoc-in output
+                                       [:refs-many k]
+                                       (set (map #(characterise fsm % opts) v))))
+
+               (set? v)
+               (characterise fsm (next pdata) opts (assoc-in output [:data-many k] v))
+
+               (= :ref t)
+               (characterise fsm (next pdata) opts
+                             (assoc-in output
+                                       [:refs-one k]
+                                       (characterise fsm v opts)))
+
+               :else
+               (characterise fsm (next pdata) opts (assoc-in output [:data-one k] v))))
+       (if (and (nil? (:db/id output))(:generate-ids opts))
+         (assoc output :db/id (iid))
+         output))))

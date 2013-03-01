@@ -31,16 +31,16 @@
                :#/not-any [[:name "chris"]
                            [:name "adam"]] })
   => {:name "chris"
-      :#/not {:name "chris"}
-      :#/not-any [[:name "chris"]
-                  [:name "adam"]]})
+      :# {:not {:name "chris"}
+          :not-any [[:name "chris"]
+                    [:name "adam"]]}})
 
 
 (def account-map
   (flatten-keys
-   {:ac {:name  [{:type   :string}]
-         :pass  [{:type   :string}]
-         :tags  [{:type   :string
+   {:ac {:name  [{:type        :string}]
+         :pass  [{:type        :string}]
+         :tags  [{:type        :string
                   :cardinality :many}]}}))
 
 (def account-res
@@ -93,18 +93,33 @@
   => (throws Exception)
   (ad/process account-map
               {:ac/tags ["fun" "happy" "still"]}) ;; not a set
-  => (throws Exception) )
+  => (throws Exception))
 
 
 (def game-map
   (flatten-keys
    {:game {:name  [{:type    :string}]
            :score [{:type    :long
-                    :default 0}]}}))
-(fact "process exceptions. what makes it blow up"
+                    :default 0}]}
+    :profile {:avatar [{:type    :keyword
+                        :default :human}]}}))
+
+(fact "checking defaults"
+  (ad/process game-map {})
+  => {}
+
   (ad/process game-map
-                 {:game {:name "adam"}})
+              {:game {:name "adam"}})
   => {:game/name "adam"
-      :game/score 0})
+      :game/score 0}
 
+  (ad/process game-map {:profile {} :game {}} {:add-defaults? true
+                                               :default-nss #{:profile :game}})
+  => {:profile/avatar :human
+      :game/score 0}
 
+  (ad/process game-map
+              {:game {:name "adam"} :profile {}} {:add-defaults? true
+                                                  :default-nss #{:profile}})
+  => {:game/name "adam"
+      :profile/avatar :human})

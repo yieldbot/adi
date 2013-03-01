@@ -36,3 +36,33 @@
   (ad/find-db-id {:+/db/id 1}) => 1
   (ad/find-db-id {:+ {:db/id 1}}) => 1
   (ad/find-db-id {:+ {:db {:id 1}}}) => 1)
+
+(fact "correct-value takes a meta type, does a check to see if
+       the data is right and converts it into the right data"
+  (ad/correct-value {:type :string} "hello" {})
+  => "hello"
+  (ad/correct-value {:type :string} "hello" {:use-sets true})
+  => #{"hello"}
+  (ad/correct-value {:type :string} #{"there" "hello"} {:use-sets true})
+  => #{"hello" "there"}
+  (ad/correct-value {:type :string} #{"there" "hello"} {})
+  => (throws Exception)
+  (ad/correct-value {:type :string
+                     :cardinality :many} #{"there" "hello"} {})
+  => #{"hello" "there"}
+
+  (ad/correct-value {:type :string
+                     :cardinality :many} "hello" {})
+  => #{"hello"}
+
+  (ad/correct-value {:type :string
+                     :cardinality :many} #{"there" :hello} {})
+  => (throws Exception)
+
+  (ad/correct-value {:type :string
+                     :cardinality :many} #{"there" :hello} {:use-sets true})
+  => (throws Exception)
+
+  (ad/correct-value {:type :string
+                     :cardinality :many} :hello {:use-sets true})
+  => (throws Exception))
