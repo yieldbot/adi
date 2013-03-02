@@ -1,9 +1,6 @@
 (ns adi.utils
   (:require [clojure.string :as st]))
 
-
-(def leaf? vector?)
-
 (defn boolean? [x] (instance? java.lang.Boolean x))
 
 (defn hash-map? [x] (instance? clojure.lang.IPersistentMap x))
