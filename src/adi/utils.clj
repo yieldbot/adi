@@ -33,7 +33,9 @@
   [m [k & ks]]
   (if-not ks
     (dissoc m k)
-    (assoc m k (dissoc-in (m k) ks))))
+    (let [nm (dissoc-in (m k) ks)]
+      (cond (empty nm) (dissoc m k)
+            :else (assoc m k nm)))))
 
 (defn no-repeats
   ([coll] (no-repeats identity coll))
@@ -94,7 +96,10 @@
 
 (defn k-ns?
   ([k] (< 0 (.indexOf (str k) "/")))
-  ([k ns] (= ns (k-ns k))))
+  ([k ns] (if-let [tkns (k-ns k)]
+            (= 0 (.indexOf (str k) 
+                 (str ns "/")))
+            (nil? ns))))
 
 (defn k-z [k]
   (last (k-unmerge k)))
@@ -113,7 +118,6 @@
          set)))
 
 ;; Map Manipulation
-
 (defn flatten-keys
   "flatten-keys will take a map of maps and make it into a single map"
   ([m] (flatten-keys m [] {}))
@@ -153,6 +157,18 @@
        (recur (rest m)
               (assoc-in output (k-unmerge k) v))
        output)))
+
+(defn treeify-all-keys
+  ([m] (cond (hash-map? m) (treeify-all-keys m {})
+             :else m))
+  ([m output] 
+    (if-let [[k v] (first m)]
+       (recur (rest m)
+              (assoc-in output (k-unmerge k) (treeify-all-keys v)))
+       output)))
+
+(defn contains-ns-keys [cm ns]
+  (some #(k-ns? % ns) (keys cm)))
 
 (defn extend-keys [m nskv ex]
   (let [e-map (select-keys m ex)

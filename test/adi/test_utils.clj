@@ -107,15 +107,23 @@
   (ut/treeify-keys {}) => {}
   (ut/treeify-keys {:a 1 :b 2}) => {:a 1 :b 2}
   (ut/treeify-keys {:a/b 2 :a/c 3}) => {:a {:b 2 :c 3}}
+  (ut/treeify-keys {:a {:b/c 2} :a/d 3}) => {:a {:b/c 2 :d 3}}
   (ut/treeify-keys {:a/b/c 3 :a/b/d 4 :a/e/f 5 :a/e/g 6 :h/i 7})
   => {:a {:b {:c 3 :d 4}
           :e {:f 5 :g 6}}
       :h {:i 7}})
 
+(fact 
+   (ut/treeify-all-keys {:a {:b/c 2} :a/d 3}) => {:a {:b {:c 2} :d 3}}
+ )
+
 
 (fact "extend-keys will extend a treeified map with given namespace keys"
   (ut/extend-keys {:a 1 :b 2} [:hello] [])
   => {:hello {:a 1 :b 2}}
+
+ (ut/extend-keys {:a 1 :b 2} [:hello :there] [])
+  => {:hello {:there {:a 1 :b 2}}}
 
   (ut/extend-keys {:a 1 :b 2} [:hello] [:a])
   => {:hello {:b 2} :a 1}
@@ -124,12 +132,27 @@
   => {:hello {} :a 1 :b 2})
 
 
-(fact "contract-keys will make a treefied map only"
+(fact "contract-keys will make a treefied map"
   (ut/contract-keys {:hello/a 1
                      :hello/b 2
                      :there/a 3
                      :there/b 4} [:hello] [] )
   => {:a 1 :b 2 :there {:a 3 :b 4}}
+  
+  (ut/contract-keys {:hello {:a 1 :b 2}
+                     :there {:a 3 :b 4}} [:hello] [] )
+  => {:a 1 :b 2 :there {:a 3 :b 4}}
+
+  (ut/contract-keys {:hello/there/a 1
+                     :hello/there/b 2
+                     :again/there/a 3
+                     :again/there/b 4} [:hello :there] [] )
+  => {:a 1 :b 2 :again {:there {:a 3 :b 4}}}
+
+
+  (ut/contract-keys {:hello {:there {:a 1 :b 2}}
+                     :again {:there {:a 3 :b 4}}} [:hello :there] [] )
+  => {:a 1 :b 2 :again {:there {:a 3 :b 4}}}
 
   (ut/contract-keys {:hello/a 1
                      :hello/b 2

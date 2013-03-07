@@ -69,7 +69,7 @@
   => '[:find ?e :where [?e :account/username "chris"] [?e :account/password "hello"]])
 
 (fact
-  (ae/emit-refroute account-map [:account :account/address])
+  (ae/emit-refroute account-map [:account])
   =>
   #{:account/contacts :account/email :account/address/all
     :account/address/billing :account/address/shipping})
