@@ -141,24 +141,22 @@
 (defn unprocess
   "The opposite of process. Takes a map or an entity and turns it into a nicer looking
    data-structure"
-  ([fsm rrs pdata]
+  ([fschm pdata rrs]
      (if-let [id (:db/id pdata)]
-       (unprocess fsm rrs pdata {:db/id id} #{id})
-       (unprocess fsm rrs pdata {} #{})))
-  ([fsm rrs pdata exclude]
-     (unprocess fsm rrs pdata {} exclude))
-  ([fsm rrs pdata output exclude]
+       (unprocess fschm pdata rrs #{id} {:db/id id})
+       (unprocess fschm pdata rrs #{} {})))
+  ([fschm pdata rrs exclude]
+     (unprocess fschm rrs pdata exclude {}))
+  ([fschm pdata rrs exclude output]
      (if-let [[k v] (first pdata)]
-       (if-let [[meta] (k fsm)]
-         (unprocess fsm
-                    rrs
-                    (next pdata)
-                    (unprocess-assoc fsm rrs meta output k v exclude)
-                    exclude)
-         (unprocess fsm rrs (next pdata) output exclude))
+       (if-let [[meta] (k fschm)]
+         (->> output
+             (unprocess-assoc fschm rrs meta k v exclude)
+             (unprocess fschm (next pdata) rrs exclude))
+         (unprocess fschm (next pdata) rrs output exclude))
        output)))
 
-(defn- unprocess-assoc [fsm rrs meta output k v exclude]
+(defn- unprocess-assoc [fschm rrs meta k v exclude output]
   (if (correct-type? meta v)
     (let [t (:type meta)
           c (or (:cardinality meta) :one)
@@ -167,20 +165,20 @@
             (assoc-in output kns v)
 
             (= c :one)
-            (assoc-in output kns (unprocess-ref fsm rrs meta k v exclude))
+            (assoc-in output kns (unprocess-ref fschm rrs meta k v exclude))
 
             (= c :many)
             (assoc-in output kns
-                      (set (map #(unprocess-ref fsm rrs meta k % exclude) v)))))))
+                      (set (map #(unprocess-ref fschm rrs meta k % exclude) v)))))))
 
-(defn- unprocess-ref [fsm rrs meta k v exclude]
+(defn- unprocess-ref [fschm rrs meta k v exclude]
   (let [id (:db/id v)]
       (cond (exclude id)
             {:+ {:db/id id}}
 
             (get rrs k)
             (let [nks (k-unmerge (:ref-ns meta))
-                  nm  (unprocess fsm rrs v)
+                  nm  (unprocess fschm v rrs)
                   cm  (get-in nm nks)
                   xm  (dissoc-in nm nks)]
               (if (empty? xm) cm
@@ -189,42 +187,40 @@
             :else
             (if id {:+ {:db/id id}} {}))))
 
-
 (defn pretty-gen [s]
   (let [r (atom 0)]
     (fn []
       (swap! r inc)
       (symbol (str "?" s @r)))))
 
-
 (defn characterise
   "Characterises the data into datomic specific format so that converting
    into datomic datastructures become easy."
-  ([pdata fsm] (characterise pdata fsm {}))
-  ([pdata fsm opts] (characterise pdata fsm opts {}))
-  ([pdata fsm opts output]
+  ([pdata fschm] (characterise pdata fschm {}))
+  ([pdata fschm opts] (characterise pdata fschm opts {}))
+  ([pdata fschm opts output]
      (if-let [[k v] (first pdata)]
-       (let [t (-> fsm k first :type)]
+       (let [t (-> fschm k first :type)]
          (cond (or (= k :db/id) (= k :#))
-               (characterise (next pdata) fsm opts (assoc output k v))
+               (characterise (next pdata) fschm opts (assoc output k v))
 
                (and (set? v) (= :ref t))
-               (characterise (next pdata) fsm opts
+               (characterise (next pdata) fschm opts
                              (assoc-in output
                                        [:refs-many k]
-                                       (set (map #(characterise % fsm opts) v))))
+                                       (set (map #(characterise % fschm opts) v))))
 
                (set? v)
-               (characterise (next pdata) fsm opts (assoc-in output [:data-many k] v))
+               (characterise (next pdata) fschm opts (assoc-in output [:data-many k] v))
 
                (= :ref t)
-               (characterise (next pdata) fsm opts
+               (characterise (next pdata) fschm opts
                              (assoc-in output
                                        [:refs-one k]
-                                       (characterise v fsm opts)))
+                                       (characterise v fschm opts)))
 
                :else
-               (characterise (next pdata) fsm opts (assoc-in output [:data-one k] v))))
+               (characterise (next pdata) fschm opts (assoc-in output [:data-one k] v))))
        (cond
         (and (nil? (:db/id output)) (:generate-ids opts))
         (assoc output :db/id (iid))
@@ -280,11 +276,11 @@
 
 (defn get-sym [chdata] (get-in chdata [:# :sym]))
 
-(defn build-query [chdata fsm & [pretty]]
+(defn build-query [chdata fschm & [pretty]]
   (concat [:find (get-sym chdata) :where]
           (clauses chdata)
-          (clauses-not chdata fsm pretty)
-          (clauses-fulltext chdata fsm pretty)
+          (clauses-not chdata fschm pretty)
+          (clauses-fulltext chdata fschm pretty)
           (clauses-q chdata)))
 
 (defn clauses
@@ -311,11 +307,11 @@
            r     rs]
       [sym k (get-in r [:# :sym]) ])))
 
-(defn clauses-not [chdata fsm & [pretty]]
+(defn clauses-not [chdata fschm & [pretty]]
   (if-let [chdn (get-in chdata [:# :not])]
     (let [p-gen (if pretty (pretty-gen "ng") gen-?sym)
-          ndata (-> (process chdn fsm {:use-sets true})
-                    (characterise fsm {:generate-syms true}))
+          ndata (-> (process chdn fschm {:use-sets true})
+                    (characterise fschm {:generate-syms true}))
           sym  (get-sym chdata)]
       (apply concat
              (for [[k vs] (:data-many ndata)
@@ -326,16 +322,17 @@
                )))
     []))
 
-(defn clauses-fulltext [chdata fsm & [pretty]]
+(defn clauses-fulltext [chdata fschm & [pretty]]
   (if-let [chdn (get-in chdata [:# :fulltext])]
     (let [p-gen (if pretty (pretty-gen "ft") gen-?sym)
-          ndata (-> (process chdn fsm {:use-sets true})
-                    (characterise fsm {:generate-syms true}))
+          ndata (-> (process chdn fschm {:use-sets true})
+                    (characterise fschm {:generate-syms true}))
           sym  (get-sym chdata)]
       (for [[k vs] (:data-many ndata)
             v      vs]
         (let [tsym (p-gen)]
           [(list 'fulltext '$ k v) [[sym tsym]]])))
     []))
+
 (defn clauses-q [chdata]
   (if-let [chdn (get-in chdata [:# :q])] chdn []))

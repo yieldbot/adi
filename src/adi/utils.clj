@@ -135,14 +135,14 @@
   ([m output]
      (if-let [[k v] (first m)]
        (cond (hash-map? v)
-            (flatten-once-keys
-              (next m)
-              (merge (zipmap (map #(k-merge [k %]) (keys v))
-                            (vals v))
-                      output))
+             (flatten-once-keys
+               (next m)
+               (merge (zipmap (map #(k-merge [k %]) (keys v))
+                              (vals v))
+                     output))
 
-             :else
-             (flatten-once-keys (next m) (assoc output k v)))
+              :else
+              (flatten-once-keys (next m) (assoc output k v)))
       output)))
 
 (defn treeify-keys
