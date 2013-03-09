@@ -59,10 +59,9 @@
         (keyword? val) (select-ids db {val '_})
 
         (hash-map? val)
-        (do (clojure.pprint/pprint (emit-query val fschm))
-          (->> (d/q (emit-query val fschm) db)
-               (map first)
-               set))
+        (->> (d/q (emit-query val fschm) db)
+             (map first)
+             set)
 
         (or (list? val) (vector? val))
         (->> (d/q val db)
@@ -98,8 +97,7 @@
                   (filter identity)))))
 
 (defn insert! [conn fschm data]
-  (let [cmd (emit-insert data fschm) ]
-    ;;(clojure.pprint/pprint cmd)
+  (let [cmd (emit-insert data fschm)]
     (d/transact conn cmd)))
 
 (defn update! [conn fschm val data]
