@@ -101,7 +101,7 @@ Next, we create a datastore, which in reality, is just a map containing a connec
 
     (def ds (adi/datastore sm-account "datomic:mem://adi-example" true))
 
-    (:fsm ds) ;; => (flatten-keys sm-account) 
+    (:fsm ds) ;; => (flatten-all-keys sm-account) 
     (:conn ds) ;; =>  #<LocalConnection datomic.peer.LocalConnection@512772cd>
 
 ## Inserting Data
@@ -142,7 +142,7 @@ Once a scheme map has been defined, now data can be added:
 
 At a more primitive level, insert! relys on 'emit' to generating datomic data that goes into datomic:
 
-    (apply ad/emit (flatten-keys sm-account) data-account)
+    (apply ad/emit (flatten-all-keys sm-account) data-account)
 
     ;;=> ({:db/id {:part :db.part/user, :idx -1000105},
     ;;     :account/password "a123",

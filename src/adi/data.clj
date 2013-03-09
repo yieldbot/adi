@@ -11,6 +11,10 @@
            v (if (< 0 v) (- v) v)]
        (tempid :db.part/user v ))))
 
+(def a (iid))
+(hash-map? a)
+(type a)
+
 (defn correct-type? [meta v]
   "Checks to see if v matches the description in the meta.
    throws an exception if the v does not"
@@ -32,7 +36,7 @@
   (let [t     (:type meta)
         c     (or (:cardinality meta) :one)
         chk   (as/type-checks t)]
-    (if (:use-sets opts)
+    (if (:sets-only? opts)
       (correct-value-sets t chk v)
       (correct-value-normal t c chk v))))
 
@@ -53,86 +57,116 @@
 
 (declare process
          process-id process-sym process-# process-ref
-         process-assoc process-assoc-value process-assoc-default)
+         process-assoc process-assoc-value process-get-defaults
+         process-check-extras process-check-required)
 
-(defn find-nskv [k data]
-  (let [nskv (k-unmerge k)
-        gnskv (cons :+ nskv)
-        trials (lazy-seq [[:+ k] gnskv [k] nskv [(k-merge gnskv)]])]
-    (->> trials
-         (filter #(get-in data %))
-         first)))
+
+(defn find-key-seq [nskv data]
+  (->> [nskv (cons :+ nskv)]
+       (filter #(get-in data %))
+       first))
 
 (defn find-db-id [val]
   (cond (integer? val) val
 
          (ref? val)
-         (if-let [nskv (find-nskv :db/id val)]
+         (if-let [nskv (find-key-seq [:db :id] val)]
            (get-in val nskv))
 
          :else (throw (Exception. (str "Not an integer, entity nor hashmap")))))
 
-(defn get-default-nss [data]
-  (disj (set (keys (treeify-keys data))) :#))
-
 (defn process
     "Processes the data according to the schema specified to form a tree-like
    structure of refs and values for the next step of characterisation."
-    ([data fsm] (process data fsm {}))
-    ([data fsm opts]
-       (let [opts (merge {:fsm fsm
-                          :add-defaults? true
-                          :default-nss (get-default-nss fsm)
-                          :use-sets false} opts)]
-         (process data fsm opts {})))
-    ([data fsm opts output]
-       (if-let [[k [meta]] (first fsm)]
-         (->> output
-              (process-assoc data meta k opts)
-              (process data (rest fsm) opts))
-         (->> output
-              (process-id data)
-              (process-# data)))))
+    ([data m] (process data m {}))
+    ([data m opts]
+       (let [mopts {:fschm (or (:fschm opts) (flatten-all-keys m))
+                    :nss (or (:nss opts) (set (keys (treeify-all-keys m))))
+                    :defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
+                    :required? (or (:required? opts) false)
+                    :extras? (or (:extras? opts) false)
+                    :sets-only? (or (:sets-only? opts) false)}]
+         (process (treeify-all-keys data) (:fschm mopts) mopts {})))
+    ([data fschm opts output]
+      ;;(println data)
+      (if-let [[k [meta]] (first fschm)]
+        (let [kt  (find-key-seq (k-unmerge k) data)]
+          (->> output
+               (process-assoc data meta k opts)
+               (process (if kt (dissoc-in-keepempty data kt) data) (rest fschm) opts)))
+        (->> output
+             (process-id data)
+             (apply process-#)
+             (apply process-check-extras opts)
+             (process-check-required opts)))))
+
+(defn process-assoc [data meta k opts output]
+  (let [kt     (find-key-seq (k-unmerge k) data)
+        v      (or (if kt (get-in data kt))
+                   (process-get-defaults data meta k opts))]
+    (cond
+      (nil? v) output
+
+      :else
+      (let [v (correct-value meta v opts)
+            t (:type meta)]
+        (cond (not= t :ref)
+              (cond (and (:sets-only? opts) (not (set? v)))
+                    (assoc output k #{v})
+                    :else
+                    (assoc output k v))
+
+              :else
+              (cond (and (:sets-only? opts) (not (set? v)))
+                    (assoc output k (hash-set (process-ref meta v opts)))
+
+                    (set? v)
+                    (assoc output k (set (map #(process-ref meta % opts) v)))
+
+                    :else
+                    (assoc output k (process-ref meta v opts))))))))
 
 (defn- process-ref [meta v opts]
   (let [nsv   (k-unmerge (:ref-ns meta))
-        data  (extend-keys (treeify-keys v) nsv [:+ :#])]
-    (process data (:fsm opts) opts)))
+        data  (extend-keys (treeify-keys v) nsv #{:+ :#})]
+    (process data (:fschm opts) opts)))
 
-(defn process-assoc [data meta k opts output]
-  (let [dfs?   (:add-defaults? opts)
-        tk     (find-nskv k data)
-        v      (cond tk (get-in data tk)
-                     dfs? (process-assoc-default data meta k opts))]
-    (if v (process-assoc-value meta k v opts output)
-        output)))
+(defn- process-get-defaults [data meta k opts]
+  (if (:defaults? opts)
+    (let [nss (or (:nss opts) #{})
+          nv  (k-nsv k)]
+      (if (and (get-in data nv) (nss (first nv)))
+        (:default meta)))))
 
-(defn- process-assoc-value [meta k v opts output]
-  (let [v (correct-value meta v opts)
-        t (:type meta)]
-    (cond (not= t :ref)
-          (assoc output k v)
+(defn- process-check-extras [opts data output]
+  (if (or (:extra? opts) (empty? (flatten-all-keys (remove-all-keys data [:+ :#]))))
+    output
+    (throw (Exception. (str "There are unprocessed data: " data)))))
 
-          (= t :ref)
-          (if (set? v)
-            (assoc output k (set (map #(process-ref meta % opts) v)))
-            (assoc output k (process-ref meta v opts))))))
-
-(defn- process-assoc-default [data meta k opts]
-  (let [dfnss (or (:default-nss opts) [])
-        n  (k-unmerge (k-ns k))
-        m  (treeify-keys data)]
-    (if (and (get-in m n) (dfnss (first n)))
-      (:default meta))))
+(defn- process-check-required [opts output]
+  (if (:required? opts)
+    (let [fschm (:fschm opts)
+          ks  (set (keys output))
+          nss (set (map k-ns ks))
+          rks (as/required-keys fschm nss)]
+      (doseq [rk rks]
+        (if (not (nss rk))
+          (throw (Exception. (str rk "is a required key in " output)))))
+      (doseq [m (filter hash-map? (vals output))]
+        (process-check-required opts m))))
+  output)
 
 (defn- process-id [data output]
-  (if-let [ks (find-nskv :db/id data)]
-    (assoc output :db/id (get-in data ks))
-    output))
+  ;;(println data)
+  (if-let [idv (find-key-seq [:db :id] data)]
+    (let [id  (get-in data idv)]
+      ;;(println id idv)
+      [(dissoc-in data idv) (assoc output :db/id id)])
+    [data output]))
 
 (defn- process-# [data output]
-  (let [fn-m (select-keys (treeify-keys data) [:#])]
-    (merge output fn-m)))
+  (let [fn-m (select-keys data [:#])]
+    [(dissoc data :#) (merge output fn-m)]))
 
 
 (declare unprocess
@@ -226,7 +260,7 @@
         (assoc output :db/id (iid))
 
         (and (nil? (get-in output [:# :sym])) (:generate-syms opts))
-        (assoc-in output [:# :sym] (if (:p-gen opts) ((:p-gen opts)) (gen-?sym)))
+        (assoc-in output [:# :sym] (if (:p-gen opts) ((:p-gen opts)) (?sym)))
 
         :else output))))
 
@@ -309,8 +343,9 @@
 
 (defn clauses-not [chdata fschm & [pretty]]
   (if-let [chdn (get-in chdata [:# :not])]
-    (let [p-gen (if pretty (pretty-gen "ng") gen-?sym)
-          ndata (-> (process chdn fschm {:use-sets true})
+    (let [p-gen (if pretty (pretty-gen "ng") ?sym)
+          ndata (-> (process chdn fschm {:sets-only? true
+                                         :defaults? false})
                     (characterise fschm {:generate-syms true}))
           sym  (get-sym chdata)]
       (apply concat
@@ -324,8 +359,9 @@
 
 (defn clauses-fulltext [chdata fschm & [pretty]]
   (if-let [chdn (get-in chdata [:# :fulltext])]
-    (let [p-gen (if pretty (pretty-gen "ft") gen-?sym)
-          ndata (-> (process chdn fschm {:use-sets true})
+    (let [p-gen (if pretty (pretty-gen "ft") ?sym)
+          ndata (-> (process chdn fschm {:sets-only? true
+                                         :defaults? false})
                     (characterise fschm {:generate-syms true}))
           sym  (get-sym chdata)]
       (for [[k vs] (:data-many ndata)

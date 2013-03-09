@@ -1,12 +1,12 @@
-(ns adi.emit.test-01-emit-schema
+(ns adi.api.test-01-emit-schema
  (:use midje.sweet
         adi.utils
         adi.checkers)
-  (:require [adi.emit :as ae]))
+  (:require [adi.api :as aa]))
 
 (fact "emit-schema takes a scheme-map and turns it into a schema
        that is installable into datomic"
-  (ae/emit-schema
+  (aa/emit-schema
    {:account
     {:username  [{:type        :string
                   :unique      :value
@@ -25,7 +25,7 @@
                     :db/unique :db.unique/value,
                     :db/cardinality :db.cardinality/one}])
 
-  (ae/emit-schema
+  (aa/emit-schema
    {:link
     {:next  [{:type :ref :ref-ns :link}]
      :value [{:type :string :default "undefined"}]}})
@@ -38,14 +38,14 @@
                     :db/valueType :db.type/string,
                     :db/cardinality :db.cardinality/one}])
 
-  (ae/emit-schema {"name" [{:type :ref}]})
+  (aa/emit-schema {"name" [{:type :ref}]})
   => (exclude-ids [{:db.install/_attribute :db.part/db,
                     :db/ident :name,
                     :db/valueType :db.type/ref,
                     :db/cardinality :db.cardinality/one}])
 
   ;; full schema
-  (ae/emit-schema {:name [{:type :string
+  (aa/emit-schema {:name [{:type :string
                            :cardinality :many
                            :unique :value
                            :doc "The name of something"
@@ -64,24 +64,24 @@
                     :db/no-history true}]))
 
 (fact "emit-schema exceptions. The function should blow up when:"
-   (ae/emit-schema {:name [{}]})
+   (aa/emit-schema {:name [{}]})
   => (throws Exception)
 
-  (ae/emit-schema {:name [{:type :wrong-type}]})
+  (aa/emit-schema {:name [{:type :wrong-type}]})
   => (throws Exception)
 
-  (ae/emit-schema {:name [{:type :ref
+  (aa/emit-schema {:name [{:type :ref
                            :doc :NOT-STRING}]})
   => (throws Exception)
 
-  (ae/emit-schema {:name [{:type :ref
+  (aa/emit-schema {:name [{:type :ref
                            :cardinality :not-one-or-many}]})
   => (throws Exception)
 
-  (ae/emit-schema {:name [{:type :ref
+  (aa/emit-schema {:name [{:type :ref
                            :unique :not-value-or-identity}]})
   => (throws Exception)
 
-  (ae/emit-schema {:name [{:type :ref
+  (aa/emit-schema {:name [{:type :ref
                            :index :not-a-bool-value}]})
   => (throws Exception))

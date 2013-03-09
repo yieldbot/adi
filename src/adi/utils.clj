@@ -3,7 +3,9 @@
 
 (defn boolean? [x] (instance? java.lang.Boolean x))
 
-(defn hash-map? [x] (instance? clojure.lang.IPersistentMap x))
+(defn hash-map? [x]
+  (and (instance? clojure.lang.IPersistentMap x)
+       (not (instance? datomic.db.DbId x))))
 
 (defn hash-set? [x] (instance? clojure.lang.PersistentHashSet x))
 
@@ -26,7 +28,7 @@
 
 ;; Misc Methods
 
-(defn gen-?sym []
+(defn ?sym []
   (symbol (str "?" (name (gensym)))))
 
 (defn dissoc-in
@@ -34,8 +36,14 @@
   (if-not ks
     (dissoc m k)
     (let [nm (dissoc-in (m k) ks)]
-      (cond (empty nm) (dissoc m k)
+      (cond (empty? nm) (dissoc m k)
             :else (assoc m k nm)))))
+
+(defn dissoc-in-keepempty
+  [m [k & ks]]
+  (if-not ks
+    (dissoc m k)
+    (assoc m k (dissoc-in-keepempty (m k) ks))))
 
 (defn no-repeats
   ([coll] (no-repeats identity coll))
@@ -97,7 +105,7 @@
 (defn k-ns?
   ([k] (< 0 (.indexOf (str k) "/")))
   ([k ns] (if-let [tkns (k-ns k)]
-            (= 0 (.indexOf (str k) 
+            (= 0 (.indexOf (str k)
                  (str ns "/")))
             (nil? ns))))
 
@@ -107,46 +115,75 @@
 (defn k-z? [k z]
   (= z (k-z k)))
 
-(defn list-ns [fsm]
-  (let [ks (keys fsm)]
+(defn list-ns [cm]
+  (let [ks (keys cm)]
     (set (map k-ns ks))))
 
-(defn list-ks [fsm ns]
-  (let [ks (keys fsm)]
+(defn list-ks [cm ns]
+  (let [ks (keys cm)]
     (->> ks
          (filter #(= ns (k-ns %)))
          set)))
 
+(defn list-all-keys
+  ([m] (list-all-keys m #{}))
+  ([m ks]
+     (if-let [[k v] (first m)]
+       (cond (hash-map? v)
+             (clojure.set/union
+              (list-all-keys (next m) (conj ks k))
+              (list-all-keys v))
+
+             :else (list-all-keys (next m) (conj ks k)))
+       ks)))
+
+(defn remove-all-keys
+  ([m ks] (remove-all-keys m (set ks) {}))
+  ([m ks output]
+    (if-let [[k v] (first m)]
+      (cond (ks k) (remove-all-keys (next m) ks output)
+
+            (hash-map? v)
+            (remove-all-keys (next m) ks
+              (assoc output k (remove-all-keys v ks)))
+            :else
+            (remove-all-keys (next m) ks (assoc output k v)))
+      output)))
+
 ;; Map Manipulation
-(defn flatten-keys
-  "flatten-keys will take a map of maps and make it into a single map"
-  ([m] (flatten-keys m [] {}))
+(defn flatten-all-keys
+  "flatten-all-keys will take a map of maps and make it into a single map"
+  ([m] (flatten-all-keys m [] {}))
   ([m nskv output]
      (if-let [[k v] (first m)]
        (cond (hash-map? v)
              (->> output
-                  (flatten-keys (next m) nskv)
-                  (flatten-keys v (conj nskv k)))
+                  (flatten-all-keys (next m) nskv)
+                  (flatten-all-keys v (conj nskv k)))
+
+             (nil? v)
+             (flatten-all-keys (next m) nskv output)
+
              :else
-             (flatten-keys (next m)
+             (flatten-all-keys (next m)
                            nskv
                            (assoc output (k-merge (conj nskv k)) v)))
        output)))
 
-(defn flatten-once-keys
-  "flatten-once-keys will flatten only one layer"
-  ([m] (flatten-once-keys m {}))
+(defn flatten-keys
+  "flatten-keys will flatten only one layer"
+  ([m] (flatten-keys m {}))
   ([m output]
      (if-let [[k v] (first m)]
        (cond (hash-map? v)
-             (flatten-once-keys
+             (flatten-keys
                (next m)
                (merge (zipmap (map #(k-merge [k %]) (keys v))
                               (vals v))
-                     output))
+                       output))
 
               :else
-              (flatten-once-keys (next m) (assoc output k v)))
+              (flatten-keys (next m) (assoc output k v)))
       output)))
 
 (defn treeify-keys
@@ -158,14 +195,17 @@
               (assoc-in output (k-unmerge k) v))
        output)))
 
-(defn treeify-all-keys
-  ([m] (cond (hash-map? m) (treeify-all-keys m {})
-             :else m))
-  ([m output] 
-    (if-let [[k v] (first m)]
-       (recur (rest m)
-              (assoc-in output (k-unmerge k) (treeify-all-keys v)))
-       output)))
+(defn treeify-all-keys [m]
+  (let [kvs (seq m)
+        hm? #(hash-map? (second %))
+        ms  (filter hm? kvs)
+        vs  (filter (complement hm?) kvs)
+        outm (reduce #(assoc-in %1 (k-unmerge (first %2))
+                                  (treeify-all-keys (second %2)))
+                    {} ms)]
+    (reduce #(assoc-in %1 (k-unmerge (first %2)) (second %2))
+                     outm vs)))
+
 
 (defn contains-ns-keys [cm ns]
   (some #(k-ns? % ns) (keys cm)))

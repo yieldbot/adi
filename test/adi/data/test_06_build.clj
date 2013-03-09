@@ -5,7 +5,7 @@
   (:require [adi.data :as ad]))
 
 (def category-map
-  (flatten-keys
+  (flatten-all-keys
    {:category {:name         [{:type        :string}]
                :tags         [{:type        :string
                                :cardinality :many}]

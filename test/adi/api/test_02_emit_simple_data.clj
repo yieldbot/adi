@@ -1,11 +1,11 @@
-(ns adi.emit.test-02-emit-simple-data
+(ns adi.api.test-02-emit-simple-data
  (:use midje.sweet
         adi.utils
         adi.checkers)
- (:require [adi.emit :as ae]))
+ (:require [adi.api :as aa]))
 
 (def account-map
-  (flatten-keys
+  (flatten-all-keys
    {:account
     {:username    [{:type        :string}]
      :hash        [{:type        :string}]
@@ -51,25 +51,25 @@
      :field       [{:type        :string}]}}))
 
 (fact
-  (ae/emit-insert {:account {:username "chris"}}
+  (aa/emit-insert {:account {:username "chris"}}
                   account-map)
-  => (exclude-ids [{:account/username "chris"}]))
+  => (exclude-ids [{:account/username "chris" :account/isActivated false, :account/isVerified false}]))
 
 (fact
-  (ae/emit-update {:db/id 4
+  (aa/emit-update {:db/id 4
                    :account {:username "chris"}}
                   account-map)
   => [{:db/id 4, :account/username "chris"}])
 
 (fact
-  (ae/emit-query {:#/sym '?e
+  (aa/emit-query {:#/sym '?e
                   :account {:username "chris"}
                   :#/q [['?e :account/password "hello"]]}
                  account-map)
   => '[:find ?e :where [?e :account/username "chris"] [?e :account/password "hello"]])
 
 (fact
-  (ae/emit-refroute account-map [:account])
+  (aa/emit-refroute account-map [:account])
   =>
   #{:account/contacts :account/email :account/address/all
     :account/address/billing :account/address/shipping})

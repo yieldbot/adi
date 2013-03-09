@@ -4,7 +4,6 @@
         adi.checkers)
   (:require [adi.data :as ad]))
 
-
 (def t0-map
   {:next  [{:type       :ref}]
    :value [{:type       :long}]})
@@ -21,13 +20,13 @@
 
 
 (def t1a-map
-  (flatten-keys
+  (flatten-all-keys
    {:link  {:next  [{:type        :ref
                      :ref-ns      :link}]
             :value [{:type        :long}]}}))
 
 (def t1b-map
-  (flatten-keys
+  (flatten-all-keys
    {:link  {:next  [{:type        :ref}]
             :value [{:type        :long}]}}))
 
@@ -56,7 +55,7 @@
   => t1-res)
 
 (def t2-map
-  (flatten-keys
+  (flatten-all-keys
    {:link  {:next  [{:type        :ref}]}
     :value [{:type    :long}]}))
 
@@ -77,7 +76,7 @@
 
 
 (def t3-map
-  (flatten-keys
+  (flatten-all-keys
    {:link  {:next  [{:type        :ref
                      :ref-ns      :link}]}
     :value [{:type   :long}]}))

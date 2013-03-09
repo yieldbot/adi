@@ -4,18 +4,15 @@
         [adi.data :only [iid]])
   (:require [adi.data :as ad]
             [adi.schema :as as]
-            [adi.emit :as ae]
             [adi.api :as aa]
             [datomic.api :as d]))
 
+(def ^:dynamic *uri* "datomic:mem://test-adi-api")
+(def ^:dynamic *conn* (aa/connect! *uri* true))
 
-
-(def *uri* "datomic:mem://test-adi-api")
-(def *conn* (aa/connect! *uri* true))
-
-
+(iid :eueu)
 (def account-map
-  (flatten-keys
+  (flatten-all-keys
    {:account
     {:username    [{:type        :string}]
      :hash        [{:type        :string}]
@@ -124,7 +121,17 @@
                     :line2   ""
                     :postcode "3000"}}}}})
 
+#_(aa/filter-empty-refs [{:db/id 1}])
+
+#_(aa/filter-empty-refs (aa/emit-insert account-info-2 account-map))
+#_(aa/emit-update account-info-2 account-map)
+
+
 @(aa/install-schema *conn* account-map)
+#_(aa/insert! *conn* account-map {:account
+                                 {:username    "titan"
+                                  :hash        "c27e8090a3ae"
+                                  :joined      (java.util.Date.)}})
 @(aa/insert! *conn* account-map account-info)
 @(aa/insert! *conn* account-map account-info-2)
 
@@ -135,14 +142,14 @@
 (aa/select (d/db *conn*) account-map {:account/username "titan"})
 
 (aa/select (d/db *conn*) account-map {:account/username "titan"}
-           (ae/emit-refroute account-map))
+           (aa/emit-refroute account-map))
 
 (aa/select-ids (d/db *conn*) account-map {:account {:address {:all {:country "Australia"}}
                                                     :contacts {:field "zc123"}}})
 
 
 (aa/select (d/db *conn*) account-map '(:find ?e :where [?e :account/username "titan"])
-           (ae/emit-refroute account-map))
+           (aa/emit-refroute account-map))
 
 
 (comment (d/delete-database *uri*))

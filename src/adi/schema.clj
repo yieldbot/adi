@@ -3,7 +3,7 @@
         adi.utils))
 
 (defn linearise-schm[schm]
-  (let [fschm (flatten-keys schm)
+  (let [fschm (flatten-all-keys schm)
         get-props (fn [[v]] v)]
     (map (fn [[k v]] (assoc (get-props v) :ident k)) fschm)))
 
@@ -65,3 +65,9 @@
        (assoc output
          :db.install/_attribute :db.part/db
          :db/id (tempid :db.part/db)))))
+
+(defn required-keys [fschm nss]
+  (filter (fn [k]
+            (and (nss (k-ns k))
+                 (:required (first (fschm k)))))
+          (keys fschm)))

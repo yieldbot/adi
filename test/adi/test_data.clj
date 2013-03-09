@@ -20,14 +20,14 @@
   (ad/correct-type? {:type :string} :NOT-STRING) => (throws Exception))
 
 
-(fact "find-nskv will return the key sequence that gives the value of the map"
+#_(fact "find-nskv will return the key sequence that gives the value of the map"
   (ad/find-nskv :a/b {}) => nil
   (ad/find-nskv :a/b {:a/b 1}) => [:a/b]
   (ad/find-nskv :a/b {:+ {:a {:b 1}}}) => [:+ :a :b]
   (ad/find-nskv :a/b {:+ {:a/b 1}}) => [:+ :a/b]
   (ad/find-nskv :a/b {:a {:b 1}}) => [:a :b])
 
-(fact "find-db-id will return the the datomic id for different data types"
+#_(fact "find-db-id will return the the datomic id for different data types"
   (ad/find-db-id {}) => nil
   (ad/find-db-id 1) => 1
   (ad/find-db-id {:db {:id 1}}) => 1
@@ -41,9 +41,9 @@
        the data is right and converts it into the right data"
   (ad/correct-value {:type :string} "hello" {})
   => "hello"
-  (ad/correct-value {:type :string} "hello" {:use-sets true})
+  (ad/correct-value {:type :string} "hello" {:sets-only? true})
   => #{"hello"}
-  (ad/correct-value {:type :string} #{"there" "hello"} {:use-sets true})
+  (ad/correct-value {:type :string} #{"there" "hello"} {:sets-only? true})
   => #{"hello" "there"}
   (ad/correct-value {:type :string} #{"there" "hello"} {})
   => (throws Exception)

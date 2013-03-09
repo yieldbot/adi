@@ -5,7 +5,7 @@
   (:require [adi.data :as ad]))
 
 (def category-map
-  (flatten-keys
+  (flatten-all-keys
    {:category {:name         [{:type        :string}]
                :tags         [{:type        :string
                                :cardinality :many}]
@@ -49,7 +49,7 @@
   => {:data-many {:category/tags #{"new" "shop"}} :data-one {:category/name "root"}}
 
   (-> {:category {:name "root" :tags #{"shop" "new"}}}
-      (ad/process category-map {:use-sets true})
+      (ad/process category-map {:sets-only? true})
       (ad/characterise category-map {:generate-ids false}))
   => {:data-many {:category/tags #{"new" "shop"}, :category/name #{"root"}}})
 
@@ -101,7 +101,7 @@
 
 
   (-> category-data-2
-      (ad/process category-map {:add-defaults? false :use-sets true})
+      (ad/process category-map {:defaults? false :sets-only? true})
       (ad/characterise category-map {:generate-ids false}))
 
   => {:data-many {:category/tags #{"new" "shop"}, :category/name #{"root"}},

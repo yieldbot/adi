@@ -5,7 +5,7 @@
   (:require [adi.data :as ad]))
 
 (def category-map
-  (flatten-keys
+  (flatten-all-keys
    {:category {:name         [{:type        :string}]
                :tags         [{:type        :string
                                :cardinality :many}]
@@ -19,12 +19,12 @@
 
 (fact "clauses will make the datomic query"
   (-> {:#/sym '?e :category {:name "root" :tags #{"shop" "new"}}}
-      (ad/process category-map {:use-sets true})
+      (ad/process category-map {:sets-only? true})
       (ad/characterise category-map {:generate-syms true})
-      ad/clauses)
-  => [['?e :category/tags "new"]
-      ['?e :category/tags "shop"]
-      ['?e :category/name "root"]])
+      ad/clauses set)
+  => (set [['?e :category/tags "new"]
+           ['?e :category/tags "shop"]
+           ['?e :category/name "root"]]))
 
 (def ch-data-1
   (-> {:#/sym '?v
@@ -33,7 +33,7 @@
                             :type :big}
                            {:#/sym '?i2
                             :type :small}}}}
-      (ad/process category-map {:use-sets true})
+      (ad/process category-map {:sets-only? true})
       (ad/characterise category-map {:generate-syms true})))
 
 (fact "clauses will automatically relate refs"
@@ -50,7 +50,7 @@
        :category {:name "root"
                   :image #{{:type :big}
                            {:type :small}}}}
-          (ad/process category-map {:use-sets true})
+          (ad/process category-map {:sets-only? true})
           (ad/characterise category-map {:generate-syms true
                                          :p-gen (ad/pretty-gen "r")})))
 
@@ -68,31 +68,31 @@
    {:#/sym '?e
     :#/not {:category/name "chris"
             :category/tags #{"happy" "sad"}}}
-   (ad/process category-map {:use-sets true})
+   (ad/process category-map {:sets-only? true})
    (ad/characterise category-map {:generate-syms true})))
 
 (fact
   (ad/clauses-not ch-data-2 category-map true)
-  => '[[?e :category/tags ?ng1]
-       [(not= ?ng1 "happy")]
-       [?e :category/tags ?ng2]
-       [(not= ?ng2 "sad")]
-       [?e :category/name ?ng3]
-       [(not= ?ng3 "chris")]])
+  =>  '[[?e :category/name ?ng1] 
+        [(not= ?ng1 "chris")] 
+        [?e :category/tags ?ng2] 
+        [(not= ?ng2 "happy")] 
+        [?e :category/tags ?ng3] 
+        [(not= ?ng3 "sad")]])
 
 (def ch-data-fulltext
   (->
    {:#/sym '?e
     :#/fulltext {:category/name "chris"
                  :category/tags #{"happy" "sad"}}}
-   (ad/process category-map {:use-sets true})
+   (ad/process category-map {:sets-only? true})
    (ad/characterise category-map {:generate-syms true})))
 
 (fact "fulltext clauses"
   (ad/clauses-fulltext ch-data-fulltext category-map true)
-  => '[[(fulltext $ :category/tags "happy") [[?e ?ft1]]]
-       [(fulltext $ :category/tags "sad") [[?e ?ft2]]]
-       [(fulltext $ :category/name "chris") [[?e ?ft3]]]])
+  => '[[(fulltext $ :category/name "chris") [[?e ?ft1]]] 
+       [(fulltext $ :category/tags "happy") [[?e ?ft2]]] 
+       [(fulltext $ :category/tags "sad") [[?e ?ft3]]]])
 
 
 (def ch-data-total
@@ -103,22 +103,22 @@
        :#/fulltext {:category/name "chris"
                     :category/tags #{"happy" "sad"}}
        :#/q '[[?e :category/name "hello"]]}
-      (ad/process category-map {:use-sets true})
+      (ad/process category-map {:sets-only? true})
       (ad/characterise category-map {:generate-syms true})))
 
 (fact "a bunch of mixed clauses"
   (ad/build-query ch-data-total category-map true)
-  => '[:find ?e :where
-       [?e :category/tags "new"]
-       [?e :category/tags "shop"]
-       [?e :category/name "root"]
-       [?e :category/tags ?ng1]
-       [(not= ?ng1 "happy")]
-       [?e :category/tags ?ng2]
-       [(not= ?ng2 "sad")]
-       [?e :category/name ?ng3]
-       [(not= ?ng3 "chris")]
-       [(fulltext $ :category/tags "happy") [[?e ?ft1]]]
-       [(fulltext $ :category/tags "sad") [[?e ?ft2]]]
-       [(fulltext $ :category/name "chris") [[?e ?ft3]]]
-       [?e :category/name "hello"]])
+  => '[:find ?e :where 
+       [?e :category/name "root"] 
+       [?e :category/tags "new"] 
+       [?e :category/tags "shop"] 
+       [?e :category/name ?ng1] 
+       [(not= ?ng1 "chris")] 
+       [?e :category/tags ?ng2] 
+       [(not= ?ng2 "happy")] 
+       [?e :category/tags ?ng3]
+      [(not= ?ng3 "sad")] 
+      [(fulltext $ :category/name "chris") [[?e ?ft1]]] 
+      [(fulltext $ :category/tags "happy") [[?e ?ft2]]] 
+      [(fulltext $ :category/tags "sad") [[?e ?ft3]]] 
+      [?e :category/name "hello"]])

@@ -12,7 +12,7 @@
   => {:name "chris"}
 
   (ad/process {:other-value "something else"} {:name [{:type :string}]})
-  => {}
+  => (throws Exception)
 
   (ad/process {:name :wrong-type}
               {:name [{:type :string}]})
@@ -34,7 +34,7 @@
 
 
 (def account-map
-  (flatten-keys
+  (flatten-all-keys
    {:ac {:name  [{:type        :string}]
          :pass  [{:type        :string}]
          :tags  [{:type        :string
@@ -45,24 +45,27 @@
 
 
 (fact "process will produces the most basic data structures"
+
+
   (ad/process {:ac {:name nil
-                       :pass nil}}
+                    :pass nil}}
                  account-map)
   => {}
 
+
   (ad/process {:ac {:name nil
-                       :pass "hello"}}
+                    :pass "hello"}}
                  account-map)
   => {:ac/pass "hello"}
 
   (ad/process {:ac {:name "chris"
-                       :pass "hello"}}
+                    :pass "hello"}}
                  account-map)
   => account-res
 
   (ad/process {:ac/name "chris"
-                  :ac {:pass "hello"}}
-                 account-map)
+               :ac {:pass "hello"}}
+              account-map)
   => account-res
 
   (ad/process {:+ {:ac/name "chris"}
@@ -93,8 +96,9 @@
 
 
 (def game-map
-  (flatten-keys
-   {:game {:name  [{:type    :string}]
+  (flatten-all-keys
+   {:game {:name  [{:type    :string
+                    :required true}]
            :score [{:type    :long
                     :default 0}]}
     :profile {:avatar [{:type    :keyword
@@ -110,13 +114,19 @@
       :game/score 0}
 
   (ad/process {:profile {} :game {}} game-map
-              {:add-defaults? true
-               :default-nss #{:profile :game}})
+              {:defaults? true
+               :nss #{:profile :game}})
   => {:profile/avatar :human
       :game/score 0}
 
+  (ad/process {:profile {} :game {}} game-map
+              {:required? true})
+  => (throws Exception)
+  ;;{:profile/avatar :human :game/score 0}
+
   (ad/process {:game {:name "adam"} :profile {}}
-              game-map {:add-defaults? true
-                        :default-nss #{:profile}})
+              game-map {:defaults? true
+                        :nss #{:profile}})
   => {:game/name "adam"
       :profile/avatar :human})
+

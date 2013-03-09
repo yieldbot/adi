@@ -1,11 +1,50 @@
 (ns adi.api
   (:use adi.utils)
   (:require [datomic.api :as d]
-            [adi.emit :as ae]
-            [adi.data :as ad]))
+            [adi.data :as ad]
+            [adi.schema :as as]))
+
+(defn filter-empty-refs [coll]
+  (filter (fn [x]
+              (or (vector? x)
+                  (and (hash-map? x)
+                       (-> (dissoc x :db/id) empty? not))))
+          coll))
+
+(defn emit-schema
+  "Generates all schemas using a datamap that can be installed
+   in the datomic database."
+  ([schm]
+    (->> (as/linearise-schm schm)
+         (map as/lschm->schema)))
+  ([schm & schms] (emit-schema (apply merge schm schms))))
+
+(defn emit-refroute [schm & [nss]]
+  (let [fschm (flatten-all-keys schm)
+        ks    (keys fschm)
+        rks   (filter #(= (-> % fschm first :type) :ref) ks)
+        frks  (if nss (filter (fn [k] (some #(k-ns? k %) nss)) rks)
+                rks)]
+    (set frks)))
+
+(defn emit-insert [data fschm]
+  (let [pdata (ad/process data fschm)
+        chdata (ad/characterise pdata fschm {:generate-ids true})]
+    (filter-empty-refs (ad/build chdata))))
+
+(defn emit-update [data fschm]
+  (let [pdata (ad/process data fschm {:defaults? false})
+        chdata (ad/characterise pdata fschm {:generate-ids false})]
+    (filter-empty-refs (ad/build chdata))))
+
+(defn emit-query [data fschm]
+  (let [pdata (ad/process data fschm {:defaults? false :sets-only? true})
+        chdata (ad/characterise pdata fschm {:generate-syms true})]
+    (ad/build-query chdata fschm)))
+
 
 (defn install-schema [conn schm]
-  (d/transact conn (ae/emit-schema schm)))
+  (d/transact conn (emit-schema schm)))
 
 (defn connect!
   ([uri] (connect! uri false))
@@ -20,9 +59,10 @@
         (keyword? val) (select-ids db {val '_})
 
         (hash-map? val)
-        (->> (d/q (ae/emit-query val fschm) db)
-             (map first)
-             set)
+        (do (clojure.pprint/pprint (emit-query val fschm))
+          (->> (d/q (emit-query val fschm) db)
+               (map first)
+               set))
 
         (or (list? val) (vector? val))
         (->> (d/q val db)
@@ -58,13 +98,14 @@
                   (filter identity)))))
 
 (defn insert! [conn fschm data]
-  (let [cmd (ae/emit-insert data fschm)]
+  (let [cmd (emit-insert data fschm) ]
+    ;;(clojure.pprint/pprint cmd)
     (d/transact conn cmd)))
 
 (defn update! [conn fschm val data]
   (let [ids     (select-ids (d/db conn) val)
         id-data (map #(assoc-in data [:+ :db/id] %) ids)
-        cmds (mapcat #(ae/emit-update % fschm) id-data)]
+        cmds (mapcat #(emit-update % fschm) id-data)]
     (d/transact conn cmds)))
 
 (declare retract!

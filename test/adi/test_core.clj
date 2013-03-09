@@ -47,7 +47,6 @@
                            :line1       [{:type        :string}]
                            :line2       [{:type        :string}]
                            :postcode    [{:type        :string}]}
-
                           :account.contact
                           {:type        [{:type        :keyword}]
                            :field       [{:type        :string}]}}
@@ -119,6 +118,9 @@
 
 (adi/insert! *ds* account-info)
 (adi/insert! *ds* account-info-2)
+
+
+
 
 (fact
   (adi/select *ds* {:account/firstName "Chris"})

@@ -1,7 +1,6 @@
 (ns adi.core
   (:use adi.utils)
   (:require [adi.data :as ad]
-            [adi.emit :as ae]
             [adi.schema :as as]
             [adi.api :as aa]
             [datomic.api :as d]))
@@ -11,7 +10,7 @@
 
 (defn datastore [uri schm & [install? recreate?]]
   (let [ds {:conn   (aa/connect! uri recreate?)
-            :fschm  (flatten-keys schm)}]
+            :fschm  (flatten-all-keys schm)}]
     (if install? (init-schema ds))
     ds))
 
@@ -41,7 +40,7 @@
   (aa/delete! (:conn ds) val (or rrs #{})))
 
 (defn delete-all! [ds val]
-  (let [rrs (ae/emit-refroute (:fschm ds))]
+  (let [rrs (aa/emit-refroute (:fschm ds))]
     (aa/delete! (:conn ds) val rrs)))
 
 (defn insert! [ds data]

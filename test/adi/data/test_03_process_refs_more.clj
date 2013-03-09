@@ -6,7 +6,7 @@
 
 
 (def account-map
-  (flatten-keys
+  (flatten-all-keys
    {:account {:name    [{:type        :string}]
               :tags    [{:type        :string
                          :default     #{"personal"}
@@ -23,8 +23,8 @@
   (ad/process {:account {}} account-map)
   => {:account/tags #{"personal"}}
 
-        (ad/process {:account.address {}} account-map)
-        => {:account.address/type :email}
+  (ad/process {:account.address {}} account-map)
+  => {:account.address/type :email}
 
   (ad/process {:account {:name "chris"
                              :tags #{"work" "business"}
@@ -41,12 +41,12 @@
   (ad/process {:account {:name "chris"
                          :contacts #{{:value "z@caudate.me"}}}}
               account-map
-              {:add-defaults? false})
+              {:defaults? false})
   => {:account/name "chris"
       :account/contacts #{{:account.address/value "z@caudate.me"}}})
 
 (def category-map
-  (flatten-keys
+  (flatten-all-keys
    {:category
     {:name         [{:type        :string}]
      :enabled      [{:type        :boolean
@@ -71,7 +71,7 @@
 
 
 (fact "testing on nested refs"
-    (ad/process category-data category-map {:add-defaults? false})
+    (ad/process category-data category-map {:defaults? false})
   => {:category/name "root"
       :category/children
       #{{:category/name "crystals"

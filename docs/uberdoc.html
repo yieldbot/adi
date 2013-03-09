@@ -3049,7 +3049,7 @@ net.brehaut.ClojureTools = (function (SH) {
          (map as/lschm-&gt;schema)))
   ([schm &amp; schms] (emit-schema (apply merge schm schms))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn schm-&gt;refroute [schm &amp; [nss]]
-  (let [fschm (flatten-keys schm)
+  (let [fschm (flatten-all-keys schm)
         ks    (keys fschm)
         rks   (filter #(= (-&gt; fschm first :type) :ref) ks)]
     (set rks)))</pre></td></tr><tr><td class="spacer docs">&nbsp;</td><td class="codes" /></tr><tr><td class="docs"><div class="docs-header"><a class="anchor" href="#adi.schema" name="adi.schema"><h1 class="project-name">adi.schema</h1><a class="toc-link" href="#toc">toc</a></a></div></td><td class="codes" /></tr><tr><td class="docs">
@@ -3082,7 +3082,7 @@ net.brehaut.ClojureTools = (function (SH) {
   (let [types (-&gt; meta-scheme-map :type :check)]
     (zipmap types (map #(resolve (symbol (str (name %) &quot;?&quot;))) types))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn linearise-schm-schm [schm]
-  (let [fschm (flatten-keys schm)
+  (let [fschm (flatten-all-keys schm)
         get-props (fn [[v]] v)]
     (map (fn [[k v]] (assoc (get-props v) :ident k)) fschm)))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn- lschm-property-pair
@@ -3128,7 +3128,7 @@ net.brehaut.ClojureTools = (function (SH) {
 </td><td class="codes"><pre class="brush: clojure">(defn bytes? [x] (= (Class/forName &quot;[B&quot;)
                     (.getClass x)))</pre></td></tr><tr><td class="docs"><p>Misc Methods</p>
 </td><td class="codes"></td></tr><tr><td class="docs">
-</td><td class="codes"><pre class="brush: clojure">(defn gen-?sym []
+</td><td class="codes"><pre class="brush: clojure">(defn ?sym []
   (symbol (str &quot;?&quot; (name (gensym)))))</pre></td></tr><tr><td class="docs">
 </td><td class="codes"><pre class="brush: clojure">(defn dissoc-in
   [m [k &amp; ks]]
@@ -3183,17 +3183,17 @@ net.brehaut.ClojureTools = (function (SH) {
     (-&gt;&gt; ks
          (filter #(= ns (k-ns %)))
          set)))</pre></td></tr><tr><td class="docs"><p>Map Manipulation</p>
-</td><td class="codes"></td></tr><tr><td class="docs"><p>flatten-keys will take a map of maps and make it into a single map</p>
-</td><td class="codes"><pre class="brush: clojure">(defn flatten-keys
-  ([m] (flatten-keys m [] {}))
+</td><td class="codes"></td></tr><tr><td class="docs"><p>flatten-all-keys will take a map of maps and make it into a single map</p>
+</td><td class="codes"><pre class="brush: clojure">(defn flatten-all-keys
+  ([m] (flatten-all-keys m [] {}))
   ([m kns output]
      (if-let [[k v] (first m)]
        (cond (hash-map? v)
              (-&gt;&gt; output
-                  (flatten-keys (next m) kns)
-                  (flatten-keys v (conj kns k)))
+                  (flatten-all-keys (next m) kns)
+                  (flatten-all-keys v (conj kns k)))
              :else
-             (flatten-keys (next m)
+             (flatten-all-keys (next m)
                            kns
                            (assoc output (k-merge (conj kns k)) v)))
        output)))</pre></td></tr><tr><td class="docs"><p>treeify-keys will take a single map of compound keys and make it into a tree</p>
