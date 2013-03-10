@@ -41,8 +41,8 @@
       (correct-value-normal t c chk v))))
 
 (defn- correct-value-sets [t chk v]
-  (cond (chk v) #{v}
-        (and (set? v) (every? chk v)) v
+  (cond (or (chk v) (= v '_)) #{v}
+        (and (set? v) (every? (fn [x] (or (chk x) (= x '_))) v)) v
         :else (throw (Exception. (format "The value/s [%s] are of type %s" v t)))))
 
 (defn- correct-value-normal [t c chk v]
@@ -84,7 +84,7 @@
                     :nss (or (:nss opts) (set (keys (treeify-all-keys m))))
                     :defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
                     :required? (or (:required? opts) false)
-                    :extras? (or (:extras? opts) false)
+                    :extras? (or (:extras? opts) true)
                     :sets-only? (or (:sets-only? opts) false)}]
          (process (treeify-all-keys data) (:fschm mopts) mopts {})))
     ([data fschm opts output]
@@ -139,9 +139,9 @@
         (:default meta)))))
 
 (defn- process-check-extras [opts data output]
-  (if (or (:extra? opts) (empty? (flatten-all-keys (remove-all-keys data [:+ :#]))))
+  (if (or (:extras? opts) (empty? (flatten-all-keys (remove-all-keys data [:+ :#]))))
     output
-    (throw (Exception. (str "There are unprocessed data: " data)))))
+    (throw (Exception. (str "There are unprocessed data: " data output opts)))))
 
 (defn- process-check-required [opts output]
   (if (:required? opts)

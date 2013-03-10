@@ -124,3 +124,18 @@
     (ad/process category-map)
     (ad/characterise category-map)
     ad/build)
+
+
+(def category-data-2
+  {
+   :category {:name "root"
+              :tags #{"shop" "new"}
+              :image {:url "www.example.com/root" :type :big}
+              :children #{{:name "crystals"
+                           :tags #{"shiny"}
+                           :image {:url "www.example.com/crystals" :type :big}
+                           :children #{{:name "rose"}
+                                       {:name "jasmin"}}}
+                          {:name "flowers"
+                           :tags #{"perfume" "red"}}}}
+   :#/not {:category/name "something"}})

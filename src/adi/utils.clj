@@ -26,6 +26,8 @@
 (defn bytes? [x] (= (Class/forName "[B")
                     (.getClass x)))
 
+(defn lazy-seq? [x] (instance? clojure.lang.LazySeq x))
+
 ;; Misc Methods
 
 (defn ?sym []

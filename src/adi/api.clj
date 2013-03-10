@@ -28,14 +28,22 @@
     (set frks)))
 
 (defn emit-insert [data fschm]
-  (let [pdata (ad/process data fschm)
-        chdata (ad/characterise pdata fschm {:generate-ids true})]
-    (filter-empty-refs (ad/build chdata))))
+  (cond (or (vector? data) (list? data) (lazy-seq? data))
+        (mapcat #(emit-insert % fschm) data)
+
+        (hash-map? data)
+        (let [pdata (ad/process data fschm {:extras? false})
+              chdata (ad/characterise pdata fschm {:generate-ids true})]
+          (filter-empty-refs (ad/build chdata)))))
 
 (defn emit-update [data fschm]
-  (let [pdata (ad/process data fschm {:defaults? false})
-        chdata (ad/characterise pdata fschm {:generate-ids false})]
-    (filter-empty-refs (ad/build chdata))))
+  (cond (or (vector? data) (list? data)  (lazy-seq? data))
+        (mapcat #(emit-update % fschm) data)
+
+        (hash-map? data)
+        (let [pdata (ad/process data fschm {:defaults? false})
+              chdata (ad/characterise pdata fschm {:generate-ids false})]
+          (filter-empty-refs (ad/build chdata)))))
 
 (defn emit-query [data fschm]
   (let [pdata (ad/process data fschm {:defaults? false :sets-only? true})

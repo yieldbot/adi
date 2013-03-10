@@ -73,11 +73,11 @@
 
 (fact
   (ad/clauses-not ch-data-2 category-map true)
-  =>  '[[?e :category/name ?ng1] 
-        [(not= ?ng1 "chris")] 
-        [?e :category/tags ?ng2] 
-        [(not= ?ng2 "happy")] 
-        [?e :category/tags ?ng3] 
+  =>  '[[?e :category/name ?ng1]
+        [(not= ?ng1 "chris")]
+        [?e :category/tags ?ng2]
+        [(not= ?ng2 "happy")]
+        [?e :category/tags ?ng3]
         [(not= ?ng3 "sad")]])
 
 (def ch-data-fulltext
@@ -90,8 +90,8 @@
 
 (fact "fulltext clauses"
   (ad/clauses-fulltext ch-data-fulltext category-map true)
-  => '[[(fulltext $ :category/name "chris") [[?e ?ft1]]] 
-       [(fulltext $ :category/tags "happy") [[?e ?ft2]]] 
+  => '[[(fulltext $ :category/name "chris") [[?e ?ft1]]]
+       [(fulltext $ :category/tags "happy") [[?e ?ft2]]]
        [(fulltext $ :category/tags "sad") [[?e ?ft3]]]])
 
 
@@ -108,17 +108,17 @@
 
 (fact "a bunch of mixed clauses"
   (ad/build-query ch-data-total category-map true)
-  => '[:find ?e :where 
-       [?e :category/name "root"] 
-       [?e :category/tags "new"] 
-       [?e :category/tags "shop"] 
-       [?e :category/name ?ng1] 
-       [(not= ?ng1 "chris")] 
-       [?e :category/tags ?ng2] 
-       [(not= ?ng2 "happy")] 
+  => '[:find ?e :where
+       [?e :category/name "root"]
+       [?e :category/tags "new"]
+       [?e :category/tags "shop"]
+       [?e :category/name ?ng1]
+       [(not= ?ng1 "chris")]
+       [?e :category/tags ?ng2]
+       [(not= ?ng2 "happy")]
        [?e :category/tags ?ng3]
-      [(not= ?ng3 "sad")] 
-      [(fulltext $ :category/name "chris") [[?e ?ft1]]] 
-      [(fulltext $ :category/tags "happy") [[?e ?ft2]]] 
-      [(fulltext $ :category/tags "sad") [[?e ?ft3]]] 
-      [?e :category/name "hello"]])
+       [(not= ?ng3 "sad")]
+       [(fulltext $ :category/name "chris") [[?e ?ft1]]]
+       [(fulltext $ :category/tags "happy") [[?e ?ft2]]]
+       [(fulltext $ :category/tags "sad") [[?e ?ft3]]]
+       [?e :category/name "hello"]])
