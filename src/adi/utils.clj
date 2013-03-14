@@ -30,6 +30,16 @@
 
 ;; Misc Methods
 
+(defn replace-all [x b a]
+  (.replaceAll x b a))
+
+(defn clean-name [n]
+  (clojure.string/join
+   "-" (-> (replace-all n "&" "and")
+           (replace-all "'" "")
+           clojure.string/lower-case
+           (clojure.string/split #" "))))
+
 (defn ?sym []
   (symbol (str "?" (name (gensym)))))
 

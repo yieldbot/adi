@@ -1,6 +1,6 @@
 # adi
 
-`adi`, rhyming with 'hardy', stands for the acronym (a) (d)atomic (i)nterface and is an attempt to simplify application and database design, bringing the concept of 'documents' as popularised by mongodb and couchdb to datomic without actually going down that path. Datomic comes with very expressive tools for query using datalog, a lightweight orm type system in the form of the entity function for fast access of related content as well as data transactions and transactional history for the entire lifetime of data as it mutates.
+`adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. and is an attempt to simplify application and database design, bringing the concept of 'documents' as popularised by mongodb and couchdb to datomic without actually going down that path. Datomic comes with very expressive tools for query using datalog, a lightweight orm type system in the form of the entity function for fast access of related content as well as data transactions and transactional history for the entire lifetime of data as it mutates. adi is datomic for the masses.
 
 However, it is of the author's opinion that the way data has to be imported into datomic does not translate naturally to the way that data is used with an application. In applications, especially ones written in clojure, data are in the form of maps and trees (maps of maps). Whilst working with datomic, the programmer is often forced to manually turn a map-like or tree-like structure into a flat vector-like structure when adding new data or updating existing ones. 
 

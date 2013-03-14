@@ -1,5 +1,9 @@
 (ns crystaluniverse.datamaps)
 
+(def history
+  {:history
+     {:added     [{:type        :instant}]}})
+
 (def magento
   {:magento
    {:customer    {:id           [{:type        :long
@@ -56,8 +60,9 @@
 (def category
   {:category
    {:name         [{:type        :string}]
+    :slug         [{:type        :string}]
     :enabled      [{:type        :boolean}]
-    :postion      [{:type        :long}]
+    :position     [{:type        :long}]
     :children     [{:type        :ref
                     :ref-ns      :category
                     :cardinality :many}]}})
@@ -69,12 +74,14 @@
     :slug          [{:type        :string}]
     :enabled       [{:type        :boolean}]
     :price         [{:type        :bigdec}]
+    :unit          [{:type        :keyword}]
+    :weight        [{:type        :bigdec}]
     :tags          [{:type        :string
                      :cardinality :many}]
-    :desc          {:long       [{:type         :string}]
-                    :short      [{:type         :string}]
-                    :unit       [{:type         :keyword}]
-                    :weight     [{:type         :bigdec}]}
+    :desc          {:long       [{:type         :string
+                                  :fulltext     true}]
+                    :short      [{:type         :string
+                                  :fulltext     true}]}
     :images        [{:type        :ref
                      :ref-ns      :product.image
                      :cardinality :many}]
@@ -92,16 +99,18 @@
    :product.single
    {:sku           [{:type        :string}]
     :price         [{:type        :bigdec}]
+    :unit          [{:type        :keyword}]
+    :weight        [{:type        :bigdec}]
     :enabled       [{:type        :boolean}]
     :name          [{:type        :string}]
-    :postion       [{:type        :long}]}
+    :position      [{:type        :long}]}
 
    :product.group
    {:sku           [{:type        :string}]
     :price         [{:type        :bigdec}]
     :enabled       [{:type        :boolean}]
     :name          [{:type        :string}]
-    :postion       [{:type        :long}]
+    :position      [{:type        :long}]
     :singles       [{:type        :ref
                      :ref-ns      :product.singles
                      :cardinality  :many}]}
@@ -111,7 +120,7 @@
     :price         [{:type        :bigdec}]
     :enabled       [{:type        :boolean}]
     :name          [{:type        :string}]
-    :postion       [{:type        :long}]
+    :position      [{:type        :long}]
     :singles       [{:type        :ref
                      :ref-ns      :product.group
                      :cardinality  :many}]
@@ -122,9 +131,9 @@
    {:file        [{:type        :string}]
     :label       [{:type        :string}]
     :url         [{:type        :string}]
-    :postion     [{:type        :long}]
+    :position    [{:type        :long}]
     :enabled     [{:type        :boolean}]
     :tags        [{:type        :string
                    :cardinality :many}]}})
 
-(def all (merge magento customer product category))
+(def all (merge magento customer product category history))

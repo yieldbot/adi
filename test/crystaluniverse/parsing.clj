@@ -1,7 +1,13 @@
-(ns crystaluniverse.parsing)
+(ns crystaluniverse.parsing
+  (:use adi.utils)
+  (:require [clj-time.core :as t]
+            [clj-time.coerce :as tc]))
 
 (defn parse-long [v]
   (Long/parseLong (or v "0")))
+
+(defn parse-double [v]
+  (Double/parseDouble (or v "0")))
 
 (defn parse-longs [arr]
   (->> arr (map parse-long) set))
@@ -12,6 +18,9 @@
 (defn parse-is-same [st t]
   (if (= st t) true false))
 
+(defn parse-instance [v]
+  (tc/to-date (.replace v " " "T")))
+
 (declare parse-categories
          categories-add-enabled categories-add-children)
 
@@ -19,7 +28,8 @@
   ;;(println (get m "position") m)
   (-> {:+ {:magento {:category {:id (parse-long (get m "category_id"))}}}
        :name (get m "name")
-       :postion (parse-long (get m "position"))}
+       :slug (clean-name (get m "name"))
+       :position (parse-long (get m "position"))}
       (categories-add-enabled m)
       (categories-add-children m)))
 
@@ -67,13 +77,14 @@
                          :categories (parse-longs (m "category_ids"))
                          :active true
                          :type :single}}
+     :history {:added (parse-instance (md "created_at"))}
      :product {:sku    (m "sku")
                :name   (m "name")
                :slug   (md "url_key")
+               :unit   (parse-product-unit (md "sell_by"))
+               :weight (parse-bigdec (md "weight"))
                :desc   {:long   (md "description")
-                        :short  (md "short_description")
-                        :unit   (parse-product-unit (md "sell_by"))
-                        :weight (parse-bigdec (md "weight"))}
+                        :short  (md "short_description")}
                :enabled true
                :price  (parse-bigdec (md "price"))
                :images (parse-product-images (m "media"))}}))
@@ -84,34 +95,41 @@
                              :categories (parse-longs (m "category_ids"))
                              :active false
                              :type :variant}}}
-     :sku    (m "sku")
-     :name   (m "name")
-     :enabled  true
-     :price    (parse-bigdec (md "price"))
-     :postion  pos}))
+     :sku     (m "sku")
+     :name    (m "name")
+     :enabled true
+     :price   (-> (md "price") parse-double (* 100) int bigdec (/ 100))
+     :unit    (parse-product-unit (md "sell_by"))
+     :weight  (-> (md "weight") parse-double (* 100000) int bigdec (/ 100000))
+     :position pos}))
+
+(defn process-redundants [p vs k]
+  (let [rds (map k vs)]
+    (if (and (< 0 (count rds))
+             (apply = rds))
+      [(assoc-in p [:product k] (first rds))
+       (map #(dissoc % k) vs)]
+      [(dissoc-in p [:product k]) vs])))
 
 (defn parse-grouped-product [m all]
   (let [p   (assoc-in (parse-single-product m)
                       [:magento :product :type] :grouped)
         chs (m "children")
         ids (map #(get % "product_id") chs)
-        pos (map #(parse-long (get % "product_id")) chs)
+        pos (map #(parse-long (get % "position")) chs)
         details  (map all ids)
         vars     (map parse-single-variant details pos)
-        prices   (map :price vars)
-        [p vars] (if (and (< 0 (count prices))
-                          (apply = prices))
-                   [(assoc p :price (first prices))
-                     (map #(dissoc % :price) vars)]
-                   [(dissoc p :price) vars])]
+        [p vars] (process-redundants p vars :price)
+        [p vars] (process-redundants p vars :unit)
+        [p vars] (process-redundants p vars :weight)]
     (assoc-in p [:product :variants :singles] (set vars))))
 
 (defn parse-product-image [m]
   {:file  (m "file")
    :label (m "label")
-   :postion (Long/parseLong (m "position"))
+   :position (Long/parseLong (m "position"))
    :enabled (parse-is-same (m "exclude") "0")
-   :url  (str "/images/products" (m "file"))
+   :url  (str "/products/image" (m "file"))
    :tags (set (m "types"))})
 
 (defn parse-product-images [arr]

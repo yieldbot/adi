@@ -41,7 +41,7 @@
                   :cardinality :many}]}}))
 
 (def account-res
-  {:ac/name "chris" :ac/pass "hello"})
+  )
 
 
 (fact "process will produces the most basic data structures"
@@ -61,22 +61,22 @@
   (ad/process {:ac {:name "chris"
                     :pass "hello"}}
                  account-map)
-  => account-res
+  => {:ac/name "chris" :ac/pass "hello"}
 
   (ad/process {:ac/name "chris"
                :ac {:pass "hello"}}
               account-map)
-  => account-res
+  => {:ac/name "chris" :ac/pass "hello"}
 
   (ad/process {:+ {:ac/name "chris"}
                :ac {:pass "hello"}}
               account-map)
-  => account-res
+  => {:ac/name "chris" :ac/pass "hello"}
 
   (ad/process {:+ {:ac {:name "chris"}}
                :ac/pass "hello"}
               account-map)
-  => account-res
+  => {:ac/name "chris" :ac/pass "hello"}
 
   (ad/process {:ac/tags #{"fun" "happy" "still"}} account-map)
   => {:ac/tags #{"fun" "happy" "still"}})
@@ -113,11 +113,6 @@
   => {:game/name "adam"
       :game/score 0}
 
-  (ad/process {:profile {} :game {}} game-map
-              {:defaults? true
-               :nss #{:profile :game}})
-  => {:profile/avatar :human
-      :game/score 0}
 
   (ad/process {:profile {} :game {}} game-map
               {:required? true})
@@ -128,5 +123,14 @@
               game-map {:defaults? true
                         :nss #{:profile}})
   => {:game/name "adam"
-      :profile/avatar :human})
+      :profile/avatar :human}
+
+
+  (ad/process {:profile {} :game {}} game-map
+              {:defaults? true
+               :nss #{:profile :game}})
+  => {:profile/avatar :human
+      :game/score 0}
+
+      )
 

@@ -37,23 +37,23 @@
         c     (or (:cardinality meta) :one)
         chk   (as/type-checks t)]
     (if (:sets-only? opts)
-      (correct-value-sets t chk v)
-      (correct-value-normal t c chk v))))
+      (correct-value-sets meta chk v)
+      (correct-value-normal meta c chk v))))
 
-(defn- correct-value-sets [t chk v]
+(defn- correct-value-sets [meta chk v]
   (cond (or (chk v) (= v '_)) #{v}
         (and (set? v) (every? (fn [x] (or (chk x) (= x '_))) v)) v
-        :else (throw (Exception. (format "The value/s [%s] are of type %s" v t)))))
+        :else (throw (Exception. (format "The value/s [%s] are of type %s, %s" v (:type meta) meta)))))
 
-(defn- correct-value-normal [t c chk v]
+(defn- correct-value-normal [meta c chk v]
   (cond (= c :one)
         (if (chk v) v
-            (throw (Exception. (format "The value %s is not of type %s" v t))))
+            (throw (Exception. (format "The value %s is not of type %s, v is type %s" v meta (type v)))))
 
         (= c :many)
         (cond (and (set? v) (every? chk v)) v
               (chk v) #{v}
-              :else (throw (Exception. (format "The value/s [%s] are not of type %s" v t))))))
+              :else (throw (Exception. (format "The value/s [%s] are not of type %s" v meta))))))
 
 (declare process
          process-id process-sym process-# process-ref
