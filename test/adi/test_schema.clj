@@ -100,12 +100,12 @@
 
 
 (fact
-  (as/required-keys
+  (as/find-required-keys
    (flatten-keys (as/add-idents (merge account-map link-map)))
    #{:link})
-  => [:link/next]
+  => #{:link/next}
 
-  (as/required-keys
+  (as/find-required-keys
    (flatten-keys (as/add-idents (merge account-map link-map)))
    #{:account})
-  => [])
+  => #{})
