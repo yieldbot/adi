@@ -39,7 +39,7 @@
                     (fn [x] (not= (ut/?sym) x))))
 
 (fact "no-repeats outputs a filtered list of values
-       *** FIX to filter-non-repeating"
+       *** FIX to remove-repeated"
   (ut/no-repeats [1 1 2 2 3 3 4 5 6]) => [1 2 3 4 5 6]
   (ut/no-repeats :n [{:n 1} {:n 1} {:n 1} {:n 2} {:n 2}]) => [{:n 1} {:n 2}]
   (ut/no-repeats even? [2 4 6 1 3 5]) => [2 1])

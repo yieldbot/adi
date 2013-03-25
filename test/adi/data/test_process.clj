@@ -104,8 +104,7 @@
 
 (def p3-geni
   (add-idents
-   {:game {:name  [{:type    :string
-                    :required true}]
+   {:game {:name  [{:type    :string}]
            :score [{:type    :long
                     :default 0}]}
     :profile {:avatar [{:type    :keyword
@@ -140,8 +139,6 @@
   => {:# {:nss #{:profile :game}}
       :profile/avatar :human
       :game/score 0})
-
-
 
 
 (def p4-geni

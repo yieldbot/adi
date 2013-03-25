@@ -97,3 +97,7 @@
 (defn find-ref-keys
   ([fgeni] (find-keys fgeni :type :ref))
   ([fgeni nss] (find-keys fgeni nss :type :ref)))
+
+;;;;;;
+
+(defn build-geni [])

@@ -86,7 +86,7 @@
      (let [mopts {:geni  (or (:geni opts) geni)
                   :fgeni (or (:fgeni opts) (flatten-all-keys geni))
                   :defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
-                  :required? (or (:required? opts) false)
+                  :required? (if (nil? (:required? opts)) true (:required? opts))
                   :extras? (or (:extras? opts) false)
                   :sets-only? (or (:sets-only? opts) false)}]
        (-> (process-init data geni mopts)
@@ -242,10 +242,66 @@
         (assoc idata k (pr-fn (idata k)))))
     idata))
 
+
+
+
+(declare unprocess
+         unprocess-assoc unprocess-ref)
+
+(defn unprocess
+  "The opposite of process. Takes a map or an entity and turns it into a nicer looking
+   data-structure"
+  ([pdata opts]
+     (if-let [id (:db/id pdata)]
+       (unprocess pdata opts #{id} {:db/id id})
+       (unprocess pdata opts #{} {})))
+  ([pdata opts exclude]
+     (unprocess pdata opts exclude {}))
+  ([pdata opts exclude output]
+     (if-let [[k v] (first pdata)]
+       (if-let [[meta] (k (:fgeni opts))]
+         (->> output
+             (unprocess-assoc opts meta k v exclude)
+             (unprocess (next pdata) opts exclude))
+         (unprocess (next pdata) opts exclude output))
+       output)))
+
+(defn- unprocess-assoc [opts meta k v exclude output]
+  (let [t (:type meta)
+        c (or (:cardinality meta) :one)
+        kns (key-unmerge k)]
+    (cond (not= t :ref)
+          (assoc-in output kns v)
+
+          (= c :one)
+          (assoc-in output kns (unprocess-ref opts meta k v exclude))
+
+          (= c :many)
+          (assoc-in output kns
+                    (set (map #(unprocess-ref opts meta k % exclude) v))))))
+
+(defn- unprocess-ref [opts meta k v exclude]
+  (let [id    (:db/id v)
+        fgeni (:fgeni opts)
+        rrs   (:ref-routes opts)]
+      (cond (exclude id)
+            {:+ {:db/id id}}
+
+            (get rrs k)
+            (let [nks (key-unmerge (:ref-ns meta))
+                  nm  (unprocess v opts)
+                  cm  (get-in nm nks)
+                  xm  (dissoc-in nm nks)]
+              (if (empty? xm) cm
+                  (merge cm (assoc {} :+ xm))))
+
+            :else
+            (if id {:+ {:db/id id}} {}))))
+
+
 (defn characterise
   "Characterises the data into datomic specific format so that converting
    into datomic datastructures become easy."
-  ([pdata fgeni] (characterise pdata fgeni {}))
   ([pdata fgeni opts] (characterise pdata fgeni opts {}))
   ([pdata fgeni opts output]
      (if-let [[k v] (first pdata)]
@@ -320,36 +376,36 @@
 
 ;; Clauses
 
-
 (declare clauses clauses-init
          clauses-data clauses-refs
          clauses-not clauses-fulltext clauses-q)
 
 (defn clauses-sym [chdata] (get-in chdata [:# :sym]))
+
 (defn clauses-pretty-gen [s]
   (let [r (atom 0)]
     (fn []
       (swap! r inc)
       (symbol (str "?" s @r)))))
 
-(defn clauses [chdata fgeni & [pretty]]
+(defn clauses
+  [chdata opts]
   (concat [:find (clauses-sym chdata) :where]
           (clauses-init chdata)
-          (clauses-not chdata fgeni pretty)
-          (clauses-fulltext chdata fgeni pretty)
-          (clauses-q chdata)))
+          (clauses-not chdata opts)
+          (clauses-fulltext chdata opts)
+          (clauses-q chdata)
+          ))
 
-(defn clauses-init
-  "Builds the datomic query structure from the
-  characterised result"
-  ([chdata]
-     (cond
-      (nil? (seq chdata)) []
-      :else
-      (concat  (clauses-data chdata)
-               (clauses-refs chdata)
-               (mapcat (fn [x]
-                         (mapcat clauses-init (second x))) (:refs-many chdata))))))
+(defn clauses-init [chdata]
+  (cond
+   (nil? (seq chdata)) []
+   :else
+   (concat  (clauses-data chdata)
+            (clauses-refs chdata)
+            (mapcat (fn [x]
+                      (mapcat clauses-init (second x)))
+                    (:refs-many chdata)))))
 
 (defn- clauses-data [chdata]
   (let [sym (clauses-sym chdata)]
@@ -363,12 +419,14 @@
            r     rs]
       [sym k (get-in r [:# :sym]) ])))
 
-(defn clauses-not [chdata fgeni & [pretty]]
+(defn clauses-not [chdata opts]
   (if-let [chdn (get-in chdata [:# :not])]
-    (let [p-gen (if pretty (clauses-pretty-gen "ng") ?sym)
-          ndata (-> (process chdn fgeni {:sets-only? true
+    (let [geni (:geni opts)
+          fgeni (:fgeni opts)
+          p-gen (if (opts :pretty-gen) (clauses-pretty-gen "ng") ?sym)
+          ndata (-> (process chdn geni {:sets-only? true
                                          :defaults? false})
-                    (characterise fgeni {:generate-syms true}))
+                    (characterise fgeni (merge {:generate-syms true} opts)))
           sym  (clauses-sym chdata)]
       (apply concat
              (for [[k vs] (:data-many ndata)
@@ -379,12 +437,14 @@
                )))
     []))
 
-(defn clauses-fulltext [chdata fgeni & [pretty]]
+(defn clauses-fulltext [chdata opts]
   (if-let [chdn (get-in chdata [:# :fulltext])]
-    (let [p-gen (if pretty (clauses-pretty-gen "ft") ?sym)
-          ndata (-> (process chdn fgeni {:sets-only? true
-                                         :defaults? false})
-                    (characterise fgeni {:generate-syms true}))
+    (let [geni (:geni opts)
+          fgeni (:fgeni opts)
+          p-gen (if (opts :pretty-gen) (clauses-pretty-gen "ft") ?sym)
+          ndata (-> (process chdn geni {:sets-only? true
+                                        :defaults? false})
+                    (characterise fgeni (merge {:generate-syms true} opts)))
           sym  (clauses-sym chdata)]
       (for [[k vs] (:data-many ndata)
             v      vs]

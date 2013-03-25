@@ -40,7 +40,6 @@
 (defn clean-name [n]
   (clojure.string/join
    "-" (-> (replace-all n "&" " and ")
-           ;;(replace-all "|" " or ")
            (replace-all "'" "")
            clojure.string/lower-case
            (clojure.string/split #"\s+"))))
@@ -203,6 +202,13 @@
               :else
               (flatten-keys (next m) (assoc output k v)))
       output)))
+
+(defn flatten-to-one
+  ([coll] (flatten-to-one coll []) )
+  ([[v & vs] output]
+     (cond (nil? v) output
+           (vector? (first v)) (flatten-to-one vs (concat output v))
+           :else (flatten-to-one vs (conj output v)))))
 
 (defn treeify-keys
   "treeify-keys will take a single map of compound keys and make it into a tree"

@@ -23,7 +23,7 @@
   (let [chdata   (-> {:db/id 1000001
                       :category {:name "root" :tags #{"shop" "new"}}}
                      (process b1-geni)
-                     (characterise (flatten-all-keys b1-geni)))]
+                     (characterise (flatten-all-keys b1-geni) {}))]
     chdata
     => {:# {:nss #{:category}}
         :db {:id 1000001}
@@ -60,7 +60,7 @@
 (fact "build will make the datomic structure"
   (let [chdata  (-> b1-data
                     (process b1-geni)
-                    (characterise (flatten-all-keys b1-geni)))]
+                    (characterise (flatten-all-keys b1-geni) {}))]
     chdata
     => {:data-one {:category/name "root"},
         :refs-many
@@ -145,7 +145,7 @@
 (fact "build will make the datomic structure"
   (let [chdata (-> b2-data
                    (process b1-geni)
-                   (characterise (flatten-all-keys b1-geni)))]
+                   (characterise (flatten-all-keys b1-geni) {}))]
     chdata
     => {:data-many {:category/tags #{"new" "shop"}},
         :data-one {:category/name "root"},
