@@ -25,7 +25,7 @@
         output  (if (:sets-only? opts)
                   (adjust-sets-only v meta chk err-many)
                   (adjust-normal v meta chk err-one err-many))]
-    (if rchk
+    (if (and rchk (:restrict? opts))
       (adjust-restrict output rchk meta opts)
       output)))
 
@@ -86,6 +86,7 @@
      (let [mopts {:geni  (or (:geni opts) geni)
                   :fgeni (or (:fgeni opts) (flatten-all-keys geni))
                   :defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
+                  :restrict? (if (nil? (:restrict? opts)) true (:restrict? opts))
                   :required? (if (nil? (:required? opts)) true (:required? opts))
                   :extras? (or (:extras? opts) false)
                   :sets-only? (or (:sets-only? opts) false)}]
@@ -113,7 +114,7 @@
              (if (:extras? opts)
                (process-init output (next data) geni opts)
                (throw (Exception.
-                       (format "Data not found in schema definition (%s %s), %s"
+                       (format "Data not found in schema definition (%s %s)\n  %s  \n"
                                k v geni))))
              (vector? (geni k))
              (-> (process-init-assoc output (first (geni k)) v opts)
@@ -283,7 +284,7 @@
 (defn- unprocess-ref [opts meta k v exclude]
   (let [id    (:db/id v)
         fgeni (:fgeni opts)
-        rrs   (:ref-routes opts)]
+        rrs   (:ref-set opts)]
       (cond (exclude id)
             {:+ {:db/id id}}
 
@@ -441,7 +442,7 @@
   (if-let [chdn (get-in chdata [:# :fulltext])]
     (let [geni (:geni opts)
           fgeni (:fgeni opts)
-          p-gen (if (opts :pretty-gen) (clauses-pretty-gen "ft") ?sym)
+          p-gen (if (:pretty-gen opts) (clauses-pretty-gen "ft") ?sym)
           ndata (-> (process chdn geni {:sets-only? true
                                         :defaults? false})
                     (characterise fgeni (merge {:generate-syms true} opts)))

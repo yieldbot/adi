@@ -256,6 +256,16 @@
          :db/cardinality :db.cardinality/one})))
 
 
+(fact "emit-ref-set"
+  (emit-ref-set (flatten-all-keys s1-geni){})
+  => #{:account/contacts :account/email :account/address/all
+       :account/address/billing :account/address/shipping}
+  (emit-ref-set (flatten-all-keys s1-geni){:ns-set #{:account}})
+  => #{:account/contacts :account/email :account/address/all
+       :account/address/billing :account/address/shipping}
+  (emit-ref-set (flatten-all-keys s1-geni){:ns-set #{}})
+  => #{})
+
 
 ;;;; emit-insert
 
@@ -359,7 +369,7 @@
         [:db/add 1 :account/email 2]))
 
 
-(fact
+(fact "emit query"
   (emit-query {:#/sym '?e
                :account {:username "chris"}}
               s1-opts)

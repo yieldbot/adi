@@ -12,10 +12,11 @@
   ([geni & genis] (emit-schema (apply merge geni genis))))
 
 
-(defn emit-refroute [fgeni & [nss]]
+(defn emit-ref-set [fgeni opts]
   (let [ks    (keys fgeni)
         rks   (filter #(= (-> % fgeni first :type) :ref) ks)
-        frks  (if nss (filter (fn [k] (some #(key-ns? k %) nss)) rks)
+        frks  (if-let [nss (:ns-set opts)]
+                (filter (fn [k] (some #(key-ns? k %) nss)) rks)
                 rks)]
     (set frks)))
 
@@ -56,7 +57,8 @@
 (defn emit-query [data opts]
   (let [geni   (:geni opts)
         fgeni  (:fgeni opts)
-        pdata (ad/process data geni (merge {:required? false
+        pdata (ad/process data geni (merge {:restrict? false
+                                            :required? false
                                             :defaults? false
                                             :sets-only? true} opts))
         chdata (ad/characterise pdata fgeni (merge {:generate-syms true} opts))]
@@ -129,11 +131,12 @@
 
 (defn- retract-cmd [ent k]
   (let [id  (:db/id ent)
-        val (k ent)]
-    (if (and id val)
-      (if (set? val)
-        (map (fn [v] [:db/retract id k v]) val)
-        [:db/retract id k val]))))
+        [k v] (if (vector? k) k
+                  [k (k ent)])]
+    (if (and id v)
+      (if (set? v)
+        (map (fn [x] [:db/retract id k x]) v)
+        [:db/retract id k v]))))
 
 (defn all-ref-ids
   ([ent rrs] (set (all-ref-ids ent rrs #{})))

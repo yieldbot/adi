@@ -9,7 +9,9 @@
 
 (defn hash-set? [x] (instance? clojure.lang.PersistentHashSet x))
 
-(defn ref? [x] (or (hash-map? x) (instance? datomic.query.EntityMap x)))
+(defn entity? [x] (instance? datomic.query.EntityMap x))
+
+(defn ref? [x] (or (hash-map? x) (entity? x)))
 
 (defn long? [x] (instance? java.lang.Long x))
 
@@ -228,11 +230,44 @@
                                   (treeify-all-keys (second %2)))
                     {} ms)]
     (reduce #(assoc-in %1 (key-unmerge (first %2)) (second %2))
-                     outm vs)))
+            outm vs)))
 
+(defn tree-diff
+  ([m1 m2] (tree-diff m1 m2 {}))
+  ([m1 m2 output]
+     (if-let [[k v] (first m1)]
+       (cond (nil? (k m2))
+             (tree-diff (dissoc m1 k) m2 (assoc output k v))
 
-(defn contain-ns-keys? [cm ns]
-  (some #(key-ns? % ns) (keys cm)))
+             (and (hash-map? v) (hash-map? (k m2)))
+             (let [sub (tree-diff v (k m2))]
+               (if (empty? sub)
+                 (tree-diff (dissoc m1 k) m2 output)
+                 (tree-diff (dissoc m1 k) m2 (assoc output k sub))))
+
+             (not= v (k m2))
+             (tree-diff (dissoc m1 k) m2 (assoc output k v))
+
+             :else
+             (tree-diff (dissoc m1 k) m2 output))
+       output)))
+
+(defn tree-merge
+  [m1 m2]
+  (if-let [[k v] (first m2)]
+    (cond (nil? (k m1))
+          (tree-merge (assoc m1 k v) (dissoc m2 k))
+
+          (and (hash-map? v) (hash-map? (k m1)))
+          (tree-merge (assoc m1 k (tree-merge (k m1) v)) (dissoc m2 k))
+
+          (not= v (k m1))
+          (tree-merge (assoc m1 k v) (dissoc m2 k))
+
+          :else
+          (tree-merge m1 (dissoc m2 k)))
+    m1))
+
 
 (defn extend-keys [m nskv ex]
   (let [e-map (select-keys m ex)
@@ -248,3 +283,6 @@
     (merge c-map (if (empty? ex)
                    x-map
                    (assoc-in {} ex x-map)))))
+
+(defn contain-ns-keys? [cm ns]
+  (some #(key-ns? % ns) (keys cm)))

@@ -23,33 +23,43 @@
   [qu args ds]
   (apply d/q qu (d/db (:conn ds)) args))
 
-(defn select-ids [val ds]
-  (aa/select-ids val (d/db (:conn ds)) ds))
+(defn merge-args
+  ([ds args]
+     (let [pargs (partition 2 args)]
+       (merge-args nil pargs ds)))
+  ([_  pargs output]
+     (if-let [[k v] (first pargs)]
+       (merge-args nil (next pargs) (assoc output k v))
+       output)))
 
-(defn select-entities [val ds]
-  (aa/select-entities val (d/db (:conn ds)) ds))
+(defn select-ids [val ds & args]
+  (aa/select-ids val (d/db (:conn ds)) (merge-args ds args)))
 
-(defn select-first-entity [val ds]
-  (first (select-entities val ds)))
+(defn select-entities [val ds & args]
+  (aa/select-entities val (d/db (:conn ds)) (merge-args ds args)))
+
+(defn select-first-entity [val ds & args]
+  (first (select-entities val (merge-args ds args))))
 
 (defn select [val ds & args]
-  (aa/select (d/db (:conn ds)) (into ds (partition 2 args))))
+  (aa/select val (d/db (:conn ds)) (merge-args ds args)))
 
 (defn select-first [val ds & args]
   (first (apply select val ds args)))
 
 (defn delete! [val ds & args]
-  (aa/delete! (:conn ds) val (into ds (partition 2 args))))
+  (aa/delete! (:conn ds) val (merge-args ds args)))
 
-(defn delete-all! [val ds]
-  (let [rrs (aa/emit-refroute (:fgeni ds))]
-    (aa/delete! (:conn ds) val (into ds [[:ref-routes rrs]]))))
+(defn delete-all! [val ds & args]
+  (let [rrs  (or (aa/emit-ref-set (:fgeni ds)))]
+    (aa/delete! (:conn ds) val (-> (merge-args ds args)
+                                   (into [[:ref-routes rrs]])))))
 
-(defn insert! [data ds]
-  (aa/insert! data (:conn ds) ds))
+(defn insert! [data ds & args]
+  (aa/insert! data (:conn ds) (merge-args ds args)))
 
-(defn update! [val data ds]
-  (aa/update!  val data (:conn ds) ds))
+(defn update! [val data ds & args]
+  (aa/update!  val data (:conn ds) (merge-args ds args)))
 
-(defn retract! [val ks ds]
-  (aa/retract!  val ks (:conn ds) ds))
+(defn retract! [val ks ds & args]
+  (aa/retract!  val ks (:conn ds) (merge-args ds args)))

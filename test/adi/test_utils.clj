@@ -154,6 +154,34 @@
    (ut/treeify-all-keys {:a/b 2 :a {:c 3}}) => {:a {:b 2 :c 3}}
    (ut/treeify-all-keys {:a {:b/c 2} :a/d 3}) => {:a {:b {:c 2} :d 3}})
 
+(fact "tree-diff will take two maps and compare what in the first is different to that in the second"
+  (ut/tree-diff {} {}) => {}
+  (ut/tree-diff {:a 1} {}) => {:a 1}
+  (ut/tree-diff {:a {:b 1}} {})=> {:a {:b 1}}
+  (ut/tree-diff {:a {:b 1}} {:a {:b 1}}) => {}
+  (ut/tree-diff {:a {:b 1}} {:a {:b 1 :c 1}}) => {}
+  (ut/tree-diff {:a {:b 1 :c 1}} {:a {:b 1}}) => {:a {:c 1}}
+  (ut/tree-diff {:a 1 :b {:c {:d {:e 1}}}}
+                {:a 1 :b {:c {:d {:e 1}}}})
+  => {}
+  (ut/tree-diff {:a 1 :b {:c {:d {:e 1}}}}
+                {:a 1 :b {:c 1}})
+  => {:b {:c {:d {:e 1}}}})
+
+
+(fact "tree-merge will take two maps and merge them recursively"
+  (ut/tree-merge {} {}) => {}
+  (ut/tree-merge {:a 1} {}) => {:a 1}
+  (ut/tree-merge {} {:a 1}) => {:a 1}
+  (ut/tree-merge {:a {:b 1}} {:a {:c 2}}) => {:a {:b 1 :c 2}}
+  (ut/tree-merge {:a {:b {:c 1}}} {:a {:b {:c 2}}}) => {:a {:b {:c 2}}}
+  (ut/tree-merge {:a {:b 3}} {:a {:b {:c 3}}}) => {:a {:b {:c 3}}}
+  (ut/tree-merge {:a {:b {:c 3}}} {:a {:b 3}}) => {:a {:b 3}}
+  (ut/tree-merge {:a {:b {:c 1 :d 2}}} {:a {:b {:c 3}}}) => {:a {:b {:c 3 :d 2}}})
+
+
+
+
 
 (fact "extend-keys will extend a treeified map with given namespace keys"
   (ut/extend-keys {:a 1 :b 2} [:hello] [])

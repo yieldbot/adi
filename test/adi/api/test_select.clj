@@ -10,6 +10,54 @@
 (def ^:dynamic *uri* "datomic:mem://adi-test-select")
 (def ^:dynamic *conn* (aa/connect! *uri* true))
 
+
+(def s0-geni
+  (add-idents {:account {:cars  [{:type    :long}]
+                         :name  [{:type    :string}]}}))
+
+(def s0-opts {:geni s0-geni
+              :fgeni (flatten-all-keys s0-geni)})
+
+(fact "Loading up simple data"
+  (against-background
+    [(before :contents
+             (do
+              (def ^:dynamic *conn* (aa/connect! *uri* true))
+              (aa/install-schema s0-geni *conn*)
+              (aa/insert! [{:account {:cars 2 :name "adam"}}
+                           {:account {:cars 1 :name "adam"}}
+                           {:account {:cars 0 :name "bob"}}
+                           {:account {:cars 1 :name "bob"}}
+                           {:account {:cars 4 :name "bob"}}
+                           {:account {:cars 0 :name "chris"}}
+                           {:account {:cars 2 :name "chris"}}
+                           {:account {:cars 1 :name "dave"}}
+                           {:account {:cars 1 :name "dave"}}
+                           {:account {:cars 2 :name "dave"}}]
+                          *conn* s0-opts)))])
+
+  (aa/select {:account/name "chris"} (d/db *conn*) s0-opts)
+  => (two-of (contains {:account (contains {:name "chris"})}))
+
+  (aa/select {:account/cars 1} (d/db *conn*) s0-opts)
+  => (four-of (contains {:account (contains {:cars 1})}))
+
+  (aa/select {:account {:cars 1
+                        :name "dave"}} (d/db *conn*) s0-opts)
+  => (two-of truthy)
+
+  (aa/select {:account {:cars 1
+                        :name "dave"
+                        :extra "something"}} (d/db *conn*) s0-opts)
+  => (throws Exception)
+
+  (aa/select {:account {:cars 1
+                        :name "dave"
+                        :extra "something"}} (d/db *conn*)
+                        (assoc s0-opts :extras? true))
+  => (two-of truthy))
+
+
 (def s1-geni
   (add-idents
    {:category {:name         [{:type        :string
