@@ -285,19 +285,19 @@
   (let [id    (:db/id v)
         fgeni (:fgeni opts)
         rrs   (:ref-set opts)]
-      (cond (exclude id)
-            {:+ {:db/id id}}
+    (cond (exclude id)
+          {:+ {:db/id id}}
 
-            (get rrs k)
-            (let [nks (key-unmerge (:ref-ns meta))
-                  nm  (unprocess v opts)
-                  cm  (get-in nm nks)
-                  xm  (dissoc-in nm nks)]
-              (if (empty? xm) cm
-                  (merge cm (assoc {} :+ xm))))
+          (get rrs k)
+          (let [nks (key-unmerge (:ref-ns meta))
+                nm  (unprocess v opts)
+                cm  (get-in nm nks)
+                xm  (dissoc-in nm nks)]
+            (if (empty? xm) cm
+                (merge cm {:+ xm})))
 
-            :else
-            (if id {:+ {:db/id id}} {}))))
+          :else
+          (if id {:+ {:db/id id}} {}))))
 
 
 (defn characterise

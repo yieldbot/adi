@@ -110,7 +110,7 @@
   => empty?)
 
 
-(fact
+(fact "update! commands"
   (against-background
     [(before :checks (reset-database))])
 
@@ -126,6 +126,16 @@
     (update! {:account/name "chris"} {:account/name "adam"} *ds*)
     (select-ids {:account/name "adam"} *ds*))
   => (four-of long?)
+
+  (do
+    (update! {:account/name "chris"} {:account/tags "another"} *ds*)
+    (select-ids {:account/tags "another"} *ds*))
+  => (four-of long?))
+
+
+(fact "retract! commands"
+  (against-background
+    [(before :checks (reset-database))])
 
   (select-ids {:account/name "chris"
                :account/tags "boo"} *ds*)
@@ -144,6 +154,7 @@
                  :account/tags "boo"} *ds*))
   => empty?
 
+
   (do
     (retract! {:account/name "chris"}
               [:account/tags] *ds*)
@@ -152,13 +163,42 @@
 
   (do
     (retract! {:account/name "chris"}
+              [[:account/tags #{"moon" "g2"}]] *ds*)
+    (select {:account/tags #{"moon" "g2"}} *ds*))
+  => (one-of (fn [x] (= "dave" (get-in x [:account :name]))))
+
+
+  (do
+    (retract! {:account/name "chris"}
               [:account/tags] *ds*)
     (select-ids {:account/name "chris"
                  :account/tags '_} *ds*))
   => empty?)
 
+(fact "delete! commands"
+  (against-background
+    [(before :checks (reset-database))])
 
+  (select-ids {:account/name "chris"} *ds*)
+  => (four-of long?)
 
+  (do
+    (delete! {:account/name "chris"} *ds*)
+    (select-ids {:account/name '_} *ds*))
+  => (four-of long?)
 
-(select-ids {:account/name "chris"
-             :account/tags "boo"} *ds*)
+  (do
+    (delete! {:account/tags "g2"} *ds*)
+    (select-ids {:account/name "chris"} *ds*))
+  => (two-of long?)
+
+  (do
+    (delete! {:account/tags "moon"} *ds*)
+    (select-ids {:account/name "chris"
+                 :account/tags "g2"} *ds*))
+  => (one-of long?)
+
+  (do
+    (delete! {:account/name '_} *ds*)
+    (select-ids {:account/tags '_} *ds*))
+  => empty?)

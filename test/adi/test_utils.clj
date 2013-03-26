@@ -179,10 +179,6 @@
   (ut/tree-merge {:a {:b {:c 3}}} {:a {:b 3}}) => {:a {:b 3}}
   (ut/tree-merge {:a {:b {:c 1 :d 2}}} {:a {:b {:c 3}}}) => {:a {:b {:c 3 :d 2}}})
 
-
-
-
-
 (fact "extend-keys will extend a treeified map with given namespace keys"
   (ut/extend-keys {:a 1 :b 2} [:hello] [])
   => {:hello {:a 1 :b 2}}

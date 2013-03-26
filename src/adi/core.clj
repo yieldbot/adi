@@ -23,7 +23,7 @@
   [qu args ds]
   (apply d/q qu (d/db (:conn ds)) args))
 
-(defn merge-args
+(defn- merge-args
   ([ds args]
      (let [pargs (partition 2 args)]
        (merge-args nil pargs ds)))
@@ -48,12 +48,12 @@
   (first (apply select val ds args)))
 
 (defn delete! [val ds & args]
-  (aa/delete! (:conn ds) val (merge-args ds args)))
+  (aa/delete! val (:conn ds) (merge-args ds args)))
 
 (defn delete-all! [val ds & args]
   (let [rrs  (or (aa/emit-ref-set (:fgeni ds)))]
-    (aa/delete! (:conn ds) val (-> (merge-args ds args)
-                                   (into [[:ref-routes rrs]])))))
+    (aa/delete! val (:conn ds) (-> (merge-args ds args)
+                                   (into [[:ref-set rrs]])))))
 
 (defn insert! [data ds & args]
   (aa/insert! data (:conn ds) (merge-args ds args)))

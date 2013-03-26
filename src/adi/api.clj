@@ -153,7 +153,10 @@
 (defn delete!
   [val conn opts]
   (let [db (d/db conn)
-        ids  (if-let [rrs (:ref-routes opts)]
+        ids  (if-let [rrs (or (:ref-set opts)
+                              (if-let [nss (:ns-set opts)]
+                                (emit-ref-set (:fgeni opts) opts))
+                              #{})]
                (mapcat #(all-ref-ids % rrs) (select-entities val db opts))
                (select-ids val db opts))
         data (map (fn [x] [:db.fn/retractEntity x]) ids)]
