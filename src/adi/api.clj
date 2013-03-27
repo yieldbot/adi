@@ -16,7 +16,7 @@
   (let [ks    (keys fgeni)
         rks   (filter #(= (-> % fgeni first :type) :ref) ks)
         frks  (if-let [nss (:ns-set opts)]
-                (filter (fn [k] (some #(key-ns? k %) nss)) rks)
+                (filter (fn [k] (some #(keyword-ns? k %) nss)) rks)
                 rks)]
     (set frks)))
 
@@ -125,7 +125,7 @@
         cmds (->> (for [ent ents
                         k ks]
                     (retract-cmd ent k))
-                  flatten-to-one
+                  flatten-to-vecs
                   (filter identity))]
     (d/transact conn cmds)))
 

@@ -74,7 +74,7 @@
 (defn process-nss-fn [data]
   (let [rm-ex (fn [s] (disj s :# :db))]
     (-> data
-        treeify-all-keys
+        treeify-keys-in
         process-nss-plus-fn
         keys
         set
@@ -84,7 +84,7 @@
   ([data geni] (process data geni {}))
   ([data geni opts]
      (let [mopts {:geni  (or (:geni opts) geni)
-                  :fgeni (or (:fgeni opts) (flatten-all-keys geni))
+                  :fgeni (or (:fgeni opts) (flatten-keys-in geni))
                   :defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
                   :restrict? (if (nil? (:restrict? opts)) true (:restrict? opts))
                   :required? (if (nil? (:required? opts)) true (:required? opts))
@@ -97,7 +97,7 @@
 (defn process-init
   ([data geni opts]
      (let [nss (process-nss-fn data)]
-       (-> (process-init {} (treeify-all-keys data) geni
+       (-> (process-init {} (treeify-keys-in data) geni
                          (assoc opts :nss nss))
            (assoc-in [:# :nss] nss))))
 
@@ -128,10 +128,10 @@
 (defn process-keyword-assoc [output meta k v]
   (let [kns (:keyword-ns meta)]
     (cond (set? v)
-          (assoc output k (set (map #(key-merge [kns %]) v)))
+          (assoc output k (set (map #(keyword-join [kns %]) v)))
 
           :else
-          (assoc output k (key-merge [kns v])))))
+          (assoc output k (keyword-join [kns v])))))
 
 (defn process-init-assoc [output meta v opts]
   (cond
@@ -155,14 +155,14 @@
            (assoc output k v)))))
 
 (defn- process-init-ref [meta v opts]
-  (let [nsvec (key-unmerge (:ref-ns meta))
-        data  (extend-keys v nsvec #{:+ :#})]
+  (let [nsvec (keyword-split (:ref-ns meta))
+        data  (nest-keys-in v nsvec #{:+ :#})]
     (process-init data (:geni opts)
                   (assoc opts :nss (process-nss-fn v)))))
 
 (defn process-defaults [idata opts & [nss-ex]]
   (if (:defaults? opts)
-    (let [nss (or (get-in idata [:# :nss]) (list-key-ns idata))
+    (let [nss (or (get-in idata [:# :nss]) (list-keyword-ns idata))
           nss (if (nil? nss-ex) nss (conj nss nss-ex))
           fgeni (:fgeni opts)
           ks (as/find-default-keys fgeni nss)
@@ -211,7 +211,7 @@
 
 (defn process-required [idata opts & [nss-ex]]
   (if (:required? opts)
-    (let [nss (or (get-in idata [:# :nss]) (list-key-ns idata))
+    (let [nss (or (get-in idata [:# :nss]) (list-keyword-ns idata))
           nss (if (nil? nss-ex) nss (conj nss nss-ex))
           fgeni (:fgeni opts)
           ks (as/find-required-keys fgeni nss)
@@ -270,7 +270,7 @@
 (defn- unprocess-assoc [opts meta k v exclude output]
   (let [t (:type meta)
         c (or (:cardinality meta) :one)
-        kns (key-unmerge k)]
+        kns (keyword-split k)]
     (cond (not= t :ref)
           (assoc-in output kns v)
 
@@ -289,7 +289,7 @@
           {:+ {:db/id id}}
 
           (get rrs k)
-          (let [nks (key-unmerge (:ref-ns meta))
+          (let [nks (keyword-split (:ref-ns meta))
                 nm  (unprocess v opts)
                 cm  (get-in nm nks)
                 xm  (dissoc-in nm nks)]

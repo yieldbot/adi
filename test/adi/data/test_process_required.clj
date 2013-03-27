@@ -21,7 +21,7 @@
 
 (def pr1-opts
   {:geni pr1-geni
-   :fgeni (flatten-all-keys pr1-geni)
+   :fgeni (flatten-keys-in pr1-geni)
    :required? true})
 
 
@@ -85,7 +85,7 @@
 
 (def pr4-opts
   {:geni pr4-geni
-   :fgeni (flatten-all-keys pr4-geni)
+   :fgeni (flatten-keys-in pr4-geni)
    :required? true})
 
 (def pr4-idata

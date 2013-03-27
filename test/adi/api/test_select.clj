@@ -16,7 +16,7 @@
                          :name  [{:type    :string}]}}))
 
 (def s0-opts {:geni s0-geni
-              :fgeni (flatten-all-keys s0-geni)})
+              :fgeni (flatten-keys-in s0-geni)})
 
 (fact "Loading up simple data"
   (against-background
@@ -73,7 +73,7 @@
                 :type        [{:type        :keyword}]}}))
 
 (def s1-opts {:geni s1-geni
-             :fgeni (flatten-all-keys s1-geni)})
+             :fgeni (flatten-keys-in s1-geni)})
 
 
 (fact "Loading up simple data"

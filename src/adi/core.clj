@@ -12,7 +12,7 @@
   (let [geni (as/add-idents geni)
         ds {:conn   (aa/connect! uri recreate?)
             :geni   geni
-            :fgeni  (flatten-all-keys geni)}]
+            :fgeni  (flatten-keys-in geni)}]
     (if install? (init-schema ds))
     ds))
 

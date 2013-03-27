@@ -35,7 +35,7 @@
                :default     "undefined"}]}})
 
 (fact "actual examples of usage of linearise."
-  (flatten-all-keys (as/add-idents account-map))
+  (flatten-keys-in (as/add-idents account-map))
   => {:account/username  [{:ident :account/username,
                             :unique :value,
                             :type :string,
@@ -44,7 +44,7 @@
                            :type :string,
                            :doc "The password associated with the account"}]}
 
-    (flatten-all-keys (as/add-idents link-map))
+    (flatten-keys-in (as/add-idents link-map))
     => {:link/next [{:ident :link/next
                      :required true
                      :type :ref,

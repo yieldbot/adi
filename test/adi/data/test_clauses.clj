@@ -19,7 +19,7 @@
                 :type        [{:type        :keyword}]}}))
 
 (def c1-opts {:geni c1-geni
-              :fgeni (flatten-all-keys c1-geni)
+              :fgeni (flatten-keys-in c1-geni)
               :pretty-gen true})
 
 ;; Unit Testing
@@ -35,7 +35,7 @@
 (fact "clauses-init will make the datomic query"
   (-> {:#/sym '?e :category {:name "root" :tags #{"shop" "new"}}}
       (process c1-geni {:sets-only? true})
-      (characterise (flatten-all-keys c1-geni) {:generate-syms true})
+      (characterise (flatten-keys-in c1-geni) {:generate-syms true})
       clauses-init set)
   => (set [['?e :category/tags "new"]
            ['?e :category/tags "shop"]
@@ -49,7 +49,7 @@
                            {:#/sym '?i2
                             :type :small}}}}
       (process c1-geni {:sets-only? true})
-      (characterise (flatten-all-keys c1-geni) {:generate-syms true})))
+      (characterise (flatten-keys-in c1-geni) {:generate-syms true})))
 
 (fact "clauses-init will automatically relate refs"
   (clauses-init c1-data)
@@ -66,7 +66,7 @@
                   :image #{{:type :big}
                            {:type :small}}}}
       (process c1-geni {:sets-only? true})
-      (characterise (flatten-all-keys c1-geni) {:generate-syms true
+      (characterise (flatten-keys-in c1-geni) {:generate-syms true
                                                 :sym-gen (clauses-pretty-gen "r")})))
 
 (fact "clauses-init will automatically relate refs"
@@ -84,7 +84,7 @@
     :#/not {:category/name "chris"
             :category/tags #{"happy" "sad"}}}
    (process c1-geni {:sets-only? true})
-   (characterise (flatten-all-keys c1-geni) {:generate-syms true})))
+   (characterise (flatten-keys-in c1-geni) {:generate-syms true})))
 
 (fact
   (clauses-not c3-data c1-opts)
@@ -101,7 +101,7 @@
     :#/fulltext {:category/name "chris"
                  :category/tags #{"happy" "sad"}}}
    (process c1-geni {:sets-only? true})
-   (characterise (flatten-all-keys c1-geni) {:generate-syms true})))
+   (characterise (flatten-keys-in c1-geni) {:generate-syms true})))
 
 (fact "fulltext clauses"
   (clauses-fulltext c4-data c1-opts)
@@ -120,7 +120,7 @@
                     :category/tags #{"happy" "sad"}}
        :#/q        '[[?e :category/name "hello"]]}
       (process c1-geni {:sets-only? true})
-      (characterise (flatten-all-keys c1-geni) {:generate-syms true})))
+      (characterise (flatten-keys-in c1-geni) {:generate-syms true})))
 
 (fact "a bunch of mixed clauses"
   (clauses c5-data c1-opts)

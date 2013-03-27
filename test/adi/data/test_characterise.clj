@@ -21,14 +21,14 @@
 (fact "characterise will sort out the data into different piles depending upon options"
   (-> {:category {:name "root" :tags #{"shop" "new"}}}
        (process c1-geni)
-       (characterise (flatten-all-keys c1-geni) {:generate-ids false}))
+       (characterise (flatten-keys-in c1-geni) {:generate-ids false}))
   => {:# {:nss #{:category}}
       :data-many {:category/tags #{"new" "shop"}}
       :data-one {:category/name "root"}}
 
   (-> {:category {:name "root" :tags #{"shop" "new"}}}
       (process c1-geni {:sets-only? true})
-      (characterise (flatten-all-keys c1-geni) {:generate-ids false}))
+      (characterise (flatten-keys-in c1-geni) {:generate-ids false}))
   => {:# {:nss #{:category}}
       :data-many {:category/tags #{"new" "shop"}
                   :category/name #{"root"}}})
@@ -49,7 +49,7 @@
 (fact "more complex results"
   (-> c1-data
       (process c1-geni {:defaults? false})
-      (characterise (flatten-all-keys c1-geni) {:generate-ids false}))
+      (characterise (flatten-keys-in c1-geni) {:generate-ids false}))
   =>
   {:# {:nss #{:category}}
    :data-one {:category/name "root"}
@@ -96,7 +96,7 @@
 (fact "more complex scenarios of data many"
   (-> c2-data
       (process c1-geni {:defaults? false})
-      (characterise (flatten-all-keys c1-geni) {:generate-ids false}))
+      (characterise (flatten-keys-in c1-geni) {:generate-ids false}))
   =>
   {:# {:nss #{:category}}
    :data-many {:category/tags #{"new" "shop"}}
@@ -132,7 +132,7 @@
 (fact "more complex scenarios of data many"
   (-> c2-data
       (process c1-geni {:defaults? false :sets-only? true})
-      (characterise (flatten-all-keys c1-geni) {:generate-ids false}))
+      (characterise (flatten-keys-in c1-geni) {:generate-ids false}))
   =>
   {:# {:nss #{:category}}
    :data-many {:category/tags #{"new" "shop"}

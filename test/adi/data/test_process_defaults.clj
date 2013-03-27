@@ -18,7 +18,7 @@
 
 (def pd1-opts
   {:geni pd1-geni
-   :fgeni (flatten-all-keys pd1-geni)
+   :fgeni (flatten-keys-in pd1-geni)
    :defaults? true})
 
 (fact "process defaults"
@@ -72,7 +72,7 @@
 
 (def pd2-opts
   {:geni pd2-geni
-   :fgeni (flatten-all-keys pd2-geni)
+   :fgeni (flatten-keys-in pd2-geni)
    :defaults? true})
 
 (def pd2-idata
@@ -116,7 +116,7 @@
 
 (def pd3-opts
   {:geni pd3-geni
-   :fgeni (flatten-all-keys pd3-geni)
+   :fgeni (flatten-keys-in pd3-geni)
    :defaults? true})
 
 (def pd3-idata
@@ -162,7 +162,7 @@
 
 (def pd4-opts
   {:geni pd4-geni
-   :fgeni (flatten-all-keys pd4-geni)
+   :fgeni (flatten-keys-in pd4-geni)
    :defaults? true})
 
 (def pd4-idata

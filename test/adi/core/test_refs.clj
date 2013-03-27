@@ -41,7 +41,7 @@
 
 (defn has-tree [m1]
   (fn [x]
-    (empty? (tree-diff m1 x))))
+    (empty? (diff-in m1 x))))
 
 (fact
   (adi/select-first {:account/user "user1"} *ds* :ref-set #{:account/email})

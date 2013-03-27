@@ -153,7 +153,7 @@
 
 (def s1-opts
   {:geni s1-geni
-   :fgeni (flatten-all-keys s1-geni)})
+   :fgeni (flatten-keys-in s1-geni)})
 
 (fact "generating a massive schema"
   (emit-schema s1-geni)
@@ -257,13 +257,13 @@
 
 
 (fact "emit-ref-set"
-  (emit-ref-set (flatten-all-keys s1-geni){})
+  (emit-ref-set (flatten-keys-in s1-geni){})
   => #{:account/contacts :account/email :account/address/all
        :account/address/billing :account/address/shipping}
-  (emit-ref-set (flatten-all-keys s1-geni){:ns-set #{:account}})
+  (emit-ref-set (flatten-keys-in s1-geni){:ns-set #{:account}})
   => #{:account/contacts :account/email :account/address/all
        :account/address/billing :account/address/shipping}
-  (emit-ref-set (flatten-all-keys s1-geni){:ns-set #{}})
+  (emit-ref-set (flatten-keys-in s1-geni){:ns-set #{}})
   => #{})
 
 

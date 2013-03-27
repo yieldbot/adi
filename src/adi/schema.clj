@@ -5,7 +5,7 @@
 (defn get-meta [[v]] v)
 
 (defn add-idents [geni]
-  (let [fgeni (flatten-all-keys geni)
+  (let [fgeni (flatten-keys-in geni)
         add-ident (fn [[k v]]
                     (let [v-ident (->> (assoc (get-meta v) :ident k)
                                        (assoc v 0 ))]
@@ -17,7 +17,7 @@
 (defn- meta-property [val ns]
   "Makes the keyword enumeration for datomic schemas properties.
    (meta-property :string :type) ;;=> :db.type/string"
-  (keyword (str "db." (key-str ns) "/" (key-str val))))
+  (keyword (str "db." (keyword-str ns) "/" (keyword-str val))))
 
 (def meta-geni
   {:ident        {:required true
@@ -45,7 +45,7 @@
 (defn- geni-property [fgeni k params res]
   (let [v (or (fgeni k) (:default params))
         geni-prop-pair  (fn [attr k v f]
-                          (list (keyword (str "db/" (key-str attr)))
+                          (list (keyword (str "db/" (keyword-str attr)))
                                 (f v k)))]
     (cond (nil? v)
           (if (:required params)
@@ -72,7 +72,7 @@
          :db/id (tempid :db.part/db)))))
 
 (defn build-schema [geni]
-  (let [lgeni (-> geni add-idents flatten-all-keys vals)]
+  (let [lgeni (-> geni add-idents flatten-keys-in vals)]
     (map (fn [[v]] (build-schema* v) ) lgeni)))
 
 ;;;;;
@@ -82,7 +82,7 @@
      (find-keys fgeni (constantly true) meta-k meta-val))
   ([fgeni nss meta-k meta-cmp]
      (let [comp-fn  (fn [val cmp] (if (fn? cmp) (cmp val) (= val cmp)))
-           filt-fn  (fn [k] (and (nss (key-ns k))
+           filt-fn  (fn [k] (and (nss (keyword-ns k))
                                 (comp-fn (meta-k (first (fgeni k))) meta-cmp)))]
        (set (filter filt-fn (keys fgeni))))))
 
