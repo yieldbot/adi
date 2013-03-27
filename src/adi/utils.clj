@@ -3,11 +3,11 @@
 
 ;; ## Type Predicates
 
-(defn boolean? 
+(defn boolean?
   "Returns `true` if `x` is of type `java.lang.Boolean`."
   [x] (instance? java.lang.Boolean x))
 
-(defn hash-map? 
+(defn hash-map?
   "Returns `true` if `x` implements `clojure.lang.IPersistentMap`."
   [x]
   (and (instance? clojure.lang.IPersistentMap x)
@@ -17,53 +17,53 @@
   "Returns `true` if `x` implements `clojure.lang.IPersistentHashSet`."
   [x] (instance? clojure.lang.PersistentHashSet x))
 
-(defn entity? 
+(defn entity?
   "Returns `true` if `x` is of type `datomic.query.EntityMap`."
   [x] (instance? datomic.query.EntityMap x))
 
-(defn ref? 
+(defn ref?
   "Returns `true` if `x` implements `clojure.lang.IPersistentMap`
    or is of type `datomic.query.EntityMap`."
   [x] (or (hash-map? x) (entity? x)))
 
-(defn long? 
+(defn long?
   "Returns `true` if `x` is of type `java.lang.Long`."
   [x] (instance? java.lang.Long x))
 
-(defn bigint? 
+(defn bigint?
   "Returns `true` if `x` is of type `clojure.lang.BigInt`."
   [x] (instance? clojure.lang.BigInt x))
 
-(defn bigdec? 
+(defn bigdec?
   "Returns `true` if `x` is of type `java.math.BigDecimal`."
   [x] (instance? java.math.BigDecimal x))
 
-(defn instant? 
+(defn instant?
   "Returns `true` if `x` is of type `java.util.Date`."
   [x] (instance? java.util.Date x))
 
-(defn uuid? 
+(defn uuid?
   "Returns `true` if `x` is of type `java.util.UUID`."
   [x] (instance? java.util.UUID x))
 
-(defn uri? 
+(defn uri?
   "Returns `true` if `x` is of type `java.net.URI`."
   [x] (instance? java.net.URI x))
 
-(defn bytes? 
+(defn bytes?
   "Returns `true` if `x` is a primitive `byte` array."
   [x] (= (Class/forName "[B")
             (.getClass x)))
 
-(defn lazy-seq? 
+(defn lazy-seq?
   "Returns `true` if `x` is of type `clojure.lang.LazySeq`."
   [x] (instance? clojure.lang.LazySeq x))
 
 ;; ## Misc Methods
 
-(defn funcmap 
-  "Returns a hash-map `m`, with the the values of `m` being 
-   the items within the collection and keys of `m` constructed 
+(defn funcmap
+  "Returns a hash-map `m`, with the the values of `m` being
+   the items within the collection and keys of `m` constructed
    by mapping `f` to `coll`. This is used to turn a collection
    into a lookup for better search performance.
 
@@ -78,7 +78,12 @@
   [s old new]
   (.replaceAll s old new))
 
-(defn slugify-name 
+(defn starts-with
+  "Returns `true` if `s` begins with `pre`."
+  [s pre]
+  (.startsWith s pre))
+
+(defn slugify-name
   "Returns a string consisiting of hyphens and lower-case letters."
   [s]
   (clojure.string/join
@@ -105,7 +110,7 @@
   "Dissociates a key in a nested associative structure `m`, where `[k & ks]` is a
   sequence of keys. If any levels are empty after the operation, they will be removed.
 
-    (dissoc-in {:a {:b {:c 3}}} [:a :b :c]) 
+    (dissoc-in {:a {:b {:c 3}}} [:a :b :c])
     ;=> {}
 
   "
@@ -120,8 +125,8 @@
   "Dissociates a key in a nested associative structure `m`, where `[k & ks]` is a
   sequence of keys. Empty levels will not be removed.
 
-    (dissoc-in-keep {:a {:b {:c 3}}} 
-                    [:a :b :c]) 
+    (dissoc-in-keep {:a {:b {:c 3}}}
+                    [:a :b :c])
     ;=> {:a {:b {}}})
   "
   [m [k & ks]]
@@ -130,13 +135,13 @@
     (assoc m k (dissoc-in-keep (m k) ks))))
 
 (defn remove-repeated
-  "Returns a vector of the items in `coll` for which `(f item)` is unique 
+  "Returns a vector of the items in `coll` for which `(f item)` is unique
    for sequential `item`'s in `coll`.
 
-    (remove-repeated [1 1 2 2 3 3 4 5 6]) 
+    (remove-repeated [1 1 2 2 3 3 4 5 6])
     ;=> [1 2 3 4 5 6]
 
-    (remove-repeated even? [2 4 6 1 3 5]) 
+    (remove-repeated even? [2 4 6 1 3 5])
     ;=> [2 1]
    "
   ([coll] (remove-repeated identity coll))
@@ -147,7 +152,6 @@
              (remove-repeated f (next coll) output last)
              :else (remove-repeated f (next coll) (conj output v) v))
        output)))
-
 
 (defn flatten-to-vecs
   "Takes a sequence of vectors. If any vector contains additional
@@ -162,15 +166,13 @@
            (vector? (first v)) (flatten-to-vecs vs (concat output v))
            :else (flatten-to-vecs vs (conj output v)))))
 
-
-
 ;; ## Keyword Methods
 
 (defn keyword-str
   "Returns the string representation of the keyword
    without the colon.
 
-    (keyword-str :hello/there) 
+    (keyword-str :hello/there)
     ;=> \"hello/there\"
   "
   [k]
@@ -179,39 +181,41 @@
 (defn keyword-join
   "Merges a sequence of keywords into one.
 
-    (keyword-join [:hello :there]) 
+    (keyword-join [:hello :there])
     ;=> :hello/there
 
-    (keyword-join [:a :b :c :d]) 
+    (keyword-join [:a :b :c :d])
     ;=> :a/b/c/d)"
-  [ks]
-  (if (empty? ks) nil
-      (->> (filter identity ks)
-           (map keyword-str)
-           (st/join "/")
-           keyword)))
+  ([ks] (keyword-join ks "/"))
+  ([ks sep]
+     (if (empty? ks) nil
+         (->> (filter identity ks)
+              (map keyword-str)
+              (st/join sep)
+              keyword))))
 
 (defn keyword-split
   "The opposite of `keyword-join`. Splits a keyword
-   by the `/` character into a vector of keys. 
-    
-    (keyword-split :hello/there) 
+   by the `/` character into a vector of keys.
+
+    (keyword-split :hello/there)
     ;=> [:hello :there]
 
-    (keyword-split :a/b/c/d) 
+    (keyword-split :a/b/c/d)
     ;=> [:a :b :c :d]
   "
-  [k]
-  (if (nil? k) []
-      (mapv keyword (st/split (keyword-str k) #"/"))))
+  ([k] (keyword-split k #"/"))
+  ([k re]
+     (if (nil? k) []
+         (mapv keyword (st/split (keyword-str k) re)))))
 
-(defn keyword-nsvec 
+(defn keyword-nsvec
   "Returns the namespace vector of keyword `k`.
 
-    (keyword-nsvec :hello/there) 
+    (keyword-nsvec :hello/there)
     ;=> [:hello]
-    
-    (keyword-nsvec :hello/there/again) 
+
+    (keyword-nsvec :hello/there/again)
     ;=> [:hello :there]
   "
   [k]
@@ -222,13 +226,64 @@
   [k nsv]
   (= nsv (keyword-nsvec k)))
 
+(defn keyword-nsroot
+  "Returns the namespace root of `k`.
+
+    (keyword-nsroot :hello/there)
+    ;=> :hello
+
+    (keyword-nsroot :hello/there/again)
+    ;=> :hello
+  "
+  [k]
+  (first (keyword-nsvec k)))
+
+(defn keyword-nsroot?
+  "Returns `true` if keyword `k` has the namespace base `nsk`."
+  [k nsk]
+  (= nsk (keyword-nsroot k)))
+
+(defn keyword-stemvec
+  "Returns the stem vector of `k`.
+
+    (keyword-stemvec :hello/there)
+    ;=> [:there]
+
+    (keyword-stemvec :hello/there/again)
+    ;=> [:there :again]
+  "
+  [k]
+  (rest (keyword-nsvec k)))
+
+(defn keyword-stemvec?
+  "Returns `true` if keyword `k` has the stem vector `kv`."
+  [k kv]
+  (= kv (keyword-stemvec k)))
+
+(defn keyword-stem
+  "Returns the steam of `k`.
+
+    (keyword-stem :hello/there)
+    ;=> :there
+
+    (keyword-stem :hello/there/again)
+    ;=> :there/again
+  "
+  [k]
+  (keyword-join (keyword-stemvec k)))
+
+(defn keyword-stem?
+  "Returns `true` if keyword `k` has the stem `kst`."
+  [k kst]
+  (= kst (keyword-stem k)))
+
 (defn keyword-ns
   "Returns the namespace of `k`.
 
-    (keyword-ns :hello/there) 
+    (keyword-ns :hello/there)
     ;=> :hello
-    
-    (keyword-nsvec :hello/there/again) 
+
+    (keyword-ns :hello/there/again)
     ;=> :hello/there
   "
   [k]
@@ -239,13 +294,13 @@
    if `ns` is given, returns `true` if the namespace
    of `k` is equal to `ns`.
 
-    (keyword-ns? :hello) 
+    (keyword-ns? :hello)
     ;=> false
 
-    (keyword-ns? :hello/there) 
+    (keyword-ns? :hello/there)
     ;=> true
 
-    (keyword-ns? :hello/there :hello) 
+    (keyword-ns? :hello/there :hello)
     ;=> true
   "
   ([k] (< 0 (.indexOf (str k) "/")))
@@ -257,10 +312,10 @@
 (defn keyword-val
   "Returns the keyword value of the `k`.
 
-    (keyword-val :hello) 
+    (keyword-val :hello)
     ;=> :hello
 
-    (keyword-val :hello/there) 
+    (keyword-val :hello/there)
     ;=> :there"
    [k]
   (last (keyword-split k)))
@@ -274,17 +329,17 @@
 (defn list-keyword-ns
   "Returns the set of keyword namespaces within `fm`.
 
-    (list-keyword-ns {:hello/a 1 :hello/b 2 
-                      :there/a 3 :there/b 4}) 
+    (list-keyword-ns {:hello/a 1 :hello/b 2
+                      :there/a 3 :there/b 4})
     ;=> #{:hello :there}
   "
   [fm]
   (let [ks (keys fm)]
     (set (map keyword-ns ks))))
 
-(defn list-ns-keys 
+(defn list-ns-keys
   "Returns the set of keys in `fm` that has keyword namespace
-  of `ns`. 
+  of `ns`.
 
     (list-ns-keys {:hello/a 1 :hello/b 2
                    :there/a 3 :there/b 4} :hello)
@@ -299,7 +354,7 @@
 
 (defn contain-ns-keys?
   "Returns `true` if any key in `fm` has keyword namespace
-  of `ns`. 
+  of `ns`.
 
     (contain-ns-keys? {:hello/a 1 :hello/b 2
                        :there/a 3 :there/b 4} :hello)
@@ -311,7 +366,7 @@
 
 (defn list-keys-in
   "Return the set of all nested keys in `m`.
-  
+
     (list-keys-in {:a {:b 1 :c {:d 1}}})
     ;=> #{:a :b :c :d})"
 
@@ -328,10 +383,10 @@
 
 (defn dissoc-keys-in
    "Returns `m` without all nested keys in `ks`.
-  
+
     (dissoc-keys-in {:a {:b 1 :c {:b 1}}} [:b])
     ;=> {:a {:c {}}}"
-     
+
   ([m ks] (dissoc-keys-in m (set ks) {}))
   ([m ks output]
     (if-let [[k v] (first m)]
@@ -347,10 +402,10 @@
 ;; ## Map Manipulation
 
 (defn flatten-keys
-  "Returns `m` with the first nest layer of keys flattened 
+  "Returns `m` with the first nest layer of keys flattened
    onto the root layer.
 
-    (flatten-keys {:a {:b 2 :c 3} e: 4}) 
+    (flatten-keys {:a {:b 2 :c 3} e: 4})
     ;=> {:a/b 2 :a/c 3 :e 4}
 
     (flatten-keys {:a {:b {:c 3 :d 4}
@@ -404,13 +459,13 @@
   "Returns a nested map, expanding out the first
    level of keys into additional hash-maps.
 
-    (treeify-keys {:a/b 2 :a/c 3}) 
+    (treeify-keys {:a/b 2 :a/c 3})
     ;=> {:a {:b 2 :c 3}}
 
-    (treeify-keys {:a/b {:e/f 1} :a/c {:g/h 1}}) 
-    ;=> {:a {:b {:e/f 1} 
+    (treeify-keys {:a/b {:e/f 1} :a/c {:g/h 1}})
+    ;=> {:a {:b {:e/f 1}
              :c {:g/h 1}}}
-  
+
   "
   ([m] (treeify-keys m {}))
   ([m output]
@@ -423,13 +478,13 @@
   "Returns a nested map, expanding out all
    levels of keys into additional hash-maps.
 
-    (treeify-keys-in {:a/b 2 :a/c 3}) 
+    (treeify-keys-in {:a/b 2 :a/c 3})
     ;=> {:a {:b 2 :c 3}}
 
-    (treeify-keys-in {:a/b {:e/f 1} :a/c {:g/h 1}}) 
-    ;=> {:a {:b {:e {:f 1}} 
+    (treeify-keys-in {:a/b {:e/f 1} :a/c {:g/h 1}})
+    ;=> {:a {:b {:e {:f 1}}
              :c {:g {:h 1}}}}
-  
+
   "
   [m]
   (let [kvs (seq m)
@@ -445,12 +500,12 @@
 (defn diff-in
   "Returns any nested values in `m1` that are different to those in `m2`.
 
-    (diff-in {:a {:b 1}} 
-             {:a {:b 1 :c 1}}) 
+    (diff-in {:a {:b 1}}
+             {:a {:b 1 :c 1}})
     ;=> {}
 
-    (diff-in {:a {:b 1 :c 1}} 
-             {:a {:b 1}}) 
+    (diff-in {:a {:b 1 :c 1}}
+             {:a {:b 1}})
     ;=> {:a {:c 1}}"
   ([m1 m2] (diff-in m1 m2 {}))
   ([m1 m2 output]
@@ -476,11 +531,11 @@
    nested values of maps on the right will replace those on the left if
    the keys are the same.
 
-    (merge-in {:a {:b {:c 3}}} {:a {:b 3}}) 
+    (merge-in {:a {:b {:c 3}}} {:a {:b 3}})
     ;=> {:a {:b 3}}
 
-    (merge-in {:a {:b {:c 1 :d 2}}} 
-              {:a {:b {:c 3}}}) 
+    (merge-in {:a {:b {:c 1 :d 2}}}
+              {:a {:b {:c 3}}})
     ;=> {:a {:b {:c 3 :d 2}}})
   "
   ([m1 m2]
@@ -501,8 +556,35 @@
    (cond (empty? ms) (merge-in m1 m2)
           :else (apply (merge-in (merge-in m1 m2)) ms))))
 
+
+(defn remove-empty-in
+  "Returns a associative with nils and empty hash-maps removed.
+
+    (remove-empty-in {:a {:b {:c {}}}})
+    ;=> {}
+
+    (remove-empty-in {:a {:b {:c {} :d 1}}})
+    ;=> {:a {:b {:d 1}}}
+  "
+  ([m] (remove-empty-in m {}))
+  ([m output]
+     (if-let [[k v] (first m)]
+       (cond (nil? v)
+             (remove-empty-in (dissoc m k) output)
+
+             (hash-map? v)
+             (let [rmm (remove-empty-in v)]
+               (if (empty? rmm)
+                 (remove-empty-in (dissoc m k) output)
+                 (remove-empty-in (dissoc m k) (assoc output k rmm))))
+
+             :else
+             (remove-empty-in (dissoc m k) (assoc output k v)))
+       output)))
+
+
 (defn nest-keys-in
-  "Returns a map that takes `m` and extends all keys with the 
+  "Returns a map that takes `m` and extends all keys with the
    `nskv` vector. `ex` is the list of keys that are not extended.
 
     (nest-keys-in {:a 1 :b 2} [:hello :there])
@@ -521,18 +603,18 @@
 
 (defn unnest-keys-in
   "The reverse of `nest-keys-in`. Takes `m` and returns a map
-   with all keys with a `keyword-nsvec` of `nskv` being 'unnested' 
+   with all keys with a `keyword-nsvec` of `nskv` being 'unnested'
 
     (unnest-keys-in {:hello/a 1
                      :hello/b 2
                      :there/a 3
                      :there/b 4} [:hello])
-    ;=> {:a 1 :b 2 
+    ;=> {:a 1 :b 2
          :there {:c 3 :d 4}}
 
     (unnest-keys-in {:hello {:there {:a 1 :b 2}}
                      :again {:c 3 :d 4}} [:hello :there] [:+] )
-    ;=> {:a 1 :b 2 
+    ;=> {:a 1 :b 2
          :+ {:again {:c 3 :d 4}}}
   "
   ([m nskv] (unnest-keys-in m nskv []))
@@ -543,4 +625,3 @@
     (merge c-map (if (empty? ex)
                    x-map
                    (assoc-in {} ex x-map))))))
-

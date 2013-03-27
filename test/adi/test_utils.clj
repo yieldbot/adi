@@ -157,7 +157,7 @@
   (treeify-keys {:a 1 :b 2}) => {:a 1 :b 2}
   (treeify-keys {:a/b 2 :a/c 3}) => {:a {:b 2 :c 3}}
   (treeify-keys {:a {:b/c 2} :a/d 3}) => {:a {:b/c 2 :d 3}}
-  (treeify-keys {:a/b {:e/f 1} :a/c {:g/h 1}}) 
+  (treeify-keys {:a/b {:e/f 1} :a/c {:g/h 1}})
   => {:a {:b {:e/f 1} :c {:g/h 1}}}
   (treeify-keys {:a/b/c 3 :a/b/d 4 :a/e/f 5 :a/e/g 6 :h/i 7})
   => {:a {:b {:c 3 :d 4}
@@ -169,8 +169,8 @@
    (treeify-keys-in {}) => {}
    (treeify-keys-in {:a 1 :b 3}) => {:a 1 :b 3}
    (treeify-keys-in {:a/b 2 :a {:c 3}}) => {:a {:b 2 :c 3}}
-   (treeify-keys-in {:a/b {:e/f 1} :a/c {:g/h 1}}) 
-   => {:a {:b {:e {:f 1}} 
+   (treeify-keys-in {:a/b {:e/f 1} :a/c {:g/h 1}})
+   => {:a {:b {:e {:f 1}}
            :c {:g {:h 1}}}}
    (treeify-keys-in {:a {:b/c 2} :a/d 3}) => {:a {:b {:c 2} :d 3}})
 
@@ -198,6 +198,15 @@
   (merge-in {:a {:b 3}} {:a {:b {:c 3}}}) => {:a {:b {:c 3}}}
   (merge-in {:a {:b {:c 3}}} {:a {:b 3}}) => {:a {:b 3}}
   (merge-in {:a {:b {:c 1 :d 2}}} {:a {:b {:c 3}}}) => {:a {:b {:c 3 :d 2}}})
+
+
+(fact "remove-empty-in"
+  (remove-empty-in {}) => {}
+  (remove-empty-in {:a {}}) => {}
+  (remove-empty-in {:a {} :b 1}) => {:b 1}
+  (remove-empty-in {:a {:b {:c 1}}}) => {:a {:b {:c 1}}}
+  (remove-empty-in {:a {:b {:c {}}}}) => {}
+  (remove-empty-in {:a {:b {:c {} :d 1}}}) => {:a {:b {:d 1}}})
 
 (fact "nest-keys-in will extend a treeified map with given namespace keys"
   (nest-keys-in {:a 1 :b 2} [:hello] [])
