@@ -253,7 +253,7 @@
     ;=> [:there :again]
   "
   [k]
-  (rest (keyword-nsvec k)))
+  (rest (keyword-split k)))
 
 (defn keyword-stemvec?
   "Returns `true` if keyword `k` has the stem vector `kv`."

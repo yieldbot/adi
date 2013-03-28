@@ -78,6 +78,42 @@
   (keyword-nsvec? :hello/there/again [:hello :there]) => true
   (keyword-nsvec? :hello/there/again [:hello]) => false)
 
+(fact "keyword-nsroot will output the keyword root"
+  (keyword-nsroot nil) => nil
+  (keyword-nsroot :hello) => nil
+  (keyword-nsroot :hello/there) => :hello
+  (keyword-nsroot :hello/there/again) => :hello)
+
+(fact "keyword-nsroot? will check is the output of key namespace is the that specified"
+  (keyword-nsroot? nil nil) => true
+  (keyword-nsroot? :hello nil) => true
+  (keyword-nsroot? :hello/there :hello) => true
+  (keyword-nsroot? :hello/there/again :hello) => true)
+
+(fact "keyword-stemvec will output the namespace in vector form"
+  (keyword-stemvec nil) => []
+  (keyword-stemvec :hello) => []
+  (keyword-stemvec :hello/there) => [:there]
+  (keyword-stemvec :hello/there/again) => [:there :again])
+
+(fact "keyword-stemvec? will check is the output of key namespace is the that specified"
+  (keyword-stemvec? nil []) => true
+  (keyword-stemvec? :hello []) => true
+  (keyword-stemvec? :hello/there [:there]) => true
+  (keyword-stemvec? :hello/there/again [:there :again]) => true)
+
+(fact "keyword-stem will output the namespace in tor form"
+  (keyword-stem nil) => nil
+  (keyword-stem :hello) => nil
+  (keyword-stem :hello/there) => :there
+  (keyword-stem :hello/there/again) => :there/again)
+
+(fact "keyword-stem? will check is the output of key namespace is the that specified"
+  (keyword-stem? nil nil) => true
+  (keyword-stem? :hello nil) => true
+  (keyword-stem? :hello/there :there) => true
+  (keyword-stem? :hello/there/again :there/again) => true)
+
 (fact "keyword-ns will output the namespace of a key"
   (keyword-ns nil) => nil
   (keyword-ns :hello) => nil
