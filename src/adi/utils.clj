@@ -231,6 +231,20 @@
      (if (nil? k) []
          (mapv keyword (st/split (keyword-str k) re)))))
 
+(defn keyword-contains?
+  "Returns `true` if the first part of `k` contains `subk`
+
+    (keyword-contains? :a :a)
+    ;=> true
+
+    (keyword-contains? :a/b/c :a/b)
+    ;=> true
+  "
+  [k subk]
+  (or (= k subk)
+      (starts-with (keyword-str k)
+                   (str (keyword-str subk) "/"))))
+
 (defn keyword-nsvec
   "Returns the namespace vector of keyword `k`.
 
@@ -647,3 +661,18 @@
     (merge c-map (if (empty? ex)
                    x-map
                    (assoc-in {} ex x-map))))))
+
+(defn keyword-ns-map
+  "Makes a map and returns an index with the keys grouped by keyword-ns
+
+    (keyword-ns-map {:a {:b {:c 1}
+                       :d 1}
+                   :e {:f 1
+                       :g 1}})
+    ;=> {:a/b #{:a/b/c}, :a #{:a/d}, :e #{:e/g :e/f}}"
+  [m]
+  (->> (keys (flatten-keys-in m))
+       (group-by keyword-ns)
+       (map (fn [[k v]] [k (set v)]))
+       (into {})
+       ((fn [m] (dissoc m nil)))))

@@ -280,24 +280,8 @@
             :rev {:email/accounts :account/email}
             :fwd {:account/email :email/accounts}}}))
 
-(fact "refs-from-enum"
-  (refs-from-enum [{:ident   :person/gender
-                    :type    :enum
-                    :enum    {:ns     :person.gender
-                              :values #{:male  :female}}}])
-  => [[{:ident :person.gender/male
-        :type  :ref
-        :ref   {:norev  true
-                :type   :enum
-                :rel    :person/gender}}]
-      [{:ident :person.gender/female
-        :type  :ref
-        :ref   {:norev  true
-                :type   :enum
-                :rel    :person/gender}}]])
-
-(fact "transform-enums"
-  (transform-enums {:person/gender [{:ident   :person/gender
+(fact "remove-enums"
+  (remove-enums {:person/gender [{:ident   :person/gender
                                      :type    :enum
                                      :enum    {:ns     :person.gender
                                                :values #{:male  :female}}}]})
@@ -305,17 +289,7 @@
                          :type  :ref
                          :ref   {:ns     :person.gender
                                  :values #{:male  :female}
-                                 :type   :enum-rel}}]
-      :person.gender/male   [{:ident :person.gender/male
-                              :type  :ref
-                              :ref   {:norev  true
-                                      :type   :enum-val
-                                      :rel    :person/gender}}]
-      :person.gender/female [{:ident :person.gender/female
-                              :type  :ref
-                              :ref   {:norev  true
-                                      :type   :enum-val
-                                      :rel    :person/gender}}]})
+                                 :type   :enum-rel}}]})
 
 
 (fact "emit-schema-property"

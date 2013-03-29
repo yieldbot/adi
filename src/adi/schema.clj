@@ -236,6 +236,7 @@
         fwd-ks (clojure.set/difference ref-ks rev-ks)]
     {:geni  (treeify-keys fgeni)
      :fgeni fgeni
+     :nss   (keyword-ns-map fgeni)
      :lu    {:all (make-ref-lu fgeni ref-ks)
              :rev (make-ref-lu fgeni rev-ks)
              :fwd (make-ref-lu fgeni fwd-ks)}}))
@@ -250,19 +251,6 @@
       (dissoc :enum)
       (assoc-in [:ref :type] :enum-rel)
       vector))
-
-(defn make-enum-val [v ns ident]
-  [{:ident (keyword-join [ns v])
-     :type  :ref
-     :ref   {:norev true
-             :type  :enum-val
-             :rel   ident}}])
-
-(defn make-enum-vals [[enmeta]]
-  (if-let [ident (:ident enmeta)
-           ns (-> enmeta :enum :ns)
-           vs (-> enmeta :enum :values)]
-    (map #(make-enum-val % ns ident) vs)))
 
 (defn find-enums [fgeni]
   (->> fgeni

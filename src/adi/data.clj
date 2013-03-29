@@ -68,6 +68,7 @@
                 (and (set? v) (every? #(adjust-safe-check chk %) v)) v
                 :else (throw (Exception. err-many))))))
 
+
 (declare process
          process-list-nss process-unnest-key process-keyword-assoc
          process-init process-init-assoc process-init-ref
@@ -82,13 +83,25 @@
               (process-unnest-key ndata k))
        data)))
 
-(defn process-list-nss [data]
-  (let [rm-ex (fn [s] (disj s :# :db))]
-    (-> (treeify-keys-in data)
-        (process-unnest-key :+)
-        keys
-        set
-        rm-ex)))
+(defn process-present-tree
+  ([data geni]
+     (let [tdata (-> (treeify-keys-in data)
+                     (process-unnest-key :+))]
+       (process-present-tree tdata geni {})))
+  ([data geni output]
+     (if-let [[k v] (first data)]
+       (cond (nil? (k geni))
+             (process-present-tree (next data) geni output)
+
+             (vector? (k geni))
+             (process-present-tree (next data) geni (assoc output k true))
+
+             (hash-map? (k geni))
+             (let [rv (process-present-tree v (k geni) {})]
+               (process-present-tree
+                (next data) geni
+                (assoc output k (if (empty? rv) true rv)))))
+       output)))
 
 (defn process-keyword-assoc [output meta k v]
   (let [kns (:keyword-ns meta)]
@@ -100,7 +113,8 @@
 
 (defn process-init
   ([data geni env]
-     (let [nss (process-list-nss data)]
+     (let [nss (-> (process-present-tree data geni)
+                   keyword-ns-map keys set)]
        (-> (process-init {} (treeify-keys-in data) geni
                          (assoc env :nss nss))
            (assoc-in [:# :nss] nss))))

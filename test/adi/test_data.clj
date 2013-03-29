@@ -168,20 +168,27 @@
   (process-unnest-key {:- {:- {:name 1}}} :-)
   => {:name 1})
 
-(fact "process-list-nss"
-  (process-list-nss
-   {:account {:name "chris"}})
-  => #{:account}
+(fact "process-present-tree"
+  (process-present-tree {} {})
+  => {}
 
-  (process-list-nss
-   {:account {:name "chris"}
-    :image {:size "big"}})
-  => #{:account :image}
+  (process-present-tree {:name ""} {:name []})
+  => {:name true}
 
-  (process-list-nss
-   {:account {:name "chris"}
-    :# {:not {}}
-    :db {:id 1}}) => #{:account})
+  (process-present-tree {:a/b/c ""
+                         :a/b/d ""
+                         :a/b/e ""
+                         :a/b/d/f/g ""}
+                        {:a {:b {:c [] :d []}}})
+  => {:a {:b {:c true :d true}}}
+
+  (process-present-tree {:a {}} {:a {:b []}})
+  => {:a true}
+
+  (process-present-tree {:account {:OTHER ""}}
+                        {:account {:id [{:ident       :account/id
+                                         :type        :long}]}})
+  => {:account true})
 
 
 (fact "process-keyword-assoc"
@@ -238,27 +245,30 @@
                  :schema  hash-map?})
 
   (process-init-env {:name [{:type :string}]} {})
-  => {:options {:defaults? true
-                :restrict? true
-                :required? true
-                :extras? false
-                :sets-only? false}
-      :schema  {:geni {:name [{:ident :name, :type :string, :cardinality :one}]},
-                :fgeni {:name [{:ident :name, :type :string, :cardinality :one}]}
-                :lu {:all {}, :fwd {}, :rev {}}}})
+  => (contains {:options {:defaults? true
+                          :extras? false
+                          :required? true
+                          :restrict? true
+                          :sets-only? false}
+                :schema (contains {:fgeni {:name [{:cardinality :one
+                                                   :ident :name
+                                                   :type :string}]}
+                                   :geni {:name [{:cardinality :one
+                                                  :ident :name
+                                                  :type :string}]}})}))
 
 (fact "process-init"
   (let [pgeni {:name [{:type :string}]}]
     (process-init {:name "chris"} pgeni
                   (process-init-env pgeni {})))
-  => {:# {:nss #{:name}}, nil "chris"}
+  => {:# {:nss #{}}, nil "chris"}
 
 
   (let [pgeni {:name [{:ident       :name
                        :type        :string}]}]
     (process-init {:name "chris"} pgeni
                   (process-init-env pgeni {})))
-  => {:# {:nss #{:name}}, :name "chris"}
+  => {:# {:nss #{}}, :name "chris"}
 
 
   (let [pgeni {:account {:name [{:ident      :account/name
@@ -308,8 +318,8 @@
   => {:# {:nss #{:account}}}
 
 
-    (let [pgeni {:account {:id [{:ident       :account/id
-                                 :type        :long}]}}]
+  (let [pgeni {:account {:id [{:ident       :account/id
+                               :type        :long}]}}]
     (process-init {:account {:id 1}} pgeni
                   (process-init-env pgeni {:options {:sets-only? true}})))
   => {:# {:nss #{:account}} :account/id #{1}})

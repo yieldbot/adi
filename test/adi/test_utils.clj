@@ -70,6 +70,16 @@
   (keyword-split :hello/there) => [:hello :there]
   (keyword-split :a/b/c/d) => [:a :b :c :d])
 
+(fact "keyword-contains?"
+  (keyword-contains? nil nil) => true
+  (keyword-contains? nil :nil) => false
+  (keyword-contains? (keyword "") nil) => false
+  (keyword-contains? :hello :hello) => true
+  (keyword-contains? :hello/there :hello) => true
+  (keyword-contains? :hellothere :hello) => false
+  (keyword-contains? :hello/there/again :hello) => true
+  (keyword-contains? :hello/there/again :hello/there) => true)
+
 (fact "keyword-nsvec will output the namespace in vector form"
   (keyword-nsvec nil) => []
   (keyword-nsvec :hello) => []
@@ -296,3 +306,10 @@
                      :there/a 3
                      :there/b 4} [:hello] [:+])
   => {:a 1 :b 2 :+ {:there {:a 3 :b 4}}})
+
+(fact "keyword-ns-map"
+  (keyword-ns-map {:a {:b {:c 1}
+                       :d 1}
+                   :e {:f 1
+                       :g 1}})
+  => {:a/b #{:a/b/c}, :a #{:a/d}, :e #{:e/g :e/f}})
