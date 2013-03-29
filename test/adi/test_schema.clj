@@ -339,19 +339,19 @@
 
 
 (fact "emit-single-schema"
-    (emit-single-schema {:ident :name
-                         :type  :string})
+  (emit-single-schema [{:ident :name
+                         :type  :string}])
     => (contains {:db.install/_attribute :db.part/db,
                   :db/ident :name,
                   :db/valueType :db.type/string,
                   :db/cardinality :db.cardinality/one})
 
-    (emit-single-schema {:ident       :account/tags
+    (emit-single-schema [{:ident       :account/tags
                           :type        :string
                           :cardinality :many
                           :fulltext    true
                           :index       true
-                          :doc         "tags for account"})
+                          :doc         "tags for account"}])
     => (contains {:db.install/_attribute :db.part/db
                   :db/ident        :account/tags
                   :db/index        true
@@ -373,17 +373,15 @@
                     :db/cardinality        :db.cardinality/one})])
 
 
-    (emit-schema (transform-enums {:person/gender [{:ident   :person/gender
-                                     :type    :enum
-                                     :enum    {:ns     :person.gender
-                                               :values #{:male  :female}}}]}))
-    => (just
-        [(contains {:db/ident       :person.gender/male
-                    :db/valueType   :db.type/ref
-                    :db/cardinality :db.cardinality/one})
-         (contains {:db/ident       :person.gender/female
-                    :db/valueType   :db.type/ref
-                    :db/cardinality :db.cardinality/one})]))
+    (emit-schema  {:person/gender [{:ident   :person/gender
+                                    :type    :enum
+                                    :enum    {:ns     :person.gender
+                                              :values #{:male  :female}}}]})
+    => (just [(contains {:db/ident       :person/gender
+                         :db/cardinality :db.cardinality/one
+                         :db/valueType   :db.type/ref})
+              (contains {:db/ident       :person.gender/male})
+              (contains {:db/ident       :person.gender/female})] :in-any-order))
 
 
 (fact "find-keys"

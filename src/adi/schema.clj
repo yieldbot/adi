@@ -272,15 +272,13 @@
 (defn find-enum-idents [fgeni]
   (keys (find-enums fgeni)))
 
-(defn transform-enums [fgeni]
+(defn remove-enums [fgeni]
   (let [es   (find-enums fgeni)
         enums  (vals es)
         e-rels (map make-enum-rel enums)
-        e-vals (mapcat make-enum-vals enums)
         mfgeni (apply dissoc fgeni (keys es))
         get-ident (fn [[meta]] (:ident meta))]
     (merge mfgeni
-           (funcmap get-ident e-vals)
            (funcmap get-ident e-rels))))
 
 (defn emit-schema-property [meta k mgprop res]
@@ -315,19 +313,21 @@
          :db.install/_attribute :db.part/db
          :db/id (tempid :db.part/db)))))
 
-(defn emit-enum-val-schema
-  ([enmeta]
-     {:db/id (tempid :db.part/user)
-      :db/ident (:ident enmeta)}))
+(defn emit-enum-val-schemas
+  ([[enmeta]]
+     (map (fn [v]
+            {:db/id (tempid :db.part/user)
+             :db/ident (keyword-join [(-> enmeta :enum :ns) v])})
+          (-> enmeta :enum :values))))
 
 (defn emit-schema
   ([fgeni]
-     (let [fgeni  (-> fgeni remove-revrefs)
-           enums  (vals (find-enums fgeni))
-           tenums (map make-enum-rel enums)]
-       (map (fn [[meta]] (emit-single-schema meta)) metas)))
+     (let [enums  (vals (find-enums fgeni))
+           metas  (-> fgeni remove-revrefs remove-enums vals)]
+       (concat
+        (map emit-single-schema metas)
+        (mapcat emit-enum-val-schemas enums))))
   ([fgeni & more] (emit-schema (apply merge fgeni more))))
-
 
 ;; ## Geni Search
 
