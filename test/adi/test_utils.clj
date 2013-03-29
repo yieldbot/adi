@@ -311,5 +311,6 @@
   (keyword-ns-map {:a {:b {:c 1}
                        :d 1}
                    :e {:f 1
-                       :g 1}})
+                       :g 1}
+                   :h 1})
   => {:a/b #{:a/b/c}, :a #{:a/d}, :e #{:e/g :e/f}})
