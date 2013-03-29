@@ -5,185 +5,331 @@
   (:require [inflections.core :as inf])
   (:refer-clojure :exclude [if-let]))
 
-;; ## Infer Methods
-
-(defn infer-idents
-  "Returns `sgeni` with the :ident keyword infer-idents will take a
-   scheme-map and automatically adds the :ident keyword"
-  [sgeni]
-
-  (let [fsgeni (flatten-keys-in sgeni)
-        add-ident (fn [[k [meta :as v]]]
-                    (let [v-ident (->> (assoc meta :ident k)
-                                       (assoc v 0 ))]
-                      [k v-ident]))]
-    (->> (map add-ident fsgeni)
-         (into {})
-         treeify-keys)))
-
-(defn find-ref-idents [fsgeni]
-  (->> fsgeni
-       (filter (fn [[k [meta]]] (= :ref (:type meta))))
-       (into {})))
-
-(defn rev-ident? [k]
-  (-> k keyword-val str (starts-with ":_")))
-
-(defn find-reversible-ref-idents [fsgeni]
-  (->> fsgeni
-       (filter (fn [[k [meta]]]
-                 (and (= :ref (:type meta))
-                      (:ref-ns meta)
-                      (keyword-ns (:ident meta))
-                      (not (rev-ident? (:ident meta))))))
-       (into {})))
-
-(defn vec-reversible-lu [[meta]]
-  (let [ident  (:ident meta)
-        ref-ns (:ref-ns meta)]
-    [(keyword-nsroot ident) ref-ns]))
-
-(defn arrange-reversible-refs
-  ([in] (arrange-reversible-refs in []))
-  ([[refg & more] output]
-     (if-let [[ks ms] refg]
-       (cond (< 1 (count ms))
-             (arrange-reversible-refs more
-                               (concat output
-                                       (map (fn [m] [(conj ks true) m]) ms)))
-             :else
-             (arrange-reversible-refs more
-                               (conj output [(conj ks false) (first ms)])))
-       output)))
-
-
-(defn make-rev-meta-ident [[[root ref-ns many?] [meta]]]
-  (let [ident  (:ident meta)
-        ival    (keyword-val ident)
-        rident (cond (= root ref-ns)
-                     (let [rvec (concat (keyword-stemvec ident) '("referrers"))]
-                       (keyword-join (cons "" rvec) "_"))
-
-                     many?
-                     (let [rvec (concat (keyword-stemvec ident)
-                                        (list (->> root name inf/plural)))]
-                       (keyword-join (cons "" rvec) "_"))
-
-                     :else
-                     (->> root name inf/plural (str "_")))]
-    (keyword-join [ref-ns rident])))
-
-(defn make-rev-meta [[[root ref-ns many] [meta] :as entry]]
-  (let [ident  (:ident meta)
-        ref-ns (:ref-ns meta)]
-    [{:type        :ref
-      :ref-key     (keyword-join [(keyword-ns ident)
-                                  (str "_" (name (keyword-val ident)))])
-      :ref-ns      (keyword-nsroot ident)
-      :cardinality :many
-      :ident       (make-rev-meta-ident entry)}]))
-
-(defn infer-rev-refs
-  "Returns `sgeni` with additional. Requires `sgeni` to already have been through `infer-ident`"
-  [sgeni]
-  (let [fsgeni (flatten-keys-in sgeni)
-        rfs   (vals (find-reversible-ref-idents fsgeni))
-        lus   (group-by vec-reversible-lu rfs)]
-    (->> (arrange-reversible-refs (seq lus))
-         (map make-rev-meta)
-         (funcmap (fn [[meta]] (:ident meta)))
-         (merge fsgeni)
-         treeify-keys)))
-
-(defn infer-all [sgeni]
-  (-> sgeni infer-idents infer-rev-refs))
-
-;; ## Schema Generation
-
-(defn find-rev-idents [fgeni]
-  (->> fgeni
-       (filter (fn [[k [meta]]]
-                 (and (= :ref (:type meta))
-                      (rev-ident? (:ref-key meta)))))
-       (into {})))
-
-(defn remove-rev-idents [geni]
-  (let [fgeni (flatten-keys-in geni)
-        rvs   (keys (find-rev-idents fgeni))]
-    (treeify-keys (apply dissoc fgeni rvs))))
-
 
 (defn meta-property
-  "Returns the keyword enumeration for datomic schemas properties.
+    "Returns the keyword enumeration for datomic schemas properties.
 
       (meta-property :string :type)
       ;=> :db.type/string
   "
-  [val ns]
-  (keyword (str "db." (keyword-str ns) "/" (keyword-str val))))
+    [val ns]
+    (keyword (str "db." (keyword-str ns) "/" (keyword-str val))))
 
 (def meta-geni
     {:ident        {:required true
                     :check keyword?}
      :type         {:required true
-                    :check #{:keyword :string :boolean :long :bigint :float
+                    :check #{:keyword :string :boolean :long :bigint :float :enum
                              :double :bigdec :ref :instant :uuid :uri :bytes}
                     :attr :valueType
                     :fn meta-property}
      :cardinality  {:check #{:one :many}
                     :default :one
+                    :add?    true
                     :fn meta-property}
      :unique       {:check #{:value :identity}
                     :fn meta-property}
      :doc          {:check string?}
-     :index        {:check boolean?}
-     :fulltext     {:check boolean?}
-     :component?   {:check keyword?}
-     :no-history   {:check boolean?}})
+     :index        {:check boolean?
+                    :default false}
+     :fulltext     {:check boolean?
+                    :default false}
+     :isComponent  {:check keyword?}
+     :noHistory    {:check boolean?
+                    :default false}})
 
 (def geni-type-checks
   (let [types (-> meta-geni :type :check)]
-    (zipmap types (map #(resolve (symbol (str (name %) "?"))) types))))
+    (zipmap types (map type-checker types))))
 
-(defn geni-property [meta k params res]
-  (let [v (or (k meta) (:default params))
-        geni-prop-pair  (fn [attr k v f]
-                          (list (keyword (str "db/" (keyword-str attr)))
-                                (f v k)))]
+(defn get-defaults [[k mgprop]]
+  (-> (select-keys mgprop [:default :add?])
+      (assoc :id k)))
+
+(def meta-geni-all-defaults
+  (filter (fn [m] (-> m :default nil? not))
+          (map get-defaults meta-geni)))
+
+(def meta-geni-add-defaults
+  (filter (fn [m] (and (-> m :default nil? not)
+                      (-> m :add?)))
+          (map get-defaults meta-geni)))
+
+;; ## Infer Methods
+
+(defn add-ident [[k [meta :as v]]]
+  (let [v-ident (->> (assoc meta :ident k)
+                     (assoc v 0))]
+    [k v-ident]))
+
+(defn infer-idents
+  "Returns `sgeni` with the :ident keyword infer-idents will take a
+   scheme-map and automatically adds the :ident keyword"
+  [fsgeni]
+  (->> (map add-ident fsgeni)
+       (into {})))
+
+(defn add-defaults [[k [meta :as v]] dfts]
+  (let [mks   (map :id dfts)
+        mdfts (map :default dfts)
+        v-defaults (->> (merge (zipmap mks mdfts) meta)
+                        (assoc v 0))]
+    [k v-defaults]))
+
+(defn infer-defaults
+  ([fsgeni] (infer-defaults fsgeni meta-geni-add-defaults))
+  ([fsgeni dfts]
+     (->> (map #(add-defaults % dfts) fsgeni)
+          (into {}))))
+
+(defn flip-ident [k]
+  (let [kval   (name (keyword-val k))
+        rkval  (if (starts-with kval "_")
+                 (.substring kval 1)
+                 (str "_" kval))]
+    (keyword-join [(keyword-ns k) rkval])))
+
+(defn ident-reversed? [k]
+  (-> k keyword-val str (starts-with ":_")))
+
+(defn reversible-ref? [[meta]]
+  (and (= :ref (:type meta))
+       (-> meta :ref :ns)
+       (not (-> meta :ref :norev))
+       (keyword-ns (:ident meta))
+       (not (ident-reversed? (:ident meta)))))
+
+(defn find-refs [fsgeni]
+  (->> fsgeni
+       (filter (fn [[k [meta]]] (= :ref (:type meta))))
+       (into {})))
+
+(defn find-ref-idents [fsgeni]
+  (keys (find-refs fsgeni)))
+
+(defn find-reversible-refs [fsgeni]
+  (->> fsgeni
+       (filter (fn [[k [meta]]] (reversible-ref? [meta])))
+       (into {})))
+
+(defn find-reversible-ref-idents [fsgeni]
+  (keys (find-reversible-refs fsgeni)))
+
+(defn vec-reversible-lu [[meta]]
+  (let [ident  (:ident meta)
+        ref-ns (->  meta :ref :ns)]
+    [(keyword-nsroot ident) ref-ns]))
+
+(defn determine-ref-rval [[[root ref-ns many?] [meta]]]
+  (if-let [rval (-> meta :ref :rval)]
+    rval
+    (let [ident  (:ident meta)
+          ival    (keyword-val ident)]
+      (cond (= root ref-ns)
+                       (let [rvec (concat (keyword-stemvec ident) '("referrers"))]
+                         (keyword-join rvec "_"))
+
+                       many?
+                       (let [rvec (concat (keyword-stemvec ident)
+                                          (list (->> root name inf/plural)))]
+                         (keyword-join rvec "_"))
+
+                       :else
+                       (->> root name inf/plural keyword)))))
+
+(defn determine-ref-meta [[meta]]
+  (if-let [ident  (:ident meta)
+           f-ref  (:ref meta)
+           f-ns   (:ns f-ref)
+           f-rval (:rval f-ref)]
+    (let [n-ref {:type    :forward
+                 :key     ident
+                 :val     (keyword-val ident)
+                 :rkey    (flip-ident ident)
+                 :rident  (keyword-join [f-ns f-rval])}]
+      [(assoc meta :ref (merge f-ref n-ref))])
+    (error "Required keys: [ident, ref [ns rval]] " meta)))
+
+(defn determine-revref-meta [[meta]]
+  (if-let [ident   (:ident meta)
+           f-ref   (:ref   meta)
+           f-key   (:key    f-ref)
+           f-val   (:val   f-ref)
+           f-rkey  (:rkey  f-ref)
+           f-rval  (:rval  f-ref)
+           f-rident (:rident f-ref)]
+    [{:ident       f-rident
+       :cardinality :many
+       :type        :ref
+       :ref         {:ns      (keyword-nsroot ident)
+                     :type    :reverse
+                     :val     f-rval
+                     :key     f-rkey
+                     :rval    f-val
+                     :rkey    f-key
+                     :rident  ident}}]
+    (error "Required keys: [ident, ref [key val rkey rval rident]" meta)))
+
+(defn arrange-reversible-refs
+    ([in] (arrange-reversible-refs in []))
+    ([[refg & more] output]
+       (if-let [[ks ms] refg]
+         (cond (< 1 (count ms))
+               (arrange-reversible-refs more
+                                        (concat output
+                                                (map (fn [m] [(conj ks true) m]) ms)))
+               :else
+               (arrange-reversible-refs more
+                                        (conj output [(conj ks false) (first ms)])))
+         output)))
+
+(defn attach-ref-rval
+  [[[root ref-ns many?] [meta] :as entry]]
+  [(assoc-in meta [:ref :rval] (determine-ref-rval entry))])
+
+(defn attach-ref-meta
+  [[[root ref-ns many?] [meta] :as entry]]
+  (determine-ref-meta (attach-ref-rval entry)))
+
+(defn gather-reversible-refs [fsgeni]
+  (let [rfs   (vals (find-reversible-refs fsgeni))
+        lus   (group-by vec-reversible-lu rfs)]
+    (->> (arrange-reversible-refs (seq lus))
+         (map attach-ref-meta))))
+
+(defn infer-refs [fsgeni]
+  (let [rfcoll  (gather-reversible-refs fsgeni)
+        revcoll (->> rfcoll
+                     (filter reversible-ref?)
+                     (map determine-revref-meta))
+        get-ident (fn [[meta]] (:ident meta))]
+    (merge fsgeni
+           (funcmap get-ident rfcoll)
+           (funcmap get-ident revcoll))))
+
+
+(defn find-revrefs [fgeni]
+  (->> fgeni
+       (filter (fn [[k [meta]]]
+                 (and (= :ref (:type meta))
+                      (= :reverse (-> meta :ref :type)))))
+       (into {})))
+
+(defn find-revref-idents [fgeni]
+  (keys (find-revrefs fgeni)))
+
+(defn remove-revrefs [fgeni]
+  (let [rvs   (find-revref-idents fgeni)]
+    (apply dissoc fgeni rvs)))
+
+(defn make-ref-lu [fgeni ks]
+  (let [get-rident (fn [k] (-> fgeni k first :ref :rident))]
+    (zipmap ks (map get-rident ks))))
+
+(defn infer-fgeni [sgeni]
+  (-> (flatten-keys-in sgeni) infer-idents infer-defaults infer-refs))
+
+(defn make-scheme-model [sgeni]
+  (let [fgeni (infer-fgeni sgeni)
+        ref-ks (set (find-ref-idents fgeni))
+        rev-ks (set (find-revref-idents fgeni))
+        fwd-ks (clojure.set/difference ref-ks rev-ks)]
+    {:geni  (treeify-keys fgeni)
+     :fgeni fgeni
+     :lu    {:all (make-ref-lu fgeni ref-ks)
+             :rev (make-ref-lu fgeni rev-ks)
+             :fwd (make-ref-lu fgeni fwd-ks)}}))
+
+
+;;; ## emit-schema
+
+(defn make-enum-rel [[enmeta]]
+  (-> enmeta
+      (assoc :type :ref)
+      (assoc :ref (:enum enmeta))
+      (dissoc :enum)
+      (assoc-in [:ref :type] :enum-rel)
+      vector))
+
+(defn make-enum-val [v ns ident]
+  [{:ident (keyword-join [ns v])
+     :type  :ref
+     :ref   {:norev true
+             :type  :enum-val
+             :rel   ident}}])
+
+(defn make-enum-vals [[enmeta]]
+  (if-let [ident (:ident enmeta)
+           ns (-> enmeta :enum :ns)
+           vs (-> enmeta :enum :values)]
+    (map #(make-enum-val % ns ident) vs)))
+
+(defn find-enums [fgeni]
+  (->> fgeni
+       (filter (fn [[k [meta]]] (= :enum (:type meta))))
+       (into {})))
+
+(defn find-enum-idents [fgeni]
+  (keys (find-enums fgeni)))
+
+(defn transform-enums [fgeni]
+  (let [es   (find-enums fgeni)
+        enums  (vals es)
+        e-rels (map make-enum-rel enums)
+        e-vals (mapcat make-enum-vals enums)
+        mfgeni (apply dissoc fgeni (keys es))
+        get-ident (fn [[meta]] (:ident meta))]
+    (merge mfgeni
+           (funcmap get-ident e-vals)
+           (funcmap get-ident e-rels))))
+
+(defn emit-schema-property [meta k mgprop res]
+  (let [dft  (if-let [dft (:default mgprop)
+                      add? (:add? mgprop)]
+               dft)
+        v    (or (k meta) dft)
+        prop-pair  (fn [attr k v f]
+                     [(keyword (str "db/" (keyword-str attr)))
+                      (f v k)])]
     (cond (nil? v)
-          (if (:required params)
-            (throw (Exception. (str "property " k " is required")))
+          (if (:required mgprop)
+            (error "property " k " is required")
             res)
 
           :else
-          (let [chk  (or (:check params) (constantly true))
-                f    (or (:fn params) (fn [x & xs] x))
-                attr (or (:attr params) k)]
+          (let [chk  (or (:check mgprop) (constantly true))
+                f    (or (:fn mgprop) (fn [x & xs] x))
+                attr (or (:attr mgprop) k)]
             (if (chk v)
-              (apply assoc res (geni-prop-pair attr k v f))
-              (throw (Exception. (str "property " v " failed check"))))))))
+              (apply assoc res (prop-pair attr k v f))
+              (error "property " v " failed check"))))))
 
-(defn build-single-schema
-  ([meta] (build-single-schema meta meta-geni {}))
-  ([meta mg output]
+(defn emit-single-schema
+  ([[meta]] (emit-single-schema [meta] meta-geni {}))
+  ([[meta] mg output]
      (if-let [[k v] (first mg)]
-       (build-single-schema meta
-                            (rest mg)
-                            (geni-property meta k v output))
+       (emit-single-schema [meta]
+                           (rest mg)
+                           (emit-schema-property meta k v output))
        (assoc output
          :db.install/_attribute :db.part/db
          :db/id (tempid :db.part/db)))))
 
-(defn build-schema [geni]
-  (let [metas (-> geni infer-all remove-rev-idents flatten-keys-in vals)]
-    (map (fn [[v]] (build-single-schema v)) metas)))
+(defn emit-enum-val-schema
+  ([enmeta]
+     {:db/id (tempid :db.part/user)
+      :db/ident (:ident enmeta)}))
 
-(defn make-schema-rec [sgeni]
-  (let [geni (infer-all sgeni)]
-    {:geni  geni
-     :fgeni (flatten-keys-in geni)}))
+(defn emit-schema
+  ([fgeni]
+     (let [fgeni  (-> fgeni remove-revrefs)
+           enums  (vals (find-enums fgeni))
+           tenums (map make-enum-rel enums)]
+       (map (fn [[meta]] (emit-single-schema meta)) metas)))
+  ([fgeni & more] (emit-schema (apply merge fgeni more))))
 
-;; ## Geni Traversal
+
+;; ## Geni Search
 
 (defn find-keys
   ([fgeni meta-k meta-val]
@@ -206,6 +352,7 @@
   ([fgeni] (find-keys fgeni :type :ref))
   ([fgeni nss] (find-keys fgeni nss :type :ref)))
 
+
 ; Infer Schema from Datomic Database
 
-(defn infer-geni [conn])
+(defn propose-geni [conn])

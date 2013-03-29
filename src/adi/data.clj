@@ -68,7 +68,6 @@
                 (and (set? v) (every? #(adjust-safe-check chk %) v)) v
                 :else (throw (Exception. err-many))))))
 
-
 (declare process
          process-list-nss process-unnest-key process-keyword-assoc
          process-init process-init-assoc process-init-ref
@@ -151,8 +150,8 @@
                  output (if rk (assoc-in output [:# :aliases id] rk)
                             output)]
              (if (set? v)
-                   (assoc output k (set (map #(process-init-ref meta % env) v)))
-                   (assoc output k (process-init-ref meta v env))))
+               (assoc output k (set (map #(process-init-ref meta % env) v)))
+               (assoc output k (process-init-ref meta v env))))
 
            (and (= t :keyword) (:keyword-ns meta))
            (process-keyword-assoc output meta id v)
@@ -161,7 +160,7 @@
            (assoc output id v)))))
 
 (defn process-init-env [geni env]
-  (let [schema  (or (:schema env) (as/make-schema-rec geni))
+  (let [schema  (or (:schema env) (as/make-scheme-model geni))
         opts    (or (:options env) {})
         mopts   {:defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
                  :restrict? (if (nil? (:restrict? opts)) true (:restrict? opts))
@@ -170,11 +169,13 @@
                  :sets-only? (or (:sets-only? opts) false)}]
     (assoc env :schema schema :options mopts)))
 
-(defn process
-  ([data geni] (process data geni {}))
-  ([data geni env]
-     (let [menv (process-init-env geni env)]
-       (-> (process-init data geni menv)
-           ;;(process-defaults menv)
-           ;;(process-required menv)
-           ))))
+(comment
+
+  (defn process
+    ([data geni] (process data geni {}))
+    ([data geni env]
+       (let [menv (process-init-env geni env)]
+         (-> (process-init data geni menv)
+             ;;(process-defaults menv)
+             ;;(process-required menv)
+             )))))

@@ -53,13 +53,35 @@
 (defn bytes?
   "Returns `true` if `x` is a primitive `byte` array."
   [x] (= (Class/forName "[B")
-            (.getClass x)))
+         (.getClass x)))
+
+(defn enum?
+  "Returns `true` if `x` is an enum keyword"
+  [x] (keyword? x))
 
 (defn lazy-seq?
   "Returns `true` if `x` is of type `clojure.lang.LazySeq`."
   [x] (instance? clojure.lang.LazySeq x))
 
+(defn type-checker
+  "Returns the checking function associated with keyword `k`
+
+    (type-checker :string)
+    ;=> #'clojure.core/string?
+
+    (type-checker :bytes)
+    ;=> #'adi.utils/bytes?
+  "
+  [k]
+  (resolve (symbol (str (name k) "?"))))
+
 ;; ## Misc Methods
+
+(defn error
+  "Throws an error when called. Syntactic sugar "
+  ([e] (throw (Exception. (str e))))
+  ([e & more]
+     (throw (Exception. (apply str e more)))))
 
 (defn funcmap
   "Returns a hash-map `m`, with the the values of `m` being

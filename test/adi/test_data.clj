@@ -216,29 +216,26 @@
   => {:name #{"chris"}
       :likes "ice-cream"})
 
-
 (fact "process-init-env"
   (process-init-env {} {})
-  => {:options {:defaults? true
-                :restrict? true
-                :required? true
-                :extras? false
-                :sets-only? false}
-      :schema {:geni {},
-               :fgeni {}}}
+  => (contains {:options {:defaults? true
+                          :restrict? true
+                          :required? true
+                          :extras? false
+                          :sets-only? false}
+                :schema  hash-map?})
 
   (process-init-env {} {:options {:defaults? false
                                   :restrict? false
                                   :required? false
                                   :extras? true
                                   :sets-only? true}})
-  => {:options {:defaults? false
-                :restrict? false
-                :required? false
-                :extras? true
-                :sets-only? true}
-      :schema {:geni {},
-               :fgeni {}}}
+  => (contains {:options {:defaults? false
+                          :restrict? false
+                          :required? false
+                          :extras? true
+                          :sets-only? true}
+                 :schema  hash-map?})
 
   (process-init-env {:name [{:type :string}]} {})
   => {:options {:defaults? true
@@ -246,8 +243,9 @@
                 :required? true
                 :extras? false
                 :sets-only? false}
-      :schema {:geni {:name [{:ident :name, :type :string}]},
-               :fgeni {:name [{:ident :name, :type :string}]}}})
+      :schema  {:geni {:name [{:ident :name, :type :string, :cardinality :one}]},
+                :fgeni {:name [{:ident :name, :type :string, :cardinality :one}]}
+                :lu {:all {}, :fwd {}, :rev {}}}})
 
 (fact "process-init"
   (let [pgeni {:name [{:type :string}]}]

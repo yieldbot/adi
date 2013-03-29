@@ -2,6 +2,11 @@
   (:use midje.sweet
         adi.utils))
 
+(fact "type-checker"
+  (type-checker :string) => (exactly #'clojure.core/string?)
+  (type-checker :bytes) =>  (exactly #'adi.utils/bytes?)
+  (type-checker :other) =>  nil)
+
 (fact "funcmap creates a hashmap using as key the function applied to each
        element of the collection."
   (funcmap identity [1 2 3]) => {1 1 2 2 3 3}
