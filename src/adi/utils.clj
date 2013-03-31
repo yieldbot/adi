@@ -491,6 +491,28 @@
                            (assoc output (keyword-join (conj nskv k)) v)))
        output)))
 
+(defn flatten-keys-in-keep
+  "Returns a single associative map with all of the nested
+  keys of `m` flattened.
+  "
+  ([m] (flatten-keys-in-keep m [] {}))
+  ([m nskv output]
+     (if-let [[k v] (first m)]
+       (cond (and (hash-map? v) (not (empty? v)))
+             (->> output
+                  (flatten-keys-in-keep (next m) nskv)
+                  (flatten-keys-in-keep v (conj nskv k)))
+
+             (nil? v)
+             (flatten-keys-in-keep (next m) nskv output)
+
+             :else
+             (flatten-keys-in-keep (next m)
+                           nskv
+                           (assoc output (keyword-join (conj nskv k)) v)))
+       output)))
+
+
 (defn treeify-keys
   "Returns a nested map, expanding out the first
    level of keys into additional hash-maps.
@@ -662,17 +684,37 @@
                    x-map
                    (assoc-in {} ex x-map))))))
 
-(defn keyword-ns-map
-  "Makes a map and returns an index with the keys grouped by keyword-ns
+(defn expand-ns-keys
+  ([k] (expand-ns-keys k #{}))
+  ([k output]
+     (if (nil? k) output
+       (if-let [nsk (keyword-ns k)]
+         (expand-ns-keys nsk (conj output k))
+         (conj output k)))))
 
-    (keyword-ns-map {:a {:b {:c 1}
-                       :d 1}
-                   :e {:f 1
-                       :g 1}})
-    ;=> {:a/b #{:a/b/c}, :a #{:a/d}, :e #{:e/g :e/f}}"
-  [m]
-  (->> (keys (flatten-keys-in m))
-       (group-by keyword-ns)
-       (map (fn [[k v]] [k (set v)]))
-       (into {})
-       ((fn [m] (dissoc m nil)))))
+(defn expand-ns-set
+  ([s] (expand-ns-set s #{}))
+  ([s output]
+     (if-let [k (first s)]
+       (expand-ns-set (next s)
+                      (clojure.set/union output
+                                         (expand-ns-keys k)))
+       output)))
+
+(defn merge-common-ns-keys
+  ([m k kset] (merge-common-ns-keys m k kset {}))
+  ([m k kset output]
+     (if-let [[j jset] (first m)]
+       (let [njset  (if (keyword-contains? j k)
+                       (clojure.set/union kset jset)
+                       jset)]
+         (merge-common-ns-keys (next m) k kset (assoc output j njset)))
+       output)))
+
+(defn merge-common-nss
+  ([m] (merge-common-nss m m))
+  ([m output]
+     (if-let [[k kset] (first m)]
+       (merge-common-nss (next m)
+                         (merge-common-ns-keys output k kset))
+       output)))

@@ -34,18 +34,19 @@
   => [:a [{}]]
 
   (add-defaults [:a [{}]] meta-geni-add-defaults)
-  => [:a [{:cardinality :one}]]
+  => [:a [{:cardinality :one :type :string}]]
 
   (add-defaults [:a [{}]] meta-geni-all-defaults)
   => [:a [{:index false, :fulltext false,
-           :cardinality :one, :noHistory false}]])
+           :cardinality :one, :noHistory false
+           :type :string}]])
 
 (fact "infer-defaults"
   (infer-defaults {:a [{}]})
-  => {:a [{:cardinality :one}]}
+  => {:a [{:cardinality :one :type :string}]}
 
   (infer-defaults {:a [{:cardinality :many}]})
-  => {:a [{:cardinality :many}]}
+  => {:a [{:cardinality :many :type :string}]}
 
   (infer-defaults {:a [{:ident :a
                         :type  :string
@@ -306,7 +307,7 @@
   => {}
 
   (emit-schema-property {} :type (meta-geni :type) {})
-  => (throws Exception)
+  => {:db/valueType :db.type/string}
 
   (emit-schema-property {:type :ERROR} :type (meta-geni :type) {})
   => (throws Exception))

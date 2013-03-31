@@ -21,6 +21,8 @@
      :type         {:required true
                     :check #{:keyword :string :boolean :long :bigint :float :enum
                              :double :bigdec :ref :instant :uuid :uri :bytes}
+                    :default :string
+                    :add? true
                     :attr :valueType
                     :fn meta-property}
      :cardinality  {:check #{:one :many}
@@ -101,7 +103,8 @@
 
 (defn find-refs [fsgeni]
   (->> fsgeni
-       (filter (fn [[k [meta]]] (= :ref (:type meta))))
+       (filter (fn [[k [meta]]] (and (= :ref (:type meta))
+                                    (-> meta :ref :norev not))))
        (into {})))
 
 (defn find-ref-idents [fsgeni]
@@ -236,7 +239,6 @@
         fwd-ks (clojure.set/difference ref-ks rev-ks)]
     {:geni  (treeify-keys fgeni)
      :fgeni fgeni
-     :nss   (keyword-ns-map fgeni)
      :lu    {:all (make-ref-lu fgeni ref-ks)
              :rev (make-ref-lu fgeni rev-ks)
              :fwd (make-ref-lu fgeni fwd-ks)}}))

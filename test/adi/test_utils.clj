@@ -191,8 +191,21 @@
   (flatten-keys-in {:a {:b 2 :c 3}}) => {:a/b 2 :a/c 3}
   (flatten-keys-in {:a {:b {:c 3 :d 4}
                         :e {:f 5 :g 6}}
-                    :h {:i 7} })
-  => {:a/b/c 3 :a/b/d 4 :a/e/f 5 :a/e/g 6 :h/i 7})
+                    :h {:i 7}})
+  => {:a/b/c 3 :a/b/d 4 :a/e/f 5 :a/e/g 6 :h/i 7}
+  (flatten-keys-in {:a {}}) => {}
+  (flatten-keys-in {:a {:b {}}}) => {})
+
+(fact "flatten-keys-in will take a map of maps and make it into a single map"
+  (flatten-keys-in-keep {}) => {}
+  (flatten-keys-in-keep {:a 1 :b 2}) => {:a 1 :b 2}
+  (flatten-keys-in-keep {:a {:b 2 :c 3}}) => {:a/b 2 :a/c 3}
+  (flatten-keys-in-keep {:a {:b {:c 3 :d 4}
+                             :e {:f 5 :g 6}}
+                         :h {:i 7}})
+  => {:a/b/c 3 :a/b/d 4 :a/e/f 5 :a/e/g 6 :h/i 7}
+  (flatten-keys-in-keep {:a {}}) => {:a {}}
+  (flatten-keys-in-keep {:a {:b {}}}) => {:a/b {}})
 
 (fact "flatten-keys will take a map of maps and make it into a single map"
   (flatten-keys {}) => {}
@@ -314,3 +327,40 @@
                        :g 1}
                    :h 1})
   => {:a/b #{:a/b/c}, :a #{:a/d}, :e #{:e/g :e/f}})
+
+(fact "expand-ns-keys"
+  (expand-ns-keys nil) => #{}
+
+  (expand-ns-keys :a) => #{:a}
+
+  (expand-ns-keys :a/b/c/d)
+  => #{:a/b/c/d :a/b/c :a/b :a})
+
+(fact "expand ns-set"
+  (expand-ns-set #{:a/b/c/d :x/y/z :a :m})
+  => #{:a/b/c/d :a/b/c :a/b :a
+       :x/y/z :x/y :x :m})
+
+(fact "merge-common-ns-keys"
+  (merge-common-ns-keys {:a/b #{:a/b/c :a/b/d}}
+                        :a #{:a/x})
+  => {:a/b #{:a/x :a/b/c :a/b/d}}
+
+  (merge-common-ns-keys {:a #{:a/x :a/y}}
+                        :a/b #{:a/b/c :a/b/d})
+  => {:a #{:a/x :a/y}})
+
+
+(fact "merge-common-nss"
+  (merge-common-nss {:a #{:a/x}
+                     :a/b #{:a/b/c :a/b/d}})
+  => {:a #{:a/x}
+      :a/b #{:a/x :a/b/d :a/b/c}}
+
+  (merge-common-nss
+   {:account #{:account/id}
+    :account/user #{:account/user/id :account/user/name}
+    :account/business #{:account/business/name :account/business/id}})
+  => {:account #{:account/id}
+      :account/user #{:account/id :account/user/id :account/user/name}
+      :account/business #{:account/id :account/business/name :account/business/id}})
