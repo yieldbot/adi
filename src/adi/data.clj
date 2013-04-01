@@ -68,7 +68,7 @@
                 (and (set? v) (every? #(adjust-safe-check chk %) v)) v
                 :else (throw (Exception. err-many))))))
 
-(declare process
+(declare process process-assoc-keyword
          process-init process-init-assoc process-init-ref
          process-extras process-extras-current)
 
@@ -159,16 +159,6 @@
       (flatten-keys-in-keep)
       (process-find-nss)))
 
-(defn process-assoc-keyword
-  ([output meta k v]
-     (let [t   (:type meta)
-           kns (-> meta t :ns)]
-       (cond (set? v)
-             (assoc output k (set (map #(keyword-join [kns %]) v)))
-
-             :else
-             (assoc output k (keyword-join [kns v]))))))
-
 (defn process-init-env [geni env]
   (let [schema  (or (:schema env) (as/make-scheme-model geni))
         opts    (or (:options env) {})
@@ -178,6 +168,16 @@
                  :extras? (or (:extras? opts) false)
                  :sets-only? (or (:sets-only? opts) false)}]
     (assoc env :schema schema :options mopts)))
+
+(defn process-assoc-keyword
+  ([output meta k v]
+     (let [t   (:type meta)
+           kns (-> meta t :ns)]
+       (cond (set? v)
+             (assoc output k (set (map #(keyword-join [kns %]) v)))
+
+             :else
+             (assoc output k (keyword-join [kns v]))))))
 
 (defn process-init
   ([data geni env]
@@ -258,32 +258,52 @@
 (declare characterise
          characterise-nout)
 
+(defn incremental-sym-gen
+  ([s] (incremental-sym-gen s 0))
+  ([s n]
+     (let [r (atom n)]
+       (fn []
+         (swap! r inc)
+         (symbol (str "?" s @r))))))
+
+(defn incremental-id-gen
+  ([] (incremental-id-gen 0))
+  ([n]
+     (let [r (atom n)]
+       (fn []
+         (swap! r inc)
+         @r))))
+
+(defn characterise-gen-id [output env]
+  (if-let [no-id? (nil? (get-in output [:db :id]))
+           gen    (-> env :generate :ids)]
+    (let [idgen (or (:function gen) iid)]
+      (assoc-in output [:db :id] (idgen)))
+    output))
+
+(defn characterise-gen-sym [output env]
+  (if-let [no-sym? (nil? (get-in output [:# :sym]))
+           gen     (-> env :generate :syms)]
+    (let [symgen (or (:function gen) ?sym)]
+      (assoc-in output [:# :sym] (symgen)))
+    output))
+
 (defn characterise
-  ([pdata env] (characterise pdata env {}))
+  ([pdata env]
+     (characterise pdata env
+                   (-> (characterise-gen-id {} env)
+                       (characterise-gen-sym env))))
   ([pdata env output]
      (if-let [[k v] (first pdata)]
        (let []
          (characterise (next pdata) env
                        (characterise-nout k v env output)))
-       (cond
-        (and (nil? (get-in output [:db :id]))
-             (-> env :generate :ids env))
-        (assoc-in output [:db :id] (iid))
-
-        (and (nil? (get-in output [:# :sym]))
-             (-> env :generate :syms env))
-        (let [val (if-let [symgen (-> env :generate :sym-gen)]
-                    (symgen)
-                    (?sym))]
-          (assoc-in output [:# :sym] val))
-        :else output))))
+       output)))
 
 (defn characterise-nout [k v env output]
-  (let [[meta] (-> env :schema :fgeni k)
+  (if-let [[meta] (-> env :schema :fgeni k)
         t (:type meta)]
-    (cond (or (= k :db) (= k :#))
-          (assoc output k v)
-
+    (cond
           (and (set? v) (= :ref t))
           (assoc-in output
                     [:refs-many (-> meta :ref :key)]
@@ -298,7 +318,16 @@
                     (characterise v env))
 
           :else
-          (assoc-in output [:data-one k] v))))
+          (assoc-in output [:data-one k] v))
+
+    (cond (= k :db)
+          (assoc output k v)
+
+          (= k :#)
+          (assoc output k (merge-in (output k) v))
+
+          :else
+          (error "key " k " not found in schema."))))
 
 (declare datoms
          datoms-data-one datoms-data-many
@@ -320,19 +349,19 @@
 
 ;; Datoms Helper Functions
 
-(defn- datoms-data-one [chd]
+(defn datoms-data-one [chd]
   [(assoc (:data-one chd) :db/id (get-in chd [:db :id]))])
 
-(defn- datoms-data-many [chd]
+(defn datoms-data-many [chd]
   (for [[k vs] (:data-many chd)
         v vs]
     [:db/add (get-in chd [:db :id]) k v]))
 
-(defn- datoms-refs-one [chd]
+(defn datoms-refs-one [chd]
   (for [[k ref] (:refs-one chd)]
     [:db/add (get-in chd [:db :id]) k (get-in ref [:db :id])]))
 
-(defn- datoms-refs-many [chd]
+(defn datoms-refs-many [chd]
   (for [[k refs] (:refs-many chd)
         ref refs]
     [:db/add (get-in chd [:db :id]) k (get-in ref [:db :id])]))
@@ -342,12 +371,6 @@
          clauses-not clauses-fulltext clauses-q)
 
 (defn clauses-sym [chdata] (get-in chdata [:# :sym]))
-
-(defn clauses-pretty-gen [s]
-  (let [r (atom 0)]
-    (fn []
-      (swap! r inc)
-      (symbol (str "?" s @r)))))
 
 (defn clauses
   [chdata env]
@@ -382,35 +405,37 @@
 (defn clauses-q [chdata]
   (if-let [chq (get-in chdata [:# :q])] chq []))
 
-(defn clauses-not-gen [ndata sym symgen]
+(defn clauses-not-gen [ndata sym]
   (let [data  (for [[k vs] (:data-many ndata)
                     v      vs]
-                (let [tsym (symgen)]
+                (let [tsym (get-in ndata [:# :sym] )]
                   [[sym k tsym]
                    [(list 'not= tsym v)]]))]
     (apply concat data)))
 
-(defn clauses-fulltext-gen [ndata sym symgen]
+(defn clauses-fulltext-gen [ndata sym]
   (for [[k vs] (:data-many ndata)
             v      vs]
-        (let [tsym (symgen)]
+        (let [tsym (get-in ndata [:# :sym] )]
           [(list 'fulltext '$ k v) [[sym tsym]]])))
 
 (defn clauses-fn [chdata env gen]
-  (if-let [chfn (get-in chdata [:# (:key gen)])]
-    (let [symgen (if (-> env :generate :pretty-gen)
-                  (clauses-pretty-gen (:prefix gen)) ?sym)
-          ndata (-> chfn (process env) (characterise env))
+  (if-let [k (:key gen)
+           chfn (get-in chdata [:# k])]
+    (let [symgen (-> env :generate :syms k :function)
+          menv   (assoc-in env [:generate :syms :function]
+                           (or symgen ?sym))
+          ndata  (-> chfn
+                     (process menv)
+                     (characterise menv))
           sym  (clauses-sym chdata)]
-      ((:function gen) ndata sym symgen))
+      ((:function gen) ndata sym))
     []))
 
 (defn clauses-not [chdata env]
   (clauses-fn chdata env {:key :not
-                          :prefix "n"
                           :function clauses-not-gen}))
 
 (defn clauses-fulltext [chdata env]
   (clauses-fn chdata env {:key :fulltext
-                          :prefix "ft"
                           :function clauses-fulltext-gen}))

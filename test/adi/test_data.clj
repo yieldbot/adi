@@ -677,4 +677,188 @@
 
   => {:data-one {:node/value "undefined"}
       :refs-many {:node/_parent #{{:data-one {:node/value "child1"}}}}
-      :refs-one {:node/parent {:data-one {:node/value "parent1"}}}})
+      :refs-one {:node/parent {:data-one {:node/value "parent1"}}}}
+
+  (characterise {:account/name #{"chris"}} s6-env)
+  => (throws Exception)
+)
+
+(fact "characterise-gen-id"
+  (characterise-gen-id {} {})
+  => {}
+
+  (characterise-gen-id {} {:generate {:ids {:function (constantly 1)}}})
+  => {:db {:id 1}}
+
+  (characterise-gen-id {:db {:id 3}} {:generate {:ids {:function (constantly 1)}}})
+  => {:db {:id 3}})
+
+(fact "characterise-gen-sym"
+  (characterise-gen-sym {} {})
+  => {}
+
+  (characterise-gen-sym {} {:generate {:syms {:function (constantly '?e)}}})
+  => {:# {:sym '?e}}
+
+  (characterise-gen-sym {:# {:sym '?x}} {:generate {:syms {:function (constantly '?e)}}})
+  => {:# {:sym '?x}})
+
+(fact "characterise refs"
+  (characterise
+   (process {:ns1/prev {:value "hello"}} s2-env)
+   (merge-in s2-env {:generate {:ids {:function (incremental-id-gen)}}}))
+  =>  {:# {:nss #{:ns1}}, :db {:id 1}
+       :refs-many
+       {:ns2/_next
+        #{{:# {:nss #{:ns2}}, :db {:id 2}
+           :data-one {:ns2/value "hello"}}}}}
+
+  (characterise
+   (process {:ns1/next {:next {:value "hello"}}} s2-env)
+   (merge-in s2-env {:generate {:ids {:function (incremental-id-gen)}}}))
+  {, :# {:nss #{:ns1}}, :db {:id 1}
+   :refs-one
+   {:ns1/next
+    {:refs-one {:ns2/next {:data-one {:ns1/value "hello"}, :# {:nss #{:ns1}}, :db {:id 3}}}, :# {:nss #{:ns2}}, :db {:id 2}}}}
+
+  (characterise
+   (process {:ns1/next {:next {:value "hello"}}} s2-env)
+   (merge-in s2-env {:generate {:syms {:function (incremental-sym-gen 'n)}}}))
+  => '{:# {:nss #{:ns1}, :sym ?n1}
+       :refs-one
+       {:ns1/next {:# {:nss #{:ns2}, :sym ?n2}
+                   :refs-one
+                   {:ns2/next {:# {:nss #{:ns1}, :sym ?n3}
+                               :data-one {:ns1/value "hello"}}}}}})
+
+
+(facts "datoms helper functions"
+  (datoms-data-one {:db {:id 0}
+                    :data-one {:account/name "chris"}})
+  => [{:db/id 0, :account/name "chris"}]
+
+  (datoms-data-many {:db {:id 0}
+                     :data-many {:account/tags #{"t1" "t2" "t3"}}})
+  => (just [[:db/add 0 :account/tags "t1"]
+            [:db/add 0 :account/tags "t2"]
+            [:db/add 0 :account/tags "t3"]] :in-any-order)
+
+  (datoms-refs-one {:db {:id 0}
+                    :refs-one {:node/parent {:db {:id 1}}}})
+  => [[:db/add 0 :node/parent 1]]
+
+  (datoms-refs-many {:db {:id 0}
+                     :refs-many {:node/_parent #{{:db {:id 1}}
+                                                 {:db {:id 2}}
+                                                 {:db {:id 3}}}}})
+  => (just [[:db/add 0 :node/_parent 1]
+            [:db/add 0 :node/_parent 2]
+            [:db/add 0 :node/_parent 3]] :in-any-order))
+
+
+(facts "datoms"
+  (datoms {:db {:id 0}
+           :data-one {:node/value "undefined"}
+           :refs-many {:node/_parent #{{:db {:id 1}
+                                        :data-one {:node/value "child1"}}}}
+           :refs-one {:node/parent {:db {:id 2}
+                                    :data-one {:node/value "parent1"}}}})
+
+  => (just [{:db/id 2, :node/value "parent1"}
+            {:db/id 1, :node/value "child1"}
+            {:db/id 0, :node/value "undefined"}
+            [:db/add 0 :node/parent 2]
+            [:db/add 0 :node/_parent 1]] :in-any-order))
+
+(defn clause-env [env]
+  (merge-in env
+            {:options {:sets-only? true}
+             :generate {:syms {:function (incremental-sym-gen 'e)
+                        :not {:function (incremental-sym-gen 'n)}
+                        :fulltext {:function (incremental-sym-gen 'ft)}}}}))
+
+(facts "clauses-init"
+  (clauses-data {:data-many {:account/name #{"adam" "bob" "chris"}}, :# {:sym '?e1}})
+  => (just '[[?e1 :account/name "adam"]
+             [?e1 :account/name "bob"]
+             [?e1 :account/name "chris"]] :in-any-order)
+
+  (clauses-refs (characterise {:node/children #{{}}
+                               :node/parent #{{}}}
+                              (clause-env s6-env)))
+  => '[[?e1 :node/parent ?e3]
+       [?e1 :node/_parent ?e2]]
+
+  (clauses-init (characterise {:account/name #{"adam" "chris"}} (clause-env s7-env)))
+  => '[[?e1 :account/name "adam"]
+       [?e1 :account/name "chris"]]
+
+  (clauses-init (characterise {:node/value #{"undefined"}
+                               :node/children #{{:node/value #{"child1"}}}
+                               :node/parent #{{:node/value #{"parent1"}}}}
+                              (clause-env s6-env)))
+  => '[[?e1 :node/value "undefined"]
+       [?e1 :node/_parent ?e3]
+       [?e1 :node/parent ?e2]
+       [?e3 :node/value "child1"]
+       [?e2 :node/value "parent1"]])
+
+(facts "other clauses"
+  (clauses-q {:# {:q '[?e :node/value "root"]}})
+  => '[?e :node/value "root"]
+
+  (clauses-not-gen
+   (characterise {:node/value #{"undefined"}} (clause-env s6-env))
+   '?x)
+  => '[[?x :node/value ?e1]
+       [(not= ?e1 "undefined")]]
+
+  (-> (process {:node/value #{"undefined"}} (clause-env s6-env))
+      (characterise (clause-env s6-env)))
+
+  (clauses-not
+   {:# {:sym '?x
+        :not {:node/value #{"undefined"}}}}
+   (clause-env s6-env))
+  => '[[?x :node/value ?n1] [(not= ?n1 "undefined")]]
+
+  (clauses-not
+   {:# {:sym '?x
+        :not {:node/value #{"undefined"}}}}
+   (merge-in s6-env {:options {:sets-only? true}}))
+  =>(just
+     [(just ['?x :node/value anything])
+      (just [(just ['not= anything "undefined"])])])
+
+  (clauses-not-gen
+   (characterise {:node/value #{"undefined" "root"}} (clause-env s6-env))
+   '?x)
+  => '[[?x :node/value ?e1]
+       [(not= ?e1 "root")]
+       [?x :node/value ?e1]
+       [(not= ?e1 "undefined")]]
+
+  (clauses-fulltext-gen
+   (characterise {:node/value #{"undefined" "root"}} (clause-env s6-env))
+   '?x)
+  => '[[(fulltext $ :node/value "root") [[?x ?e1]]]
+       [(fulltext $ :node/value "undefined") [[?x ?e1]]]]
+
+  (clauses-fulltext
+   {:# {:sym '?x
+        :fulltext {:node/value #{"undefined"}}}}
+   (clause-env s6-env))
+  => '[[(fulltext $ :node/value "undefined") [[?x ?ft1]]]]
+
+  (first (clauses-fulltext
+           {:# {:sym '?x
+                :fulltext {:node/value #{"undefined"}}}}
+           (merge-in s6-env {:options {:sets-only? true}})))
+  => (just ['(fulltext $ :node/value "undefined")
+            (just [(just ['?x anything])])])
+
+  (clauses {:node/next #{:node/value #{"undefined" "root"}}
+            :# {:sym '?x
+                :fulltext {:node/value #{"undefined"}}}}
+           (clause-env s6-env))
+  )

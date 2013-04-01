@@ -320,14 +320,6 @@
                      :there/b 4} [:hello] [:+])
   => {:a 1 :b 2 :+ {:there {:a 3 :b 4}}})
 
-(fact "keyword-ns-map"
-  (keyword-ns-map {:a {:b {:c 1}
-                       :d 1}
-                   :e {:f 1
-                       :g 1}
-                   :h 1})
-  => {:a/b #{:a/b/c}, :a #{:a/d}, :e #{:e/g :e/f}})
-
 (fact "expand-ns-keys"
   (expand-ns-keys nil) => #{}
 
