@@ -17,69 +17,80 @@
 
 
 (fact "adjust-safe-check"
-  (adjust-safe-check (fn [x] (throw (Exception.))) :anything)
-  => false
+  (adjust-safe-check (fn [x] (throw (Exception.))) :anything {})
+  => falsey
 
-  (adjust-safe-check long? "1")
-  => false
+  (adjust-safe-check long? "1" {})
+  => falsey
 
-  (adjust-safe-check long? 2)
+  (adjust-safe-check long? 2 {})
   => true
 
-  (adjust-safe-check string? "1")
+  (adjust-safe-check string? "1" {})
   => true
 
-  (adjust-safe-check long? '_)
+  (adjust-safe-check long? '_ {})
   => true
 
-  (adjust-safe-check (fn [x] (throw (Exception.))) '_)
+  (adjust-safe-check (fn [x] (throw (Exception.))) '_ {})
+  => true
+
+  (adjust-safe-check long? '[< _ 3] {})
+  => falsey
+
+  (adjust-safe-check long? '[< _ 3] {:options {:query? true}})
   => true)
 
 (fact "adjust-value-sets-only"
-  (adjust-value-sets-only #{} string? nil)
+  (adjust-value-sets-only #{} string? {} nil)
   => #{}
 
-  (adjust-value-sets-only "1" string? nil)
+  (adjust-value-sets-only "1" string? {} nil)
   => #{"1"}
 
-  (adjust-value-sets-only #{"1"} string? nil)
+  (adjust-value-sets-only #{"1"} string? {} nil)
   => #{"1"}
 
-  (adjust-value-sets-only #{"1" "2"} string? nil)
+  (adjust-value-sets-only #{"1" "2"} string? {} nil)
   => #{"1" "2"}
 
-  (adjust-value-sets-only 1 string? nil)
+  (adjust-value-sets-only 1 string? {} nil)
   => (throws Exception)
 
-  (adjust-value-sets-only #{1} string? nil)
+  (adjust-value-sets-only #{1} string? {} nil)
   => (throws Exception)
 
-  (adjust-value-sets-only #{1 "2"} string? nil)
-  => (throws Exception))
+  (adjust-value-sets-only #{1 "2"} string? {} nil)
+  => (throws Exception)
+
+  (adjust-value-sets-only #{'[< _ 3] '[> _ 6]} long?
+                          {:options {:query? true}} nil)
+  => #{'[< _ 3] '[> _ 6]}
+  )
 
 (fact "adjust-value-normal"
-  (adjust-value-normal "1" {} string? nil nil)
+  (adjust-value-normal "1" {} string? {} nil nil)
   => "1"
 
-  (adjust-value-normal #{"1"} {} string? nil nil)
+  (adjust-value-normal #{"1"} {} string? {} nil nil)
   => (throws Exception)
 
-  (adjust-value-normal #{} {:cardinality :many} string? nil nil)
+  (adjust-value-normal #{} {:cardinality :many} string? {} nil nil)
   => #{}
 
-  (adjust-value-normal "1" {:cardinality :many} string? nil nil)
+  (adjust-value-normal "1" {:cardinality :many} string? {} nil nil)
   => #{"1"}
 
-  (adjust-value-normal #{"1" "2"} {:cardinality :many} string? nil nil)
+  (adjust-value-normal #{"1" "2"} {:cardinality :many} string? {} nil nil)
   => #{"1" "2"}
 
-  (adjust-value-normal "1" {} long? nil nil)
+  (adjust-value-normal "1" {} long? {} nil nil)
   => (throws Exception)
 
-  (adjust-value-normal "1" {:cardinality :many} long? nil nil)
+  (adjust-value-normal "1" {:cardinality :many} long? {} nil nil)
   => (throws Exception)
 
-  (adjust-value-normal #{"1"} {:cardinality :many} long? nil nil)
+  (adjust-value-normal #{"1"} {:cardinality :many} long? {} nil nil)
   => (throws Exception))
 
 (fact "adjust-value"
@@ -87,7 +98,12 @@
 
   (adjust-value "1" {} string?
                 {:options {:sets-only? true}} nil nil)
-  => #{"1"})
+  => #{"1"}
+
+  (adjust-value '[< _ 3] {} string?
+                {:options {:sets-only? true
+                           :query? true}} nil nil)
+  => #{'[< _ 3]})
 
 (fact "adjust-chk-type"
   (adjust-chk-type "1" {:type :string} {}) => "1"
@@ -386,6 +402,7 @@
                           :restrict? true
                           :required? true
                           :extras? false
+                          :query? false
                           :sets-only? false}
                 :schema  hash-map?})
 
@@ -393,11 +410,13 @@
                                   :restrict? false
                                   :required? false
                                   :extras? true
+                                  :query? true
                                   :sets-only? true}})
   => (contains {:options {:defaults? false
                           :restrict? false
                           :required? false
                           :extras? true
+                          :query? true
                           :sets-only? true}
                  :schema  hash-map?})
 
@@ -406,6 +425,7 @@
                           :extras? false
                           :required? true
                           :restrict? true
+                          :query? false
                           :sets-only? false}
                 :schema (contains {:fgeni {:name [{:cardinality :one
                                                    :ident :name
@@ -770,59 +790,121 @@
             [:db/add 0 :node/parent 2]
             [:db/add 0 :node/_parent 1]] :in-any-order))
 
-(defn clause-env [env]
+(facts "emit-datoms-insert"
+  (emit-datoms-insert {:account {:name "chris"}} s7-env)
+  => (throws Exception)
+
+  (emit-datoms-insert {:db/id 101
+                       :account {:id 0 :name "chris"}} s7-env)
+  => [{:db/id 101, :account/id 0, :account/name "chris"}]
+
+  (emit-datoms-insert {:account {:id 0 :name "chris"}} s7-env)
+  => (just [(just {:db/id anything, :account/name "chris", :account/id 0})])
+
+  (emit-datoms-insert {:node/parent {:children {:value "root"}}} s6-env)
+  => (just [(just {:db/id anything, :node/value "root"})
+            (just {:db/id anything, :node/value "undefined"})
+            (just {:db/id anything, :node/value "undefined"})
+            (just [:db/add anything :node/_parent anything])
+            (just [:db/add anything :node/parent anything])] :in-any-order)
+
+  (emit-datoms-insert {:db/id 0
+                       :node/parent {:db/id 1
+                                     :children {:db/id 2
+                                                :value "root"}}} s6-env)
+  => [{:db/id 2, :node/value "root"}
+      {:db/id 1, :node/value "undefined"}
+      {:db/id 0, :node/value "undefined"}
+      [:db/add 1 :node/_parent 2]
+      [:db/add 0 :node/parent 1]])
+
+
+(facts "emit-datoms-update"
+  (emit-datoms-update {:db/id 101
+                       :account {:name "chris"}} s7-env)
+  => '({:db/id 101, :account/name "chris"})
+
+  (emit-datoms-update {:db/id 101
+                       :account {:id 0 :name "chris" :other :NOT}} s7-env)
+  => [{:db/id 101, :account/id 0, :account/name "chris"}]
+
+  (emit-datoms-update {:db/id 0
+                       :node/parent {:db/id 1
+                                     :children {:db/id 2
+                                                :value "root"}}} s6-env)
+  => [{:db/id 2, :node/value "root"}
+      [:db/add 1 :node/_parent 2]
+      [:db/add 0 :node/parent 1]])
+
+
+(defn query-env [env]
   (merge-in env
-            {:options {:sets-only? true}
+            {:options {:sets-only? true
+                       :query? true}
              :generate {:syms {:function (incremental-sym-gen 'e)
                         :not {:function (incremental-sym-gen 'n)}
                         :fulltext {:function (incremental-sym-gen 'ft)}}}}))
 
-(facts "clauses-init"
-  (clauses-data {:data-many {:account/name #{"adam" "bob" "chris"}}, :# {:sym '?e1}})
+(facts "query-init"
+  (query-data {:data-many {:account/name #{"chris"}}
+               :# {:sym '?e1}}
+              (query-env s7-env))
+  => '[[?e1 :account/name "chris"]]
+
+  (query-data {:data-many {:account/name #{(? = "hello")}}
+               :# {:sym '?e1}}
+              (query-env s7-env))
+  => '[[?e1 :account/name ?e1]
+       [(= ?e1 "hello")]]
+
+  (query-data {:data-many {:account/name #{"adam" "bob" "chris"}}
+               :# {:sym '?e1}}
+              s7-env)
   => (just '[[?e1 :account/name "adam"]
              [?e1 :account/name "bob"]
              [?e1 :account/name "chris"]] :in-any-order)
 
-  (clauses-refs (characterise {:node/children #{{}}
+  (query-refs (characterise {:node/children #{{}}
                                :node/parent #{{}}}
-                              (clause-env s6-env)))
+                              (query-env s6-env)))
   => '[[?e1 :node/parent ?e3]
        [?e1 :node/_parent ?e2]]
 
-  (clauses-init (characterise {:account/name #{"adam" "chris"}} (clause-env s7-env)))
+  (query-init (characterise {:account/name #{"adam" "chris"}} (query-env s7-env)) s7-env)
   => '[[?e1 :account/name "adam"]
        [?e1 :account/name "chris"]]
 
-  (clauses-init (characterise {:node/value #{"undefined"}
+  (query-init (characterise {:node/value #{"undefined"}
                                :node/children #{{:node/value #{"child1"}}}
                                :node/parent #{{:node/value #{"parent1"}}}}
-                              (clause-env s6-env)))
+                            (query-env s6-env))
+              s6-env)
   => '[[?e1 :node/value "undefined"]
        [?e1 :node/_parent ?e3]
        [?e1 :node/parent ?e2]
        [?e3 :node/value "child1"]
        [?e2 :node/value "parent1"]])
 
-(facts "other clauses"
-  (clauses-q {:# {:q '[?e :node/value "root"]}})
+(facts "other query"
+  (query-q {:# {:q '[?e :node/value "root"]}})
   => '[?e :node/value "root"]
 
-  (clauses-not-gen
-   (characterise {:node/value #{"undefined"}} (clause-env s6-env))
+  (query-not-gen
+   (characterise {:node/value #{"undefined"}} (query-env s6-env))
    '?x)
   => '[[?x :node/value ?e1]
        [(not= ?e1 "undefined")]]
 
-  (-> (process {:node/value #{"undefined"}} (clause-env s6-env))
-      (characterise (clause-env s6-env)))
+  (-> (process {:node/value #{"undefined"}} (query-env s6-env))
+      (characterise (query-env s6-env)))
 
-  (clauses-not
+  (query-not
    {:# {:sym '?x
         :not {:node/value #{"undefined"}}}}
-   (clause-env s6-env))
+   (query-env s6-env))
   => '[[?x :node/value ?n1] [(not= ?n1 "undefined")]]
 
-  (clauses-not
+  (query-not
    {:# {:sym '?x
         :not {:node/value #{"undefined"}}}}
    (merge-in s6-env {:options {:sets-only? true}}))
@@ -830,35 +912,71 @@
      [(just ['?x :node/value anything])
       (just [(just ['not= anything "undefined"])])])
 
-  (clauses-not-gen
-   (characterise {:node/value #{"undefined" "root"}} (clause-env s6-env))
+  (query-not-gen
+   (characterise {:node/value #{"undefined" "root"}} (query-env s6-env))
    '?x)
   => '[[?x :node/value ?e1]
        [(not= ?e1 "root")]
        [?x :node/value ?e1]
        [(not= ?e1 "undefined")]]
 
-  (clauses-fulltext-gen
-   (characterise {:node/value #{"undefined" "root"}} (clause-env s6-env))
+  (query-fulltext-gen
+   (characterise {:node/value #{"undefined" "root"}} (query-env s6-env))
    '?x)
   => '[[(fulltext $ :node/value "root") [[?x ?e1]]]
        [(fulltext $ :node/value "undefined") [[?x ?e1]]]]
 
-  (clauses-fulltext
+  (query-fulltext
    {:# {:sym '?x
         :fulltext {:node/value #{"undefined"}}}}
-   (clause-env s6-env))
+   (query-env s6-env))
   => '[[(fulltext $ :node/value "undefined") [[?x ?ft1]]]]
 
-  (first (clauses-fulltext
+  (first (query-fulltext
            {:# {:sym '?x
                 :fulltext {:node/value #{"undefined"}}}}
            (merge-in s6-env {:options {:sets-only? true}})))
   => (just ['(fulltext $ :node/value "undefined")
             (just [(just ['?x anything])])])
 
-  (clauses {:node/next #{:node/value #{"undefined" "root"}}
+  (query {:refs-many {:node/next #{{:# {:sym '?e1
+                                          :fulltext {:node/value #{"sub1"}}}
+                                      :data-many {:node/value #{"root"}}}}}
             :# {:sym '?x
-                :fulltext {:node/value #{"undefined"}}}}
-           (clause-env s6-env))
-  )
+                :fulltext {:node/value #{"sub"}}}}
+           (query-env s6-env))
+  => '[:find ?x :where
+       [?x :node/next ?e1]
+       [?e1 :node/value "root"]
+       [(fulltext $ :node/value "sub") [[?x ?ft1]]]])
+
+
+(fact "emit-query"
+  (emit-query {:account {:name "chris"}} s7-env)
+  => (just [:find anything :where
+            (just [anything :account/name "chris"])])
+
+  (emit-query {:account {:name "chris"}} (query-env s7-env))
+  => '[:find ?e1 :where
+       [?e1 :account/name "chris"]]
+
+  (emit-query {:node/parent {:value "root"}} (query-env s6-env))
+  => '[:find ?e1 :where
+       [?e1 :node/parent ?e2]
+       [?e2 :node/value "root"]]
+
+  (emit-query {:node/children {:value "root"}} (query-env s6-env))
+  => '[:find ?e1 :where
+       [?e1 :node/_parent ?e2]
+       [?e2 :node/value "root"]]
+
+  (emit-query {:account/id #{(? > 3) (? < 6)}} (query-env s7-env))
+  => '[:find ?e1 :where
+       [?e1 :account/id ?e2]
+       [(> ?e2 3)]
+       [?e1 :account/id ?e3]
+       [(< ?e3 6)]])
+
+(fact "? macro"
+  (? < 3) => '[< _ 3]
+  (? < 4 5 6 7) => '[< _ 4 5 6 7])

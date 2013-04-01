@@ -46,26 +46,28 @@
 
 (defn adjust-value [v meta chk env err-one err-many]
   (if (-> env :options :sets-only?)
-      (adjust-value-sets-only v chk err-many)
-      (adjust-value-normal v meta chk err-one err-many)))
+      (adjust-value-sets-only v chk env err-many)
+      (adjust-value-normal v meta chk env err-one err-many)))
 
-(defn adjust-safe-check [chk v]
-  (or (try (chk v) (catch Exception e)) (= v '_)))
+(defn adjust-safe-check [chk v env]
+  (or (try (chk v) (catch Exception e))
+      (= v '_)
+      (and (-> env :options :query?) (vector? v))))
 
-(defn adjust-value-sets-only [v chk err-many]
-  (cond (adjust-safe-check chk v) #{v}
-        (and (set? v) (every? #(adjust-safe-check chk %) v)) v
+(defn adjust-value-sets-only [v chk env err-many]
+  (cond (adjust-safe-check chk v env) #{v}
+        (and (set? v) (every? #(adjust-safe-check chk % env) v)) v
         :else (throw (Exception. err-many))))
 
-(defn adjust-value-normal [v meta chk err-one err-many]
+(defn adjust-value-normal [v meta chk env err-one err-many]
   (let [c (or (:cardinality meta) :one)]
     (cond (= c :one)
-          (if (adjust-safe-check chk v) v
+          (if (adjust-safe-check chk v env) v
               (throw (Exception. err-one)))
 
           (= c :many)
-          (cond (adjust-safe-check chk v) #{v}
-                (and (set? v) (every? #(adjust-safe-check chk %) v)) v
+          (cond (adjust-safe-check chk v env) #{v}
+                (and (set? v) (every? #(adjust-safe-check chk % env) v)) v
                 :else (throw (Exception. err-many))))))
 
 (declare process process-assoc-keyword
@@ -166,6 +168,7 @@
                  :restrict? (if (nil? (:restrict? opts)) true (:restrict? opts))
                  :required? (if (nil? (:required? opts)) true (:required? opts))
                  :extras? (or (:extras? opts) false)
+                 :query? (or (:query? opts) false)
                  :sets-only? (or (:sets-only? opts) false)}]
     (assoc env :schema schema :options mopts)))
 
@@ -341,9 +344,11 @@
   ([chdata f1 f2]
     (cond (nil? (seq chdata)) []
         :else
-        (concat (mapcat (fn [x] (datoms (second x) f1 f2)) (:refs-one chdata))
+        (concat (mapcat (fn [x] (datoms (second x) f1 f2))
+                        (:refs-one chdata))
                 (mapcat (fn [x]
-                          (mapcat #(datoms % f1 f2) (second x))) (:refs-many chdata))
+                          (mapcat #(datoms % f1 f2) (second x)))
+                        (:refs-many chdata))
                 (f1 chdata)
                 (f2 chdata)))))
 
@@ -366,46 +371,82 @@
         ref refs]
     [:db/add (get-in chd [:db :id]) k (get-in ref [:db :id])]))
 
-(declare clauses clauses-init
-         clauses-data clauses-refs
-         clauses-not clauses-fulltext clauses-q)
+(defn emit-remove-empty-refs [coll]
+  (filter (fn [x]
+              (or (vector? x)
+                  (and (hash-map? x)
+                       (-> (dissoc x :db/id) empty? not))))
+          coll))
 
-(defn clauses-sym [chdata] (get-in chdata [:# :sym]))
+(defn emit-datoms [data env default-env]
+  (cond (or (vector? data) (list? data) (lazy-seq? data))
+        (mapcat #(emit-datoms % env) data)
 
-(defn clauses
+        (hash-map? data)
+        (let [menv (merge-in env default-env)
+              chdata  (-> data
+                          (process menv)
+                          (characterise menv))]
+          (emit-remove-empty-refs (datoms chdata)))))
+
+(defn emit-datoms-insert [data env]
+  (emit-datoms data env {:generate {:ids {:current true}}}))
+
+(defn emit-datoms-update [data env]
+  (emit-datoms data env {:options {:required? false
+                                   :extras? true
+                                   :defaults? false}}))
+
+(declare query query-init
+         query-data query-refs
+         query-not query-fulltext query-q)
+
+(defn query-sym [chdata] (get-in chdata [:# :sym]))
+
+(defn query
   [chdata env]
-  (concat [:find (clauses-sym chdata) :where]
-          (clauses-init chdata)
-          (clauses-not chdata env)
-          (clauses-fulltext chdata env)
-          (clauses-q chdata)))
+  (concat [:find (query-sym chdata) :where]
+          (query-init chdata env)
+          (query-not chdata env)
+          (query-fulltext chdata env)
+          (query-q chdata)))
 
-(defn clauses-init [chdata]
+(defn query-init [chdata env]
   (cond
    (nil? (seq chdata)) []
    :else
-   (concat  (clauses-data chdata)
-            (clauses-refs chdata)
+   (concat  (query-data chdata env)
+            (query-refs chdata)
             (mapcat (fn [x]
-                      (mapcat clauses-init (second x)))
+                      (mapcat #(query-init % env) (second x)))
                     (:refs-many chdata)))))
 
-(defn clauses-data [chdata]
-  (let [sym (clauses-sym chdata)]
-    (for [[k vs] (:data-many chdata)
-           v     vs]
-      [sym k v])))
+(defn query-data-val [sym k v env]
+  (cond (vector? v)
+        (let [symgen (-> env :generate :syms :function)
+              esym (symgen)]
+          [[sym k esym]
+           [(apply list (assoc v 1 esym))]])
+        :else
+        [[sym k v]]))
 
-(defn clauses-refs [chdata]
-  (let [sym (clauses-sym chdata)]
+(defn query-data [chdata env]
+  (let [sym  (query-sym chdata)
+        data (for [[k vs] (:data-many chdata)
+                   v     vs]
+               (query-data-val sym k v env))]
+    (apply concat data)))
+
+(defn query-refs [chdata]
+  (let [sym (query-sym chdata)]
     (for [[k rs] (:refs-many chdata)
            r     rs]
-      [sym k (clauses-sym r)])))
+      [sym k (query-sym r)])))
 
-(defn clauses-q [chdata]
+(defn query-q [chdata]
   (if-let [chq (get-in chdata [:# :q])] chq []))
 
-(defn clauses-not-gen [ndata sym]
+(defn query-not-gen [ndata sym]
   (let [data  (for [[k vs] (:data-many ndata)
                     v      vs]
                 (let [tsym (get-in ndata [:# :sym] )]
@@ -413,13 +454,13 @@
                    [(list 'not= tsym v)]]))]
     (apply concat data)))
 
-(defn clauses-fulltext-gen [ndata sym]
+(defn query-fulltext-gen [ndata sym]
   (for [[k vs] (:data-many ndata)
             v      vs]
         (let [tsym (get-in ndata [:# :sym] )]
           [(list 'fulltext '$ k v) [[sym tsym]]])))
 
-(defn clauses-fn [chdata env gen]
+(defn query-fn [chdata env gen]
   (if-let [k (:key gen)
            chfn (get-in chdata [:# k])]
     (let [symgen (-> env :generate :syms k :function)
@@ -428,14 +469,29 @@
           ndata  (-> chfn
                      (process menv)
                      (characterise menv))
-          sym  (clauses-sym chdata)]
+          sym  (query-sym chdata)]
       ((:function gen) ndata sym))
     []))
 
-(defn clauses-not [chdata env]
-  (clauses-fn chdata env {:key :not
-                          :function clauses-not-gen}))
+(defn query-not [chdata env]
+  (query-fn chdata env {:key :not
+                        :function query-not-gen}))
 
-(defn clauses-fulltext [chdata env]
-  (clauses-fn chdata env {:key :fulltext
-                          :function clauses-fulltext-gen}))
+(defn query-fulltext [chdata env]
+  (query-fn chdata env {:key :fulltext
+                        :function query-fulltext-gen}))
+
+(defn emit-query [data env]
+  (let [menv (merge-in env {:options {:restrict? false
+                                      :required? false
+                                      :defaults? false
+                                      :sets-only? true
+                                      :query? true}
+                            :generate {:syms {:current true}}})
+        chdata  (-> data
+                    (process menv)
+                    (characterise menv))]
+    (query chdata menv)))
+
+(defmacro ? [f & args]
+  (vec (concat [(list 'symbol (name f)) (list 'symbol "_")] `[~@args])))
