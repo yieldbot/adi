@@ -322,13 +322,17 @@
 ;; ## Geni Search
 
 (defn find-keys
-  ([fgeni meta-k meta-val]
-     (find-keys fgeni (constantly true) meta-k meta-val))
-  ([fgeni nss meta-k meta-cmp]
+  ([fgeni mk mv]
+     (find-keys fgeni (constantly true) mk mv))
+  ([fgeni nss mk mv]
      (let [comp-fn  (fn [val cmp] (if (fn? cmp) (cmp val) (= val cmp)))
            filt-fn  (fn [k] (and (nss (keyword-ns k))
-                                (comp-fn (meta-k (first (fgeni k))) meta-cmp)))]
-       (set (filter filt-fn (keys fgeni))))))
+                                (comp-fn (mk (first (fgeni k))) mv)))]
+       (set (filter filt-fn (keys fgeni)))))
+  ([fgeni nss mk mv mk1 mv1 & more]
+     (let [ks (find-keys fgeni nss mk mv)
+           nfgeni (select-keys fgeni ks)]
+       (apply find-keys nfgeni nss mk1 mv1 more))))
 
 (defn find-required-keys
   ([fgeni] (find-keys fgeni :required true))

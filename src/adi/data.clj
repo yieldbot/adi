@@ -397,6 +397,28 @@
                                    :extras? true
                                    :defaults? false}}))
 
+(defn make-?? [f args]
+  [(apply list 'list
+          (concat [(list 'quote f)
+                   (list 'symbol "??")]
+                  `[~@args]))])
+
+(defmacro ?? [f & args]
+  (make-?? f args))
+
+(defmacro ? [f & args]
+  [[(list 'symbol "??sym")
+    (list 'symbol "??attr")
+    (list 'symbol "??")]
+   (make-?? f args)])
+
+(defn ?not [val]
+  (? not= val))
+
+(defn ?fulltext [val]
+  [[(list 'fulltext '$ '??attr val) [['??sym '??]]]])
+
+
 (declare query query-init
          query-data query-refs
          query-not query-fulltext query-q)
@@ -405,11 +427,9 @@
 
 (defn query
   [chdata env]
-  (concat [:find (query-sym chdata) :where]
-          (query-init chdata env)
-          (query-not chdata env)
-          (query-fulltext chdata env)
-          (query-q chdata)))
+  (vec (concat [:find (query-sym chdata) :where]
+               (query-init chdata env)
+               (query-q chdata))))
 
 (defn query-init [chdata env]
   (cond
@@ -425,8 +445,7 @@
   (cond (vector? v)
         (let [symgen (-> env :generate :syms :function)
               esym (symgen)]
-          [[sym k esym]
-           [(apply list (assoc v 1 esym))]])
+          (replace-walk v {'??sym sym '?? esym '??attr k}))
         :else
         [[sym k v]]))
 
@@ -446,41 +465,6 @@
 (defn query-q [chdata]
   (if-let [chq (get-in chdata [:# :q])] chq []))
 
-(defn query-not-gen [ndata sym]
-  (let [data  (for [[k vs] (:data-many ndata)
-                    v      vs]
-                (let [tsym (get-in ndata [:# :sym] )]
-                  [[sym k tsym]
-                   [(list 'not= tsym v)]]))]
-    (apply concat data)))
-
-(defn query-fulltext-gen [ndata sym]
-  (for [[k vs] (:data-many ndata)
-            v      vs]
-        (let [tsym (get-in ndata [:# :sym] )]
-          [(list 'fulltext '$ k v) [[sym tsym]]])))
-
-(defn query-fn [chdata env gen]
-  (if-let [k (:key gen)
-           chfn (get-in chdata [:# k])]
-    (let [symgen (-> env :generate :syms k :function)
-          menv   (assoc-in env [:generate :syms :function]
-                           (or symgen ?sym))
-          ndata  (-> chfn
-                     (process menv)
-                     (characterise menv))
-          sym  (query-sym chdata)]
-      ((:function gen) ndata sym))
-    []))
-
-(defn query-not [chdata env]
-  (query-fn chdata env {:key :not
-                        :function query-not-gen}))
-
-(defn query-fulltext [chdata env]
-  (query-fn chdata env {:key :fulltext
-                        :function query-fulltext-gen}))
-
 (defn emit-query [data env]
   (let [menv (merge-in env {:options {:restrict? false
                                       :required? false
@@ -493,5 +477,90 @@
                     (characterise menv))]
     (query chdata menv)))
 
-(defmacro ? [f & args]
-  (vec (concat [(list 'symbol (name f)) (list 'symbol "_")] `[~@args])))
+
+(defn emit-view
+  ([geni] (emit-view geni (set (keys geni))))
+  ([geni val] (emit-view geni val {}))
+  ([geni val cfg]
+     (let [cfg (merge {:data :show :ref :id :rev-refs false} cfg)]
+       (cond (keyword? val)
+             (let [ks (-> (select-keys geni [val])
+                          flatten-keys-in)
+                   dks (as/find-keys ks :type (fn [t] (not= :ref t)))
+                   rks (as/find-keys ks (constantly true)
+                                     :type :ref
+                                     :ref (if (cfg :rev-refs)
+                                            (constantly true)
+                                            (fn [m] (= :forward (:type m)))))]
+               (-> (merge (zipmap dks (repeat (cfg :data)))
+                          (zipmap rks (repeat (cfg :ref))))
+                   treeify-keys))
+
+
+             (hash-set? val)
+             (apply merge (map #(emit-view geni % cfg) val))
+
+             (hash-map? val)
+             (let [nval (treeify-keys val)]
+               (merge-in (emit-view geni (set (keys nval)) cfg)
+                         nval))))))
+
+(declare deprocess
+         deprocess-assoc deprocess-ref)
+
+(defn deprocess
+  ([fm env]
+     (let [view (-> (emit-view (-> env :schema :geni)
+                               (list-keyword-ns fm))
+                    flatten-keys-in)]
+       (deprocess fm view env)))
+  ([fm view env] (deprocess fm view env #{}))
+  ([fm view env exclude]
+     (let [ks   (clojure.set/union (set (keys fm)) (set (keys view)))]
+       (if-let [id (fm :db/id)]
+         (deprocess (dissoc fm :db/id) view env (conj exclude id) ks {:db {:id id}})
+         (deprocess fm view env exclude ks {}))))
+  ([fm view env exclude ks output]
+     (if-let [k (first ks)]
+       (if-let [[meta]  (-> env :schema :fgeni k)
+                v       (or (fm k) (fm (-> meta :ref :key)))
+                ps      (view k)
+                add?    (or (= ps :show) (= ps :id)
+                            (and (-> env :deprocess :show?)
+                                 (not= :hide ps)))]
+         (->> output
+              (deprocess-assoc k v view env exclude)
+              (deprocess fm view env exclude (next ks)))
+         (deprocess fm view env exclude (next ks) output))
+       output)))
+
+(defn deprocess-assoc [k v view env exclude output]
+  (if-let [[meta]  (-> env :schema :fgeni k)
+           kns     (keyword-split k)]
+    (cond (not= (:type meta) :ref)
+          (assoc-in output kns v)
+
+          (hash-set? v)
+          (assoc-in output kns
+                    (set (map #(deprocess-ref k % view env exclude) v)))
+
+          :else
+          (assoc-in output kns (deprocess-ref k v view env exclude)))
+    output))
+
+(defn deprocess-ref [k ref view env exclude]
+  (let [id      (:db/id ref)
+        [meta]  (-> env :schema :fgeni k)
+        ps      (get view k)]
+    (cond (and id (or (= :id ps) (exclude id)))
+          {:+ {:db {:id id}}}
+
+          (= :show ps)
+          (let [nks (keyword-split (-> meta :ref :ns))
+                nm  (deprocess ref view env exclude)
+                cm  (get-in nm nks)
+                xm  (dissoc-in nm nks)]
+            (if (empty? xm) cm
+                (merge cm {:+ xm})))
+
+          :else {})))

@@ -356,3 +356,20 @@
   => {:account #{:account/id}
       :account/user #{:account/id :account/user/id :account/user/name}
       :account/business #{:account/id :account/business/name :account/business/id}})
+
+
+(fact "replace-walk"
+  (replace-walk 1 {1 2})
+  => 2
+
+  (replace-walk [1 2 3] {1 2})
+  => [2 2 3]
+
+  (replace-walk '[1 (1 2 [1 2 3])] {1 3 3 1})
+  => '[3 (3 2 [3 2 1])]
+
+  (replace-walk {:a 1 :b {:c 1}} {1 2})
+  => {:a 2 :b {:c 2}}
+
+  (replace-walk '{:a 1 :b {:c [1 (1 [1 1])]}} {1 2})
+  => '{:a 2 :b {:c [2 (2 [2 2])]}})

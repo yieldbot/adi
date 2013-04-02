@@ -718,3 +718,11 @@
        (merge-common-nss (next m)
                          (merge-common-ns-keys output k kset))
        output)))
+
+(defn replace-walk [st rep]
+  (cond (vector? st) (mapv #(replace-walk % rep) st)
+        (list? st) (map #(replace-walk % rep) st)
+        (hash-map? st) (zipmap (keys st)
+                               (map #(replace-walk % rep) (vals st)))
+        (rep st) (rep st)
+        :else st))

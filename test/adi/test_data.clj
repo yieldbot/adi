@@ -837,6 +837,28 @@
       [:db/add 0 :node/parent 1]])
 
 
+(fact "make-??"
+  (make-?? 'f [1 2 3 (inc 3)])
+  => '[(list (quote f) (symbol "??") 1 2 3 4)])
+
+(fact "?? macro"
+  (?? < 4) => '[(< ?? 4)]
+  (?? < 3) => '[(< ?? 3)]
+  (?? < 4 5 6 7) => '[(< ?? 4 5 6 7)]
+  (?? .indexOf ".") => '[(.indexOf ?? ".")])
+
+(fact "? macro"
+  (? < 3) => '[[??sym ??attr ??] [(< ?? 3)]]
+  (? not= 3) => '[[??sym ??attr ??] [(not= ?? 3)]])
+
+(fact "?not"
+  (?not 9) => '[[??sym ??attr ??] [(not= ?? 9)]]
+  (?not "this") => '[[??sym ??attr ??] [(not= ?? "this")]])
+
+
+(fact "?fulltext"
+  (?fulltext "hello") => '[[(fulltext $ ??attr "hello") [[??sym ??]]]])
+
 (defn query-env [env]
   (merge-in env
             {:options {:sets-only? true
@@ -852,9 +874,9 @@
   => '[[?e1 :account/name "chris"]]
 
   (query-data {:data-many {:account/name #{(? = "hello")}}
-               :# {:sym '?e1}}
-              (query-env s7-env))
-  => '[[?e1 :account/name ?e1]
+                         :# {:sym '?x}}
+                        (query-env s7-env))
+  => '[[?x :account/name ?e1]
        [(= ?e1 "hello")]]
 
   (query-data {:data-many {:account/name #{"adam" "bob" "chris"}}
@@ -889,67 +911,25 @@
   (query-q {:# {:q '[?e :node/value "root"]}})
   => '[?e :node/value "root"]
 
-  (query-not-gen
-   (characterise {:node/value #{"undefined"}} (query-env s6-env))
-   '?x)
+  (query-data-val '?x :node/value '[[??sym ??attr ??]
+                                    [(not= ?? "undefined")]]
+                  (query-env s6-env))
   => '[[?x :node/value ?e1]
        [(not= ?e1 "undefined")]]
 
-  (-> (process {:node/value #{"undefined"}} (query-env s6-env))
-      (characterise (query-env s6-env)))
+  (query-data (characterise {:node/value #{(? < 4)}} (query-env s6-env))
+              (query-env s6-env))
+  => '[[?e1 :node/value ?e1]
+       [(< ?e1 4)]]
 
-  (query-not
-   {:# {:sym '?x
-        :not {:node/value #{"undefined"}}}}
-   (query-env s6-env))
-  => '[[?x :node/value ?n1] [(not= ?n1 "undefined")]]
-
-  (query-not
-   {:# {:sym '?x
-        :not {:node/value #{"undefined"}}}}
-   (merge-in s6-env {:options {:sets-only? true}}))
-  =>(just
-     [(just ['?x :node/value anything])
-      (just [(just ['not= anything "undefined"])])])
-
-  (query-not-gen
-   (characterise {:node/value #{"undefined" "root"}} (query-env s6-env))
-   '?x)
-  => '[[?x :node/value ?e1]
-       [(not= ?e1 "root")]
-       [?x :node/value ?e1]
-       [(not= ?e1 "undefined")]]
-
-  (query-fulltext-gen
-   (characterise {:node/value #{"undefined" "root"}} (query-env s6-env))
-   '?x)
-  => '[[(fulltext $ :node/value "root") [[?x ?e1]]]
-       [(fulltext $ :node/value "undefined") [[?x ?e1]]]]
-
-  (query-fulltext
-   {:# {:sym '?x
-        :fulltext {:node/value #{"undefined"}}}}
-   (query-env s6-env))
-  => '[[(fulltext $ :node/value "undefined") [[?x ?ft1]]]]
-
-  (first (query-fulltext
-           {:# {:sym '?x
-                :fulltext {:node/value #{"undefined"}}}}
-           (merge-in s6-env {:options {:sets-only? true}})))
-  => (just ['(fulltext $ :node/value "undefined")
-            (just [(just ['?x anything])])])
-
-  (query {:refs-many {:node/next #{{:# {:sym '?e1
-                                          :fulltext {:node/value #{"sub1"}}}
-                                      :data-many {:node/value #{"root"}}}}}
-            :# {:sym '?x
-                :fulltext {:node/value #{"sub"}}}}
-           (query-env s6-env))
+  (query (characterise {:# {:sym '?x}
+                        :node/parent #{{:node/value #{"root"}}}
+                        :node/value #{(?fulltext "sub")}} (query-env s6-env))
+         (query-env s6-env))
   => '[:find ?x :where
-       [?x :node/next ?e1]
-       [?e1 :node/value "root"]
-       [(fulltext $ :node/value "sub") [[?x ?ft1]]]])
-
+       [(fulltext $ :node/value "sub") [[?x ?e1]]]
+       [?x :node/parent ?e2]
+       [?e2 :node/value "root"]])
 
 (fact "emit-query"
   (emit-query {:account {:name "chris"}} s7-env)
@@ -975,8 +955,123 @@
        [?e1 :account/id ?e2]
        [(> ?e2 3)]
        [?e1 :account/id ?e3]
-       [(< ?e3 6)]])
+       [(< ?e3 6)]]
 
-(fact "? macro"
-  (? < 3) => '[< _ 3]
-  (? < 4 5 6 7) => '[< _ 4 5 6 7])
+  (emit-query {:# {:sym '?x}
+               :account/id #{(? > 3) (?not 6)}
+               :account/name (?fulltext "chris")}
+              (query-env s7-env))
+  => '[:find ?x :where
+       [(fulltext $ :account/name "chris") [[?x ?e2]]]
+       [?x :account/id ?e3]
+       [(not= ?e3 6)]
+       [?x :account/id ?e4]
+       [(> ?e4 3)]]
+
+  (emit-query {:# {:sym '?x}
+               :node/children/parent/parent/value (?not 4)}
+              (query-env s6-env))
+  => '[:find ?x :where
+       [?x :node/_parent ?e2]
+       [?e2 :node/parent ?e3]
+       [?e3 :node/parent ?e4]
+       [?e4 :node/value ?e5]
+       [(not= ?e5 4)]])
+
+(fact "emit-view"
+  (emit-view (-> s6-env :schema :geni) :node)
+  => {:node {:parent :id
+             :value :show}}
+
+  (emit-view (-> s6-env :schema :geni) :node {:data :hide :ref :show})
+  => {:node {:value :hide
+             :parent :show}}
+
+  (emit-view (-> s6-env :schema :geni) {:node {:children :show}})
+  => {:node {:children :show
+             :value :show
+             :parent :id}}
+
+  (emit-view (-> s6-env :schema :geni) :node {:rev-refs true})
+  => {:node {:value    :show
+             :children :id
+             :parent   :id}}
+
+  (emit-view (-> s5-env :schema :geni) #{:nsA :nsB})
+  => {:nsA {:val1 :show
+            :val2 :show
+            :sub1 {:val :show}
+            :sub2 {:val :show}}
+      :nsB {:val1 :show
+            :val2 :show
+            :sub1 {:val :show}
+            :sub2 {:val :show}}}
+
+  (emit-view (-> s5-env :schema :geni) {:nsA {}})
+  => {:nsA {:sub1 {:val :show}
+            :sub2 {:val :show}
+            :val1 :show
+            :val2 :show}}
+
+  (emit-view (-> s5-env :schema :geni) {:nsA {:val1 :hide
+                                              :sub1 {:val :hide}}})
+  => {:nsA {:sub1 {:val :hide}
+            :sub2 {:val :show}
+            :val1 :hide
+            :val2 :show}})
+
+
+(fact "deprocess"
+  (deprocess-assoc :nsA/val1 "A1"
+                   (flatten-keys-in (emit-view (-> s5-env :schema :geni) :nsA))
+                   s5-env
+                   #{}
+                   {})
+  => {:nsA {:val1 "A1"}}
+
+  (deprocess {:db/id 1} {})
+  => {:db {:id 1}}
+
+  (deprocess {:db/id 1 :nsA/val1 "A1"} s5-env)
+  => {:db {:id 1}
+      :nsA {:val1 "A1"}}
+
+  (deprocess {:db/id 0 :node/parent {:db/id 1 :node/value "root"}} s6-env)
+  => {:db {:id 0} :node {:parent {:+ {:db {:id 1}}}}}
+
+  (deprocess {:db/id 0 :node/parent {:db/id 1 :node/value "root"}}
+             (flatten-keys-in (emit-view  (-> s6-env :schema :geni) :node {:ref :show}))
+             s6-env)
+
+  => {:node {:parent {:+ {:db {:id 1}}, :value "root"}}, :db {:id 0}}
+
+  (deprocess {:node/value "l2"
+              :node/parent {:node/value "l1"
+                            :node/parent {:node/value "root"}}}
+             (flatten-keys-in (emit-view  (-> s6-env :schema :geni) :node {:ref :show}))
+             s6-env)
+  => {:node {:value "l2", :parent {:value "l1", :parent {:value "root"}}}}
+
+  (deprocess {:node/value "l2"
+              :node/parent {:node/value "l1"
+                            :node/parent {:node/value "root"}}}
+             (flatten-keys-in (emit-view  (-> s6-env :schema :geni) :node {:ref :show}))
+             s6-env)
+
+  (deprocess {:node/value "root"
+              :node/children #{{:node/value "l1"
+                                :node/children #{{:node/value "l2"}}}}}
+             (flatten-keys-in (emit-view  (-> s6-env :schema :geni)
+                                          {:node {:children :show}} {:ref :show}))
+             s6-env)
+  => {:node {:value "root", :children #{{:value "l1", :children #{{:value "l2"}}}}}})
+
+
+(fact "reverse-lookup"
+  (deprocess {:node/value "root"
+              :node/_parent #{{:node/value "l1"
+                               :node/_parent #{{:node/value "l2"}}}}}
+             (flatten-keys-in (emit-view  (-> s6-env :schema :geni)
+                                          {:node {:children :show}} {:ref :show}))
+             s6-env)
+  => {:node {:value "root", :children #{{:value "l1", :children #{{:value "l2"}}}}}})

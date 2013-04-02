@@ -44,3 +44,9 @@
  (ffirst)
  (d/entity (d/db conn))
  :person/gender)
+
+
+(d/q '[:find ?e :where
+       [?e :person/name ?g]
+       [(not= "Bob" ?g)]]
+      (d/db conn))
