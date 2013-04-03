@@ -229,19 +229,25 @@
   (let [get-rident (fn [k] (-> fgeni k first :ref :rident))]
     (zipmap ks (map get-rident ks))))
 
+(defn make-lu
+  ([fgeni] (make-lu fgeni {}))
+  ([fgeni output]
+     (if-let [[k [meta]] (first fgeni)]
+       (cond (and (= :ref (:type meta))
+                  (= :reverse (-> meta :ref :type)))
+             (recur (next fgeni) (assoc output (-> meta :ref :key) k k k))
+             :else
+             (recur (next fgeni) (assoc output k k)))
+       output)))
+
 (defn infer-fgeni [sgeni]
   (-> (flatten-keys-in sgeni) infer-idents infer-defaults infer-refs))
 
 (defn make-scheme-model [sgeni]
-  (let [fgeni (infer-fgeni sgeni)
-        ref-ks (set (find-ref-idents fgeni))
-        rev-ks (set (find-revref-idents fgeni))
-        fwd-ks (clojure.set/difference ref-ks rev-ks)]
+  (let [fgeni (infer-fgeni sgeni)]
     {:geni  (treeify-keys fgeni)
      :fgeni fgeni
-     :lu    {:all (make-ref-lu fgeni ref-ks)
-             :rev (make-ref-lu fgeni rev-ks)
-             :fwd (make-ref-lu fgeni fwd-ks)}}))
+     :lu    (make-lu fgeni)}))
 
 
 ;;; ## emit-schema

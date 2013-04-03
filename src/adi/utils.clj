@@ -596,6 +596,7 @@
               {:a {:b {:c 3}}})
     ;=> {:a {:b {:c 3 :d 2}}})
   "
+  ([m] m)
   ([m1 m2]
   (if-let [[k v] (first m2)]
     (cond (nil? (k m1))
@@ -610,9 +611,8 @@
           :else
           (merge-in m1 (dissoc m2 k)))
     m1))
-  ([m1 m2 & ms]
-   (cond (empty? ms) (merge-in m1 m2)
-          :else (apply (merge-in (merge-in m1 m2)) ms))))
+  ([m1 m2 m3 & ms]
+     (apply merge-in (merge-in m1 m2) m3 ms)))
 
 
 (defn remove-empty-in

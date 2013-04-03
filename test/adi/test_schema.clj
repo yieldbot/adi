@@ -276,10 +276,9 @@
                                        :type    :ref
                                        :ref     {:ns  :email}}]})
   => (contains
-      {:lu {:all {:account/email :email/accounts
-                  :email/accounts :account/email}
-            :rev {:email/accounts :account/email}
-            :fwd {:account/email :email/accounts}}}))
+      {:lu {:account/email :account/email
+            :email/accounts :email/accounts
+            :account/_email :email/accounts}}))
 
 (fact "remove-enums"
   (remove-enums {:person/gender [{:ident   :person/gender

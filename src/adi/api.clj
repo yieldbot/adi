@@ -4,7 +4,7 @@
         [adi.data :only [emit-datoms
                          emit-datoms-insert
                          emit-datoms-update
-                         emit-query emit-view]])
+                         emit-query]])
   (:require [datomic.api :as d]
             [adi.data :as ad]
             [adi.schema :as as]))
@@ -57,7 +57,6 @@
 (defn update! [val data conn env]
   (d/transact conn (update- val data (d/db conn) env)))
 
-
 (defn- retract-cmd [ent k]
   (let [id  (:db/id ent)
         [k v] (if (vector? k) k
@@ -78,10 +77,42 @@
 (defn retract! [val ks conn env]
   (d/transact conn (retract- val ks (d/db conn) env)))
 
+(defn delete-
+  [val db env]
+  (let [ids  (select-ids val db env)]
+    (map (fn [x] [:db.fn/retractEntity x]) ids)))
 
+(defn delete!
+  [val conn env]
+  (d/transact conn (delete- val (d/db conn env))))
 
 (defn select [val db env]
   (map #(ad/deprocess % env)
        (select-entities val db env)))
 
 (defn select-first [val db env]  (first (select val db env)))
+
+(declare all-linked-ids)
+
+(defn find-linked-nss [fgeni view]
+  (set (filter (fn [k] (= :ref (-> fgeni k :type)))
+               (keys (flatten-keys-in view)))))
+
+(defn all-linked-ids-key
+  [k ent vnss env exclude]
+  (let [v (k ent)
+        id (:db/id v)]
+    (if (and (ref? v)
+             (not (exclude id)))
+      (all-linked-ids v vnss env (conj exclude id)))))
+
+(defn all-linked-ids
+  ([ent view env]
+     (let [vnss (find-linked-nss (-> env :schema :fgeni)
+                                 view)]
+       (set (all-linked-ids ent vnss env #{}))))
+  ([ent vnss env exclude]
+     (concat [(:db/id ent)]
+             (->> vnss
+                  (mapcat #(all-linked-ids-key % ent vnss env exclude))
+                  (filter identity)))))
