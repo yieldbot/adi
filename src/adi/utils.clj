@@ -614,7 +614,6 @@
   ([m1 m2 m3 & ms]
      (apply merge-in (merge-in m1 m2) m3 ms)))
 
-
 (defn remove-empty-in
   "Returns a associative with nils and empty hash-maps removed.
 

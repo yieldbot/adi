@@ -511,7 +511,7 @@
 (defn deprocess-ref
   [k rf meta env exclude]
   (let [vw  (or (-> env :view) {})
-        dir (or (deprocess-view-key vw k)
+        dir (or (vw k)
                 (-> env :deprocess :refs-default)
                 :hide)
         id (:db/id rf)]
@@ -554,9 +554,7 @@
 
 (defn deprocess-fm
   ([fm env exclude]
-     (if-let [id (:db/id fm)]
-       (deprocess-fm {:db/id id} fm env (conj exclude id))
-       (deprocess-fm {} fm env exclude)))
+     (deprocess-fm {} fm env exclude))
   ([output fm env exclude]
      (if-let [[k v] (first fm)]
        (if-let [[meta] (-> env :schema :fgeni k)]
@@ -572,7 +570,7 @@
   ([output fm env exclude vw]
      (if-let [[k dir] (first vw)]
        (if-let [[meta] (-> env :schema :fgeni k)
-                v (or (fm k) (fm (-> meta :ref :key)))]
+                v (or (get fm k) (get fm (-> meta :ref :key)))]
          (-> output
              (deprocess-assoc k v meta env exclude)
              (recur fm env exclude (next vw)))
@@ -583,11 +581,14 @@
   ([fm env]
      (deprocess fm env #{}))
   ([fm env exclude]
-     (let [env (deprocess-init-env env)
-           fm-out (deprocess-fm fm env exclude)
-           fm-ks  (keys fm-out)
-           vw     (apply dissoc (or (-> env :view) {}) fm-ks)
-           vw-out (deprocess-view fm env exclude vw)]
+     (let [id (:db/id fm)
+           output  (if id {:db/id id} {})
+           exclude (if id (conj exclude id) exclude)
+           env     (deprocess-init-env env)
+           fm-out  (deprocess-fm output fm env exclude)
+           fm-ks   (keys fm-out)
+           vw      (apply dissoc (or (-> env :view) {}) fm-ks)
+           vw-out  (deprocess-view fm env exclude vw)]
        (treeify-keys (merge vw-out fm-out)))))
 
 
@@ -649,155 +650,3 @@
        (filter (fn [[k v]] (= v :show)))
        (map first)
        (set)))
-
-
-
-
-
-
-
-
-
-(comment
-  (declare deprocess
-           deprocess-ref
-           deprocess-view
-           deprocess-view-data deprocess-view-extras
-           deprocess-view-refs deprocess-view-revs)
-
-  (defn deprocess
-    ([fm env]
-       (let [fgeni (-> env :schema :fgeni)
-             nst   (list-keyword-ns fm)
-             cfg (or (-> env :deprocess) {})
-             vw (view fgeni nst cfg)]
-         (deprocess fm vw env)))
-    ([fm vw env]
-       (deprocess fm vw env #{}))
-    ([fm vw env exclude]
-       (if-let [id (:db/id fm)]
-         (deprocess-view fm vw env (conj exclude id) {:db {:id id}})
-         (deprocess-view fm vw env exclude {}))))
-
-  (defn deprocess-ref [rf k dr vw env exclude]
-    (cond (= dr :show)
-          (let [[meta] (-> env :schema :fgeni k)
-                nks (keyword-split (-> meta :ref :ns))
-                nm  (deprocess rf vw env exclude)
-                cm  (get-in nm nks)
-                xm  (dissoc-in nm nks)]
-            (if (empty? xm) (or cm {})
-                (merge cm {:+ xm})))
-          :else
-          (if-let [id (:db/id rf)]
-            {:+ {:db {:id id}}}
-            {})))
-
-  (defn deprocess-view [fm vw env exclude output]
-    (let [{:keys [data refs revs]} vw
-          d-out (deprocess-view-data fm data)
-          rf-out (deprocess-view-refs fm refs vw env exclude)
-          rv-out (deprocess-view-revs fm revs vw env exclude)
-          extras (if-let [? (-> env :deprocess :extras)
-                          fmks (keys fm)
-                          eks (clojure.set/difference fmks data refs revs)]
-                   (deprocess-view-extras fm eks env exclude))]
-      (treeify-keys (merge output d-out rf-out rv-out))))
-
-  (defn deprocess-view-data [fm data-vw]
-    (let [ks (->> data-vw
-                  (filter (fn [[k v]] (= v :show)))
-                  (map first))]
-      (select-keys fm ks)))
-
-  (defn deprocess-view-refs
-    ([fm refs-vw vw env exclude]
-       (deprocess-view-refs fm refs-vw vw env exclude {}))
-    ([fm refs-vw vw env exclude output]
-       (if-let [[k dr] (first refs-vw)]
-         (if-let [?      (not= dr :hide)
-                  [meta] (-> env :schema :fgeni k)
-                  rf     (fm (-> meta :ref :key))
-                  rout   (deprocess-ref rf k dr vw env exclude)]
-           (deprocess-view-refs fm (next refs-vw) vw env exclude
-                                (assoc output k rout))
-           (deprocess-view-refs fm (next refs-vw) vw env exclude output))
-         output)))
-
-  (defn deprocess-view-extras
-    ([fm ks env exclude]
-       (deprocess-view-extras fm ks env exclude {}))
-    ([fm ks env exclude output]
-       (if-let [k (first ks)]
-         (if-let [[meta] (-> env :schema :fgeni k)]
-           (cond (= :ref (:type meta)))
-           (deprocess-view-extras fm (next ks) env exclude output))
-         output)))
-
-  ;; This is the overall method
-
-
-  (defn emit-path [view]
-    (->> (filter (fn [[k v]]
-                   (or (= v :ids) (= v :show)))
-                 (merge (:refs view) (:revs view)))
-         (group-by keyword-nsroot))))
-
-
-(comment
-  (declare deprocess
-           deprocess-assoc deprocess-ref)
-  (defn deprocess
-    ([fm env]
-       (let [view (-> (view (-> env :schema :fgeni)
-                            (list-keyword-ns fm)))]
-         (deprocess fm view env)))
-    ([fm view env] (deprocess fm (flatten-keys-in view) env #{}))
-    ([fm view env exclude]
-       (let [ks   (set (keys view))]
-         (if-let [id (:db/id fm)]
-           (deprocess fm  view env (conj exclude id) ks {:db {:id id}})
-           (deprocess fm view env exclude ks {}))))
-    ([fm view env exclude ks output]
-       (if-let [k (first ks)]
-         (if-let [[meta]  (-> env :schema :fgeni k)
-                  v       (or (get fm k) (get fm (-> meta :ref :key)))
-                  ps      (view k)
-                  add?    (or (= ps :show) (= ps :id))]
-           (->> output
-                (deprocess-assoc k v view env exclude)
-                (deprocess fm view env exclude (next ks)))
-           (deprocess fm view env exclude (next ks) output))
-         output)))
-
-  (defn deprocess-assoc [k v view env exclude output]
-    (if-let [[meta]  (-> env :schema :fgeni k)
-             kns     (keyword-split k)]
-      (cond (not= (:type meta) :ref)
-            (assoc-in output kns v)
-
-            (hash-set? v)
-            (assoc-in output kns
-                      (set (map #(deprocess-ref k % view env exclude) v)))
-
-            :else
-            (assoc-in output kns (deprocess-ref k v view env exclude)))
-      output))
-
-  (defn deprocess-ref [k ref view env exclude]
-    (let [id      (:db/id ref)
-          [meta]  (-> env :schema :fgeni k)
-          ps      (get view k)]
-      (cond (and id (or (= :id ps) (exclude id)))
-            {:+ {:db {:id id}}}
-
-            (= :show ps)
-            (let [nks (keyword-split (-> meta :ref :ns))
-                  nm  (deprocess ref view env exclude)
-                  cm  (get-in nm nks)
-                  xm  (dissoc-in nm nks)]
-              (if (empty? xm) (or cm {})
-                  (merge cm {:+ xm})))
-
-            :else {})))
-  )

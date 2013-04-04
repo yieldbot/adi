@@ -27,3 +27,26 @@
 (defn exclude-ids [ms]
   (fn [val]
     (= (map #(dissoc % :db/id) val) ms)))
+
+(defn nest-in-fn [sym c]
+  (cond (vector? c)
+        (list sym (mapv #(nest-in-fn sym %) c))
+
+        (hash-map? c)
+        (->> c
+             (map (fn [[k v]]
+                    [k (nest-in-fn sym v)]))
+             (into {})
+             (list sym))
+        (hash-set? c)
+        (list sym (set (map #(nest-in-fn sym %) c)))
+
+        :else c))
+
+(defmacro just-in [c & args]
+  (concat (nest-in-fn 'just c)
+          args))
+
+(defmacro contains-in [c & args]
+  (concat (nest-in-fn 'contains c)
+          args))

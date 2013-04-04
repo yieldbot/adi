@@ -120,7 +120,7 @@
 
 (fact "deprocess-fm"
   (deprocess-fm {:db/id 1} d1-env #{})
-  => {:db/id 1}
+  => {}
 
   (deprocess-fm {} {:db/id 1} d1-env #{})
   => {}
@@ -136,17 +136,17 @@
   (deprocess-fm {:db/id 0 :node/parent {:db/id 1 :node/value "hello"}}
                 (assoc d1-env :view {:node/value :show
                                      :node/parent :show}) #{})
-  => {:node/parent {:+ {:db {:id 1}}, :value "hello"}, :db/id 0}
+  => {:node/parent {:+ {:db {:id 1}}, :value "hello"}}
 
   (deprocess-fm {:db/id 0 :node/parent {:db/id 1 :node/value "hello"}}
                 (assoc d1-env :view {:node/value :show
                                      :node/parent :show}) #{1})
-  => {:node/parent {:+ {:db {:id 1}}}, :db/id 0}
+  => {:node/parent {:+ {:db {:id 1}}}}
 
   (deprocess-fm {:db/id 0 :node/parent {:db/id 1 :node/value "hello"}}
                 (assoc d1-env :view {:node/value :show
                                      :node/parent :show}) #{0 1})
-  => {:node/parent {:+ {:db {:id 1}}}, :db/id 0})
+  => {:node/parent {:+ {:db {:id 1}}}})
 
 (fact "deprocess-view"
   (deprocess-view {:node/value "hello"}

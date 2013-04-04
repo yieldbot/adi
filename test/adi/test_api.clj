@@ -33,7 +33,7 @@
                  {:account {:cars 2 :name "dave"}}]
                 *conn* s0-env)))
 
-#_(fact "select"
+(fact "select"
   (aa/select {:account/name "chris"} (d/db *conn*) s0-env)
   => (just [(just {:account {:cars 0, :name "chris"}, :db hash-map?})
             (just {:account {:cars 2, :name "chris"}, :db hash-map?})]
@@ -51,7 +51,14 @@
   (aa/select {:account {:cars (? < 2)
                         :name #{(?not "bob") (?not "dave")}}} (d/db *conn*) s0-env)
   => (just [(just {:account {:name "adam", :cars 1}, :db hash-map?})
-            (just {:account {:name "chris", :cars 0}, :db hash-map?})]))
+            (just {:account {:name "chris", :cars 0}, :db hash-map?})])
+
+  (aa/select {:account {:cars (? < 2)
+                        :name #{(?not "bob") (?not "dave")}}}
+             (d/db *conn*)
+             (assoc s0-env :view {:account/name :hide}))
+  => (just [(just {:account {:cars 1}, :db hash-map?})
+            (just {:account {:cars 0}, :db hash-map?})]))
 
 (fact "update"
   (aa/update- {:account/name "chris"}
@@ -78,36 +85,20 @@
          (just [:db.fn/retractEntity long?])]))
 
 
-(fact "emit-path"
-  {:node/parent :id
-   :node/children :id
-   :node/value :show})
+(def d1-env
+  (process-init-env {:node {:value  [{:default "undefined"
+                                      :fulltext true}]
+                            :parent [{:type :ref
+                                      :ref  {:ns :node
+                                             :rval :children}}]}
+                     :leaf {:value [{:default "leafy"}]
+                          :node  [{:type :ref
+                                   :ref {:ns :node
+                                         :rval :leaves}}]}}))
 
-(def s6-sgeni {:node {:value  [{:default "undefined"
-                                :fulltext true}]
-                      :parent [{:type :ref
-                                :ref  {:ns :node
-                                       :rval :children}}]}})
-(def s6-env (process-init-env s6-sgeni {}))
+(def d1-fgeni (-> d1-env :schema :fgeni))
 
-(def s6-view
-  {:data {:node/value :show}
-   :refs {:node/parent :show}})
-
-(def s6-path
-  {:node #{:node/parent}})
-
-#_(fact "emit-view"
-  (view (-> s6-env :schema :fgeni))
-  => {:data {:node/value :show}
-      :refs {:node/parent :ids}
-      :revs {:node/children :hide}})
-
-#_(fact "emit-path"
-  (emit-path s6-view)
-  => {:node #{:node/parent}})
-
-(aa/install-schema (-> s6-env :schema :fgeni) *conn*)
+(aa/install-schema d1-fgeni *conn*)
 (aa/insert! {:node {:value "root"
                     :children #{{:value "l1A"
                                  :children #{{:value "l1A l2A"}
@@ -124,29 +115,56 @@
                                              {:value "l1C l2B"}
                                              {:value "l1C l2C"}
                                              {:value "l1C l2D"}}}}}}
-            *conn* s6-env)
+            *conn* d1-env)
 
-#_(fact "select"
-  (aa/select {:node/value (?fulltext "l2A")} (d/db *conn*) s6-env)
-  => (just [(just {:node (just {:value "l1A l2A", :parent anything}) :db anything})
-            (just {:node (just {:value "l1B l2A", :parent anything}) :db anything})
-            (just {:node (just {:value "l1C l2A", :parent anything}) :db anything})]
+
+
+(fact "select"
+  (d/q '[:find ?v :where [?e :node/value ?v]] (d/db *conn*))
+  => #{["root"]
+       ["l1A"] ["l1A l2A"] ["l1A l2B"] ["l1A l2C"] ["l1A l2D"]
+       ["l1B"] ["l1B l2A"] ["l1B l2B"] ["l1B l2C"] ["l1B l2D"]
+       ["l1C"] ["l1C l2A"] ["l1C l2B"] ["l1C l2C"] ["l1C l2D"]}
+
+  (aa/select {:node/value (?fulltext "l2A")} (d/db *conn*) d1-env)
+  => (just-in [{:node {:value "l1A l2A", :parent anything} :db anything}
+               {:node {:value "l1B l2A", :parent anything} :db anything}
+               {:node {:value "l1C l2A", :parent anything} :db anything}]
+              :in-any-order)
+
+  (aa/select {:node/value (?fulltext "l2A")} (d/db *conn*)
+             (assoc d1-env :view {:node/parent :hide}))
+  => (just-in [{:node {:value "l1A l2A"} :db anything}
+               {:node {:value "l1B l2A"} :db anything}
+               {:node {:value "l1C l2A"} :db anything}]
+              :in-any-order)
+
+  (aa/select {:node/value "l1A"} (d/db *conn*)
+             (assoc d1-env :view {:node/parent :hide
+                                  :node/children :show}))
+  => (just-in
+      [{:db anything
+        :node {:value "l1A"
+               :children [{:value "l1A l2A" :+ anything}
+                          {:value "l1A l2B" :+ anything}
+                          {:value "l1A l2C" :+ anything}
+                          {:value "l1A l2D" :+ anything}]}}])
+
+
+  (aa/select {:node/value (?fulltext "l1C")} (d/db *conn*) d1-env)
+  => (just-in [{:node {:value "l1C", :parent anything}, :db anything}
+               {:node {:value "l1C l2A", :parent anything} :db anything}
+               {:node {:value "l1C l2B", :parent anything} :db anything}
+               {:node {:value "l1C l2C", :parent anything} :db anything}
+               {:node {:value "l1C l2D", :parent anything} :db anything}]
            :in-any-order)
 
-  (aa/select {:node/value (?fulltext "l1C")} (d/db *conn*) s6-env)
-  => (just [(just {:node (just {:value "l1C", :parent anything}), :db anything})
-            (just {:node (just {:value "l1C l2A", :parent anything}) :db anything})
-            (just {:node (just {:value "l1C l2B", :parent anything}), :db anything})
-            (just {:node (just {:value "l1C l2C", :parent anything}), :db anything})
-            (just {:node (just {:value "l1C l2D", :parent anything}), :db anything})]
-           :in-any-order)
+  (aa/select {:node {:children {:value "l1C"}}} (d/db *conn*) d1-env)
+  => (just-in [{:node {:value "root"}, :db anything}])
 
-  (aa/select {:node {:children {:value "l1C"}}} (d/db *conn*) s6-env)
-  => (just [(contains {:node {:value "root"}, :db anything})])
-
-  (aa/select {:node {:parent {:value "l1C"}}} (d/db *conn*) s6-env)
-  => (just [(just {:node (just {:value "l1C l2A", :parent anything}) :db anything})
-            (just {:node (just {:value "l1C l2B", :parent anything}), :db anything})
-            (just {:node (just {:value "l1C l2C", :parent anything}), :db anything})
-            (just {:node (just {:value "l1C l2D", :parent anything}), :db anything})]
+  (aa/select {:node {:parent {:value "l1C"}}} (d/db *conn*) d1-env)
+  => (just-in [{:node {:value "l1C l2A", :parent anything} :db anything}
+               {:node {:value "l1C l2B", :parent anything} :db anything}
+               {:node {:value "l1C l2C", :parent anything} :db anything}
+               {:node {:value "l1C l2D", :parent anything} :db anything}]
            :in-any-order))

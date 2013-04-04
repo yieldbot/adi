@@ -87,8 +87,12 @@
   (d/transact conn (delete- val (d/db conn env))))
 
 (defn select [val db env]
-  (map #(ad/deprocess % env)
-       (select-entities val db env)))
+  (let [menv (if (-> env :deprocess)
+               env (assoc env :deprocess
+                          {:data-default :show
+                           :refs-default :ids}))]
+    (map #(ad/deprocess % menv)
+         (select-entities val db env))))
 
 (defn select-first [val db env]  (first (select val db env)))
 
