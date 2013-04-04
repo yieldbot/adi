@@ -486,28 +486,62 @@
     (query chdata menv)))
 
 (declare deprocess
-         deprocess-loop
+         deprocess-fm deprocess-view
          deprocess-ref
          deprocess-assoc deprocess-assoc-data deprocess-assoc-ref)
 
-(defn deprocess
-  ([fm env]
-     (deprocess fm env #{}))
-  ([fm env exclude]
-     (if-let [id (:db/id fm)]
-       (deprocess-loop {:db/id id} fm env (conj exclude id))
-       (deprocess-loop {} fm env exclude))))
+(defn deprocess-init-env [env]
+  (if-let [vw (-> env :view)
+           ?  (hash-set? vw)
+           vw (zipmap vw (repeat :show))]
+    (assoc env :view vw)
+    env))
 
-(defn deprocess-loop
-  [ output fm env exclude]
-  (if-let [[k v] (first fm)]
-    (if-let [lk (-> env :schema :lu k)
-             [meta] (-> env :schema :fgeni k)]
-      (-> output
-           (deprocess-assoc k v meta env exclude)
-           (recur (next fm) env exclude))
-      (recur (next fm) env exclude output))
-    output))
+(defn deprocess-assoc-data
+  [output k v env]
+  (let [vw  (or (-> env :view) {})
+        dir (or (vw k)
+                (-> env :deprocess :data-default)
+                :hide)]
+    (cond (= dir :show)
+          (assoc output k v)
+
+          :else output)))
+
+(defn deprocess-ref
+  [k rf meta env exclude]
+  (let [vw  (or (-> env :view) {})
+        dir (or (deprocess-view-key vw k)
+                (-> env :deprocess :refs-default)
+                :hide)
+        id (:db/id rf)]
+    (cond (= dir :hide) nil
+
+          (exclude id) {:+ {:db {:id id}}}
+
+          (= dir :ids) (if id {:+ {:db {:id id}}})
+
+          (= dir :show)
+          (let [rns (keyword-split (-> meta :ref :ns))
+                nm  (deprocess rf env exclude)
+                cm  (get-in nm rns)
+                xm  (dissoc-in nm rns)]
+            (if (empty? xm) (or cm {})
+                (merge cm {:+ xm}))))))
+
+(defn deprocess-assoc-ref
+  [output k v meta env exclude]
+  (let [c   (or (:cardinality meta) :one)]
+    (cond (= c :one)
+          (if-let [rout (deprocess-ref k v meta env exclude)]
+            (assoc output k rout)
+            output)
+
+          (= c :many)
+          (assoc output k
+                    (-> (map #(deprocess-ref k % meta env exclude) v)
+                        (set)
+                        (disj nil))))))
 
 (defn deprocess-assoc
   ([output k v meta env exclude]
@@ -518,140 +552,106 @@
              :else
              (deprocess-assoc-ref output k v meta env exclude)))))
 
-(defn deprocess-view-key
-  [vw k]
-  (cond (hash-set? vw) (if (vw k) :show)
-        (hash-map? vw) (vw k)))
+(defn deprocess-fm
+  ([fm env exclude]
+     (if-let [id (:db/id fm)]
+       (deprocess-fm {:db/id id} fm env (conj exclude id))
+       (deprocess-fm {} fm env exclude)))
+  ([output fm env exclude]
+     (if-let [[k v] (first fm)]
+       (if-let [[meta] (-> env :schema :fgeni k)]
+         (-> output
+             (deprocess-assoc k v meta env exclude)
+             (recur (next fm) env exclude))
+         (recur output (next fm) env exclude))
+       output)))
 
-(defn deprocess-assoc-data
-  [output k v env]
-  (let [vw  (or (-> env :view) {})
-        dir (or (deprocess-view-key vw k)
-                (-> env :deprocess :data-default)
-                :hide)]
-    (cond (= dir :show)
-          (assoc output k v)
+(defn deprocess-view
+  ([fm env exclude vw]
+     (deprocess-view {} fm env exclude vw))
+  ([output fm env exclude vw]
+     (if-let [[k dir] (first vw)]
+       (if-let [[meta] (-> env :schema :fgeni k)
+                v (or (fm k) (fm (-> meta :ref :key)))]
+         (-> output
+             (deprocess-assoc k v meta env exclude)
+             (recur fm env exclude (next vw)))
+         (recur output fm env exclude (next vw)))
+       output)))
 
-          :else output)))
-
-(defn deprocess-assoc-ref
-  [output k v meta env exclude]
-  (let [c   (or (:cardinality meta) :one)
-        kns (keyword-split k)]
-    (cond (= c :one)
-          (if-let [rout (deprocess-ref k v meta env exclude)]
-            (assoc-in output kns rout)
-            output)
-
-          (= c :many)
-          (assoc-in output kns
-                    (-> (map #(deprocess-ref k % meta env exclude) v)
-                        (set)
-                        (disj nil))))))
-
-(defn deprocess-ref
-  [k rf meta env exclude]
-  (let [vw  (or (-> env :view) {})
-        dir (or (deprocess-view-key vw k)
-                (-> env :deprocess :refs-default)
-                :hide)]
-    (cond (= dir :show)
-          (let [rns (keyword-split (-> meta :ref :ns))
-                nm  (deprocess rf env exclude)
-                _ (println nm rf)
-                cm  (get-in nm rns)
-                xm  (dissoc-in nm rns)]
-            (if (empty? xm) (or cm {})
-                (merge cm {:+ xm})))
-
-          (= dir :ids)
-          (if-let [id (:db/id rf)]
-            {:+ {:db {:id id}}}))))
+(defn deprocess
+  ([fm env]
+     (deprocess fm env #{}))
+  ([fm env exclude]
+     (let [env (deprocess-init-env env)
+           fm-out (deprocess-fm fm env exclude)
+           fm-ks  (keys fm-out)
+           vw     (apply dissoc (or (-> env :view) {}) fm-ks)
+           vw-out (deprocess-view fm env exclude vw)]
+       (treeify-keys (merge vw-out fm-out)))))
 
 
 
+(declare view)
+
+(defn view-nval
+  [fgeni k cfg]
+  (if-let [[meta] (fgeni k)
+           t      (:type meta)]
+    (cond (not= :ref t)
+          (or (cfg :data) :show)
+
+          (= :forward (-> meta :ref :type))
+          (or (cfg :refs) :ids)
+
+          (= :reverse (-> meta :ref :type))
+          (or (cfg :revs) :hide))))
+
+(defn view-loop
+  ([fgeni ks cfg]
+     (view-loop fgeni ks cfg {}))
+  ([fgeni ks cfg output]
+     (if-let [k (first ks)]
+       (if-let [nval (view-nval fgeni k cfg)]
+         (recur fgeni (next ks) cfg (assoc output k nval))
+         (recur fgeni (next ks) cfg output))
+       output)))
+
+(defn view-keyword [fgeni ns cfg]
+  (let [nsks (list-ns-keys fgeni ns)
+        ks   (keys (select-keys fgeni nsks))]
+    (view-loop fgeni ks cfg)))
+
+(defn view-hashset [fgeni st cfg]
+  (apply merge-in (map #(view-keyword fgeni % cfg) st)))
+
+(defn view-hashmap [fgeni m cfg]
+  (let [fks (keys fgeni)
+        ks  (set (keys (treeify-keys m)))
+        st  (view-hashset fgeni ks cfg)]
+    (merge st (select-keys (flatten-keys-in m) fks))))
+
+(defn view
+  ([fgeni] (view fgeni (list-keyword-ns fgeni)))
+  ([fgeni val] (view fgeni val {}))
+  ([fgeni val cfg]
+     (cond (keyword? val)
+           (view-keyword fgeni val cfg)
+
+           (hash-set? val)
+           (view-hashset fgeni val cfg)
+
+           (hash-map? val)
+           (view-hashmap fgeni val cfg))))
+
+(defn view-make-set [view]
+  (->> view
+       (filter (fn [[k v]] (= v :show)))
+       (map first)
+       (set)))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(comment
-  (declare view
-           view-keyword view-hashmap)
-
-  (defn view-keyword [fgeni k cfg]
-    (let [ks (-> (list-ns-keys fgeni k))
-          km (select-keys fgeni ks)
-          dks  (as/find-keys km :type (fn [t] (not= :ref t)))
-          rfks (as/find-keys km (constantly true)
-                             :type :ref
-                             :ref (fn [m] (= :forward (:type m))))
-          rvks (as/find-keys km (constantly true)
-                             :type :ref
-                             :ref (fn [m] (= :reverse (:type m))))]
-      (-> {:data (zipmap dks (repeat (or (-> cfg :data) :show)))
-           :refs (zipmap rfks (repeat (or (-> cfg :refs) :ids)))
-           :revs (zipmap rvks (repeat (or (-> cfg :revs) :hide)))})))
-
-  (defn view-hashset [fgeni st cfg]
-    (apply merge-in (map #(view-keyword fgeni % cfg) st)))
-
-  (defn view-hashmap
-    ([fgeni fm] (view-hashmap fgeni fm {}))
-    ([fgeni fm output]
-       (if-let [[k v] (first fm)]
-         (if-let [[meta] (-> fgeni k)
-                  t (-> meta :type)]
-           (cond  (not= t :ref)
-                  (view-hashmap fgeni (next fm)
-                                (assoc-in output [:data k] v))
-                  (= :forward (-> meta :ref :type))
-                  (view-hashmap fgeni (next fm)
-                                (assoc-in output [:refs k] v))
-
-                  (= :reverse (-> meta :ref :type))
-                  (view-hashmap fgeni (next fm)
-                                (assoc-in output [:revs k] v)))
-           (view-hashmap fgeni (next fm) output))
-         output)))
-
-  (defn view
-    ([fgeni] (view fgeni (list-keyword-ns fgeni)))
-    ([fgeni val] (view fgeni val {}))
-    ([fgeni val cfg]
-       (cond (keyword? val)
-             (view-keyword fgeni val cfg)
-
-             (hash-set? val)
-             (view-hashset fgeni val cfg)
-
-             (hash-map? val)
-             (let [ks (set (keys (treeify-keys val)))
-                   vhs (view-hashset fgeni ks cfg)
-                   vhm (view-hashmap fgeni (flatten-keys-in val) cfg)]
-               (merge-in vhs vhm)))))
-
-  (defn links [view]
-    (->> (filter (fn [[k v]]
-                   (or (= v :ids) (= v :show)))
-                 (merge (:refs view) (:revs view)))
-         (group-by (fn [[k v]] (keyword-nsroot k)))
-         (map (fn [[k vs]] [k (into {} vs)]))
-         (into {}))))
 
 
 
