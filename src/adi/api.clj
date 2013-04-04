@@ -96,27 +96,53 @@
 
 (defn select-first [val db env]  (first (select val db env)))
 
-(declare all-linked-ids)
+(declare linked-ids)
 
-(defn find-linked-nss [fgeni view]
-  (set (filter (fn [k] (= :ref (-> fgeni k :type)))
-               (keys (flatten-keys-in view)))))
+(defn linked-nss [fgeni view]
+  (set (filter (fn [k] (= :ref (-> fgeni k first :type)))
+               (ad/view-make-set view))))
 
-(defn all-linked-ids-key
+(defn linked-ids-ref
+  [rf vnss env exclude]
+  (let [id (:db/id rf)]
+    (if (not (exclude id))
+      (linked-ids rf vnss env (conj exclude id))
+      [])))
+
+(defn linked-ids-key
   [k ent vnss env exclude]
-  (let [v (k ent)
-        id (:db/id v)]
-    (if (and (ref? v)
-             (not (exclude id)))
-      (all-linked-ids v vnss env (conj exclude id)))))
+  (let [[meta] (-> env :schema :fgeni k)
+        res ((-> meta :ref :key) ent)]
+    (cond (ref? res)
+          (linked-ids-ref res vnss env exclude)
+          (vector? res)
+          (mapcat #(linked-ids-ref % vnss env exclude) res))))
 
-(defn all-linked-ids
+(defn linked-ids
+  ([ent env]
+     (let [vw (or (-> env :view)
+                  (ad/view-cfg (-> env :schema :fgeni)
+                               {:refs :show}))]
+       (linked-ids ent vw env)))
   ([ent view env]
-     (let [vnss (find-linked-nss (-> env :schema :fgeni)
-                                 view)]
-       (set (all-linked-ids ent vnss env #{}))))
+     (let [vnss (linked-nss (-> env :schema :fgeni) view)]
+       (set (linked-ids ent vnss env #{}))))
   ([ent vnss env exclude]
      (concat [(:db/id ent)]
              (->> vnss
-                  (mapcat #(all-linked-ids-key % ent vnss env exclude))
+                  (mapcat #(linked-ids-key % ent vnss env exclude))
                   (filter identity)))))
+
+(defn linked-entities
+  [val db env]
+  (let [ents (select-entities val db env)]
+    (-> (mapcat #(linked-ids % env) ents)
+        (set)
+        (select-entities db env))))
+
+(defn linked [val db env]
+  [val db env]
+  (let [ents (select-entities val db env)]
+    (-> (mapcat #(linked-ids % env) ents)
+        (set)
+        (select db (dissoc env :view :deprocess)))))

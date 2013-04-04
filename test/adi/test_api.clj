@@ -35,54 +35,54 @@
 
 (fact "select"
   (aa/select {:account/name "chris"} (d/db *conn*) s0-env)
-  => (just [(just {:account {:cars 0, :name "chris"}, :db hash-map?})
-            (just {:account {:cars 2, :name "chris"}, :db hash-map?})]
-           :in-any-order)
+  => (just-in [{:account {:cars 0, :name "chris"}, :db hash-map?}
+               {:account {:cars 2, :name "chris"}, :db hash-map?}]
+              :in-any-order)
 
   (aa/select {:account {:cars (? < 2)}} (d/db *conn*) s0-env)
-  => (just [(just {:account {:name "adam", :cars 1}, :db hash-map?})
-            (just {:account {:name "bob", :cars 0}, :db hash-map?})
-            (just {:account {:name "bob", :cars 1}, :db hash-map?})
-            (just {:account {:name "chris", :cars 0}, :db hash-map?})
-            (just {:account {:name "dave", :cars 1}, :db hash-map?})
-            (just {:account {:name "dave", :cars 1}, :db hash-map?})]
-           :in-any-order)
+  => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
+               {:account {:name "bob", :cars 0}, :db hash-map?}
+               {:account {:name "bob", :cars 1}, :db hash-map?}
+               {:account {:name "chris", :cars 0}, :db hash-map?}
+               {:account {:name "dave", :cars 1}, :db hash-map?}
+               {:account {:name "dave", :cars 1}, :db hash-map?}]
+              :in-any-order)
 
   (aa/select {:account {:cars (? < 2)
                         :name #{(?not "bob") (?not "dave")}}} (d/db *conn*) s0-env)
-  => (just [(just {:account {:name "adam", :cars 1}, :db hash-map?})
-            (just {:account {:name "chris", :cars 0}, :db hash-map?})])
+  => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
+               {:account {:name "chris", :cars 0}, :db hash-map?}])
 
   (aa/select {:account {:cars (? < 2)
                         :name #{(?not "bob") (?not "dave")}}}
              (d/db *conn*)
              (assoc s0-env :view {:account/name :hide}))
-  => (just [(just {:account {:cars 1}, :db hash-map?})
-            (just {:account {:cars 0}, :db hash-map?})]))
+  => (just-in [{:account {:cars 1}, :db hash-map?}
+               {:account {:cars 0}, :db hash-map?}]))
 
 (fact "update"
   (aa/update- {:account/name "chris"}
               {:account/cars 1}
               (d/db *conn*)
               s0-env)
-  => (just [(just {:db/id long?, :account/cars 1})
-            (just {:db/id long?, :account/cars 1})]))
+  => (just-in [{:db/id long?, :account/cars 1}
+            {:db/id long?, :account/cars 1}]))
 
 (fact "retract"
   (aa/retract- {:account/name "chris"}
                [:account/cars]
                (d/db *conn*)
                s0-env)
-  => (just [(just [:db/retract long? :account/cars 0])
-            (just [:db/retract long? :account/cars 2])]))
+  => (just-in [[:db/retract long? :account/cars 0]
+            [:db/retract long? :account/cars 2]]))
 
 
 (fact "delete"
   (aa/delete- {:account/name "chris"}
               (d/db *conn*)
               s0-env)
-  (just [(just [:db.fn/retractEntity long?])
-         (just [:db.fn/retractEntity long?])]))
+  (just-in [[:db.fn/retractEntity long?]
+         [:db.fn/retractEntity long?]]))
 
 
 (def d1-env
@@ -116,8 +116,6 @@
                                              {:value "l1C l2C"}
                                              {:value "l1C l2D"}}}}}}
             *conn* d1-env)
-
-
 
 (fact "select"
   (d/q '[:find ?v :where [?e :node/value ?v]] (d/db *conn*))
@@ -168,3 +166,86 @@
                {:node {:value "l1C l2C", :parent anything} :db anything}
                {:node {:value "l1C l2D", :parent anything} :db anything}]
            :in-any-order))
+
+(d1-fgeni :node/parent)
+
+(def l1a-ent (aa/select-first-entity {:node/value "l1A"} (d/db *conn*) d1-env))
+
+(fact
+  (aa/linked-nss d1-fgeni {:node/parent :ids})
+  => #{}
+
+  (aa/linked-nss d1-fgeni {:node/parent :show})
+  => #{:node/parent}
+
+  (aa/linked-nss d1-fgeni {:node/children :show
+                           :node/parent :ids})
+  => #{:node/children}
+
+  (aa/linked-ids-key :node/parent l1a-ent
+                         #{:node/parent} d1-env #{})
+  => (one-of long?)
+
+  (aa/linked-ids l1a-ent {:node/parent :show} d1-env)
+  => (two-of long?)
+
+
+  (aa/linked-ids-key :node/children l1a-ent
+                         #{:node/children} d1-env #{})
+  => (four-of long?)
+
+  (aa/linked-ids l1a-ent {:node/children :show} d1-env)
+  => (five-of long?)
+
+  (aa/linked-ids l1a-ent {:node/parent :show
+                              :node/children :show} d1-env)
+  => (n-of long? 16)
+
+  (aa/linked-ids
+   (aa/select-first-entity {:node/value "l1A"} (d/db *conn*)
+                           d1-env)
+   {:node/children :show}
+   d1-env))
+
+(fact "linked-entities"
+  (view d1-fgeni)
+
+  (aa/linked-entities {:node/value "l1A"} (d/db *conn*) d1-env)
+  => (two-of ref?)
+
+  (aa/linked-entities {:node/value "l1A"} (d/db *conn*)
+                      (assoc d1-env :view {:node/children :show}))
+  => (five-of ref?)
+
+  (aa/linked {:node/value "l1A"} (d/db *conn*) d1-env)
+  => (contains-in [{:node {:value "root"}}
+                   {:node {:value "l1A"}}]
+                  :in-any-order)
+
+  (aa/linked {:node/value "l1A"} (d/db *conn*)
+             (assoc d1-env :view {:node/children :show}))
+  => (contains-in [{:node {:value "l1A l2B"}}
+                   {:node {:value "l1A l2C"}}
+                   {:node {:value "l1A l2D"}}
+                   {:node {:value "l1A l2A"}}
+                   {:node {:value "l1A"}}])
+
+  (aa/linked {:node/value "l1A"} (d/db *conn*)
+             (assoc d1-env :view {:node/children :show :node/parent :show}))
+  => (contains-in [{:node {:value "root"}}
+                   {:node {:value "l1C l2D"}}
+                   {:node {:value "l1C l2A"}}
+                   {:node {:value "l1C l2B"}}
+                   {:node {:value "l1C l2C"}}
+                   {:node {:value "l1C"}}
+                   {:node {:value "l1A l2B"}}
+                   {:node {:value "l1A l2C"}}
+                   {:node {:value "l1A l2D"}}
+                   {:node {:value "l1A l2A"}}
+                   {:node {:value "l1A"}}
+                   {:node {:value "l1B l2C"}}
+                   {:node {:value "l1B l2A"}}
+                   {:node {:value "l1B l2D"}}
+                   {:node {:value "l1B l2B"}}
+                   {:node {:value "l1B"}}]
+                  :in-any-order))

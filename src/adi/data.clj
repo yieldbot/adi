@@ -645,6 +645,9 @@
            (hash-map? val)
            (view-hashmap fgeni val cfg))))
 
+(defn view-cfg
+  [fgeni cfg] (view fgeni (list-keyword-ns fgeni) cfg))
+
 (defn view-make-set [view]
   (->> view
        (filter (fn [[k v]] (= v :show)))

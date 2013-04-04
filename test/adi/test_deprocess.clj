@@ -331,7 +331,11 @@
       :leaf/value :show}
 
   (view d1-fgeni {:leaf/l :show})
-  => {:leaf/node :ids, :leaf/value :show})
+  => {:leaf/node :ids, :leaf/value :show}
+
+  (view d1-fgeni {:leaf {}} {:refs :show})
+  => {:leaf/node :show, :leaf/value :show}
+  )
 
 (fact "view-make-set"
   (view-make-set (view d1-fgeni {:leaf/node :show :node/parent :show}))
