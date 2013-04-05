@@ -228,7 +228,8 @@
                    {:node {:value "l1A l2C"}}
                    {:node {:value "l1A l2D"}}
                    {:node {:value "l1A l2A"}}
-                   {:node {:value "l1A"}}])
+                   {:node {:value "l1A"}}]
+				  :in-any-order)
 
   (aa/linked {:node/value "l1A"} (d/db *conn*)
              (assoc d1-env :view {:node/children :show :node/parent :show}))
@@ -248,4 +249,11 @@
                    {:node {:value "l1B l2D"}}
                    {:node {:value "l1B l2B"}}
                    {:node {:value "l1B"}}]
-                  :in-any-order))
+                  :in-any-order)
+  (aa/linked {:node/value "l1A l2A"} (d/db *conn*)
+	         (assoc d1-env :view {:node/parent :show}))
+  => (just [(contains-in {:node {:value "root"}})
+            (contains-in {:node {:value "l1A"}})
+			(contains-in {:node {:value "l1A l2A"}})]
+			:in-any-order)
+  )
