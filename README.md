@@ -2,7 +2,7 @@
 
 `adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. 
 
-The concept is simple. `adi` is a Document Database onto Grafted on Datomic. It makes use of a map/object notation to interface with a Logical Query Engine.
+The concept is simple. `adi` is a Document Database onto grafted on Datomic. It makes use of a map/object notation to interface with a Logical Query Engine.
 
 Datomic began something brand new for data, and `adi` leverages that incredible flexiblility with a syntax that is simple to understand.  It converts flat, record-like arrays to tree-like objects and back again so that the user can interface with datomic the way datomic was designed to do.
 
