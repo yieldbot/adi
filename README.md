@@ -474,8 +474,9 @@ By Hashset (which returns the union of results):
 
 ```
 
-This syntax is supported at the bottom by `emit-query`
+This syntax is supported at by `emit-query`
 
+```clojure
 (use '[adi.emit.query :only [emit-query query-env]])
 
 (emit-query {:account/permissions :editor} (query-env (process-init-env (sm-account))))
@@ -489,7 +490,7 @@ This syntax is supported at the bottom by `emit-query`
 ;;     [(> ?e2 3)]
 ;;     [?e1 :account/points ?e3]
 ;;     [(< ?e3 6)]]
-
+```
 
 ### Future Work
 
