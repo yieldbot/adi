@@ -7,7 +7,7 @@
 - Nested maps/objects as declarative logic queries.
 - Custom views on data (schemas for how data is consumed)
 
-The concept is simple. `adi` is a Document Database Syntax grafted on Datomic. It makes use of a Map/Object notation to interface with a Logical Query Engine for an even more declarative view of your data. Fundamentally, there should be no difference in the data-structure between what the programmer uses to ask  and what the programmer is getting back. We shouldn't have to play around turning objects into records, objects into queries... etc... 
+The concept is simple. `adi` is a document-database syntax grafted on Datomic. It makes use of a map/object notation to generate datastructure for Datomic's query engine. This provides for an even more declarative syntax for relational search. Fundamentally, there should be no difference in the data-structure between what the programmer uses to ask  and what the programmer is getting back. We shouldn't have to play around turning objects into records, objects into queries... etc...
 
 ***Not Anymore.***
 
