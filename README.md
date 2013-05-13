@@ -4,13 +4,13 @@
 
 The concept is simple. `adi` is a Document Database onto Grafted on Datomic. It makes use of a map/object notation to interface with a Logical Query Engine.
 
-Datomic began something brand new for data, and Adi leverages that incredible flexiblility with a syntax that is simple to understand.  It converts flat, record-like arrays to tree-like objects and back again so that the user can interface with datomic the way datomic was designed to do.
+Datomic began something brand new for data, and `adi` leverages that incredible flexiblility with a syntax that is simple to understand.  It converts flat, record-like arrays to tree-like objects and back again so that the user can interface with datomic the way datomic was designed to do.
 
 The key to understanding `adi` lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her. 
 
 Using `adi` once a schema for an application has been defined, the data can be inserted in any shape, as long as it follows the coventions specified within that schema. Fundamentally, there should be no difference in the data-structure between what the programmer asks for and what the programmer is getting. We shouldn't have to play around turning objects into records, objects into logic queries... etc... 
 
-Well... Not anymore with `datomic` + `adi`.
+Well... Not anymore...
 
 #### Installation
 
