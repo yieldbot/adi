@@ -1,5 +1,7 @@
 (ns adi.data.school
-  (:use [adi.utils :only [iid ?q]])
+  (:use [adi.utils :only [iid ?q]]
+        [adi.emit.datoms :only [emit-datoms-insert]]
+        [adi.emit.process :only [process-init-env]])
   (:require [adi.core :as adi]))
 
 
@@ -18,12 +20,29 @@
    :student {:name     [{:type :string}]
              :siblings [{:type :long}]
              :classes    [{:type :ref
-                         :ref   {:ns   :class
-                                 :rval :students}
+                         :ref   {:ns   :class}
                          :cardinality :many}]}})
 
 (def class-datastore
   (adi/datastore "datomic:mem://adi-class-datastore" class-schema true true))
+
+(keys class-datastore)
+;; => (:conn :options :schema)
+
+(:conn class-datastore) #<LocalConnection datomic.peer.LocalConnection@2b4a4d56>
+
+(:options class-datastore) ;=> {:defaults? true, :restrict? true, :required? true, :extras? false, :query? false, :sets-only? false}
+
+(emit-datoms-insert
+ [{:db/id (iid :EnglishA)
+    :class {:type :english
+            :name "English A"
+            :teacher {:name "Mr. Anderson"
+                      :teaches  {:+/db/id (iid :Maths)}
+                      :canTeach :maths
+                      :pets     :dog}}}]
+ (process-init-env class-schema))
+
 
 (def class-data
   [{:db/id (iid :EnglishA)
@@ -45,7 +64,6 @@
     :class {:type :sports
             :name "Sports"
             :accelerated false}}
-
    {:db/id (iid :Maths)
     :class {:type :maths
             :name "Maths"
@@ -55,15 +73,13 @@
     :class {:type :art
             :name "Art"
             :accelerated true}}
-
    {:db/id (iid :Science)
     :class {:type :science
             :name "Science"
             :teacher {:name "Mr. Blair"
-                      :teaches {:+/db/id (iid :Science)}
+                      :teaches {:+/db/id (iid :Art)}
                       :canTeach #{:maths :science}
                       :pets    #{:fish :bird}}}}
-
    {:db/id (iid :EnglishA)
     :class/students #{{:name "Bobby"
                        :siblings 2
@@ -109,26 +125,66 @@
 
 ### Selecting
 
-
+;; A Gentle Intro
+;;
 ;; Find the student with the name Harry
 
 (adi/select {:student/name "Harry"} class-datastore) ;=> Returns a map with Harry
 
+(-> ;; Lets get the database id of the student with the name Harry
+ (adi/select {:student/name "Harry"} class-datastore)
+ first :db :id) ;=>17592186045432 (Will be different)
+
+(-> ;; Lets do the same with a standard datomic query
+ (adi/select '[:find ?x :where
+               [?x :student/name "Harry"]] class-datastore)
+ first :db :id) ;=> 17592186045432 (The same)
+
+;; More Advanced Queries
+;;
+;; Now lets query across objects:
+;;
 (->> ;; Find the student that takes sports
+ (adi/select '[:find ?x :where
+               [?x :student/classes ?c]
+               [?c :class/type :sports]] class-datastore)
+ (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
+
+(->> ;; The same query with the object syntax
  (adi/select {:student/classes/type :sports} class-datastore)
  (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
 
-
+;; Full expressiveness on searches:
+;;
 (->> ;; Find the teacher that teaches a student called Harry
  (adi/select {:teacher/teaches/students/name "Harry"} class-datastore)
  (map #(-> % :teacher :name))) ;=> ("Mr. Anderson" "Mr. Carpenter" "Mr. Blair")
 
+(->> ;; Find all students taught by Mr Anderson
+ (adi/select {:student/classes/teacher/name "Mr. Anderson" } class-datastore)
+ (map #(-> % :student :name))) ;=> ("Ivan" "Bobby" "Erin" "Kelly"
+                               ;;   "David" "Harry" "Francis" "Jack")
 
+(->> ;; Find all the students that have class with teachers with fish
+ (adi/select {:student/classes/teacher/pets :fish } class-datastore)
+ (map #(-> % :student :name)) sort)
+;=> ("Anna" "Charlie" "David" "Francis" "Harry" "Ivan" "Jack" "Kelly")
+
+(->> ;; Not that you'd ever want to write a query like this but you can!
+     ;;
+     ;;  Find the class with the teacher that teaches
+     ;;  a student that takes the class taken by Mr. Anderson
+ (adi/select {:class/teacher/teaches/students/classes/teacher/name
+              "Mr. Anderson"} class-datastore)
+ (map #(-> % :class :name))) ;=> ("English A" "Maths" "English B"
+                             ;;   "Sports" "Art" "Science")
+
+;; Contraints through addtional map parameters
+;;
 (->> ;; Find students that have less than 2 siblings and take art
- (adi/select {:student {:siblings (?q < 2)
+ (adi/select {:student {:siblings (?q < 2) ;; <- WE CAN QUERY!!
                         :classes/type :art}} class-datastore)
  (map #(-> % :student :name))) ;=> ("Erin" "Anna" "Francis")
-
 
 (->> ;; Find the classes that Mr Anderson teaches David
  (adi/select {:class {:teacher/name "Mr. Anderson"
@@ -145,15 +201,9 @@
 (-> ;; His mum just had twins!
  (adi/update! {:student/name "Harry"} {:student/siblings 4} class-datastore))
 
-(-> ;; Find the number of siblings Harry has
+(-> ;; Now how many sibling?
  (adi/select {:student/name "Harry"} class-datastore)
  first :student :siblings) ;=> 4
-
-(->> ;; Find all the students that have class with teachers with fish
- (adi/select {:student/classes/teacher/pets :fish } class-datastore)
- (map #(-> % :student :name)) sort)
-;=> ("Anna" "Charlie" "David" "Francis" "Harry" "Ivan" "Jack" "Kelly")
-
 
 ## Retractions
 
@@ -174,7 +224,7 @@
 
 
 ### Deletions
-(->>
+(->> ;; See who is playing sports
  (adi/select {:student/classes/type :sports} class-datastore)
  (map #(-> % :student :name)))
 ;=> ("Ivan" "Anna" "Jack")
@@ -191,7 +241,7 @@
 ;; The students in english A had a bus accident
 (adi/delete! {:student/classes/name "English A"} class-datastore)
 
-(->>
+(->> ;; Who is left at the school
  (adi/select :student/name class-datastore)
  (map #(-> % :student :name)))
 ;=> ("Anna" "Charlie" "Francis" "Jack" "Harry")

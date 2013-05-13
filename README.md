@@ -1,16 +1,18 @@
 # adi
 
-`adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. 
+`adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. It has three main objectives
 
-The concept is simple. `adi` is a Document Database onto grafted on Datomic. It makes use of a map/object notation to interface with a Logical Query Engine.
+- freedom from structured data inputs 
+- a schema/type system for data
+- objects as logic queries
 
-Datomic began something brand new for data, and `adi` leverages that incredible flexiblility with a syntax that is simple to understand.  It converts flat, record-like arrays to tree-like objects and back again so that the user can interface with datomic the way datomic was designed to do.
+The concept is simple. `adi` is a Document Database Syntax grafted on Datomic. It makes use of a Map/Object notation to interface with a Logical Query Engine for an even more declarative view of your data. Fundamentally, there should be no difference in the data-structure between what the programmer uses to ask  and what the programmer is getting back. We shouldn't have to play around turning objects into records, objects into queries... etc... 
 
-The key to understanding `adi` lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her. 
+***Not Anymore.***
 
-Using `adi` once a schema for an application has been defined, the data can be inserted in any shape, as long as it follows the coventions specified within that schema. Fundamentally, there should be no difference in the data-structure between what the programmer asks for and what the programmer is getting. We shouldn't have to play around turning objects into records, objects into logic queries... etc... 
+Datomic began something brand new for data, and `adi` leverages that incredible flexiblility with a syntax that is simple to understand.  It converts flat, record-like arrays to tree-like objects and back again so that the user can interface with Datomic the way that expresses Datomic's true capabilities.
 
-Well... Not anymore...
+The key to understanding `adi` lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her, much like what a type-system does for programmers - without being suffocatingly restrictive. Once a schema for an application has been defined, the data can be inserted in ANY shape, as long as it follows the coventions specified within that schema.
 
 #### Installation
 
@@ -22,7 +24,7 @@ In your project file, add
 
 ### The Overview
 
-This is a longish tutorial, mainly because of the data we have to import:
+This is a longish tutorial, mainly because of the data we have to write:
 
 We want to model a simple school, and we have the standard information like classes, teachers students.
 
@@ -47,7 +49,7 @@ We want to model a simple school, and we have the standard information like clas
              :siblings [{:type :long}]
              :classes    [{:type :ref
                          :ref   {:ns   :class
-                                 :rval :students}
+                                 :rval :students}   ;; Same with students 
                          :cardinality :many}]}})
 ```
 
@@ -58,87 +60,86 @@ Here, we create a `datastore`, which is a thin wrapper around the datomic connec
   (adi/datastore "datomic:mem://class-datastore" class-schema true true))
 ```
 
-Now is the fun part: Lets fill in the data. This is one way of filling out the data. Note that it is object-like in nature, with links defined through ids. If it doesn't contain an id, the record is automatically created:
+Now is the fun part: Lets fill in the data. This is one way of filling out the data. There are many other ways. Note that it is object-like in nature, with links defined through ids. If it doesn't contain an id, the record is automatically created. The example is slightly contrived mainly to show-off some different features of `adi`:
 
 ```clojure
-(def class-data
-  [{:db/id (iid :EnglishA)
-    :class {:type :english                  ;; <- This is the English A class
-            :name "English A"
-            :teacher {:name "Mr. Anderson"  ;; <- The teacher is Mr. Anderson
-                      :teaches  {:+/db/id (iid :Maths)}   ;;<- Oh and he also teaches Maths 
-                      :canTeach :maths
-                      :pets     :dog}}}     ;;<- He has a dog as a pet
-   {:db/id (iid :EnglishB)
-    :class {:type :english
-            :name "English B"                   ;; <- The teacher for English B 
-            :teacher {:name "Mr. Carpenter"     ;;    Mr Carpenter
-                      :canTeach #{:sports :maths}
-                      :teaches {:+/db/id (iid :Sports)}  ;; <- He also teaches Sport
-                      :pets    #{:dog :fish :bird}}}}    ;; <- He has multiple pets
-   {:db/id (iid :Sports)        
-    :class {:type :sports          ;; <- Here is our Sports Class    
-            :name "Sports"         ;; Since we already know that Mr. Carpenter teaches
-            :accelerated false}}   ;; This subject, we don't need to put it in
+(def class-data                      ;;; Lets See....
+  [{:db/id (iid :Maths)
+    :class {:type :maths             ;;; There's Math. The most important subject
+            :name "Maths"            ;;; We will be giving all the classes ids 
+            :accelerated true}}      ;;; for easier reference
+    
+    {:db/id (iid :Science)           ;;; Lets add science 
+     :class {:type :science
+             :name "Science"}}
+    
+    {:student {:name "Ivan"          ;;; And then Ivan, who does English, Science and Sports 
+           :siblings 2
+           :classes #{{:+/db/id (iid :EnglishA)}
+                      {:+/db/id (iid :Science)}
+                      {:+/db/id (iid :Sports)}}}}
 
-   {:db/id (iid :Maths)
-    :class {:type :maths
-            :name "Maths"          ;; <- Oh, Mr. Anderson teaches this subject
-            :accelerated true}}
+    {:teacher {:name "Mr. Blair"                       ;; Here's Mr Blair
+               :teaches #{{:+/db/id (iid :Art)      
+                           :type :art                  ;; He teaches Art  
+                           :name "Art"
+                           :accelerated true}
+                          {:+/db/id (iid :Science)}}   ;; He also teaches Science
+               :canTeach #{:maths :science}
+               :pets    #{:fish :bird}}}               ;; And a fish and a bird
 
-   {:db/id (iid :Art)
-    :class {:type :art
-            :name "Art"            ;; <- Who is teaching Art I wonder?
-            :accelerated true}}
-
-   {:db/id (iid :Science)
-    :class {:type :science
-            :name "Science"
-            :teacher {:name "Mr. Blair"
-                      :teaches {:+/db/id (iid :Art)}   ;; <- Oh its Mr Blair, the science teacher 
-                      :canTeach #{:maths :science}
-                      :pets    #{:fish :bird}}}}
-
-   {:db/id (iid :EnglishA)                   ;; And here are our students!
-    :class/students #{{:name "Bobby"   
-                       :siblings 2
-                       :classes  {:+/db/id (iid :Maths)}}
-                      {:name "David"
-                       :siblings 5
-                       :classes #{{:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Maths)}}}
-                      {:name "Erin"
-                       :siblings 1
-                       :classes #{{:+/db/id (iid :Art)}}}
-                      {:name "Ivan"
-                       :siblings 2
-                       :classes #{{:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Sports)}}}
-                      {:name "Kelly"
-                       :siblings 0
-                       :classes #{{:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Maths)}}}}}
-   {:db/id (iid :EnglishB)
-    :class/students #{{:name  "Anna"
-                       :siblings 1
-                       :classes #{{:+/db/id (iid :Sports)}
-                                  {:+/db/id (iid :Art)}}}
-                      {:name    "Charlie"
-                       :siblings 3
-                       :classes {:+/db/id (iid :Art)}}
-                      {:name    "Francis"
-                       :siblings 0
-                       :classes #{{:+/db/id (iid :Art)}
-                                  {:+/db/id (iid :Maths)}}}
-                      {:name    "Harry"
-                       :siblings 2
-                       :classes #{{:+/db/id (iid :Art)}
-                                  {:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Maths)}}}
-                      {:name    "Jack"
-                       :siblings 4
-                       :classes #{{:+/db/id (iid :Sports)}
-                                  {:+/db/id (iid :Maths)}}}}}])
+    {:teacher {:name "Mr. Carpenter"                   ;; This is Mr Carpenter
+               :canTeach #{:sports :maths}
+               :pets    #{:dog :fish :bird}
+               :teaches #{{:+/db/id (iid :Sports)      ;; He teaches sports
+                           :type :sports
+                           :name "Sports"
+                           :accelerated false
+                           :students #{{:name "Jack"   ;; There's Jack
+                                        :siblings 4    ;; Who is also in EnglishB and Maths
+                                        :classes #{{:+/db/id (iid :EnglishB)
+                                                    :students {:name  "Anna"  ;; There's also Anna in the class
+                                                               :siblings 1    
+                                                               :classes #{{:+/db/id (iid :Art)}}}}
+                                                                          {:+/db/id (iid :Maths)}}}}}
+                          {:+/db/id (iid :EnglishB)    
+                           :type :english             ;; Now we revisit English B
+                           :name "English B"          ;;  Here are all the additional students
+                           :students #{{:name    "Charlie"
+                                        :siblings 3
+                                        :classes  #{{:+/db/id (iid :Art)}}}
+                                       {:name    "Francis"
+                                        :siblings 0
+                                        :classes #{{:+/db/id (iid :Art)}
+                                                   {:+/db/id (iid :Maths)}}}
+                                       {:name    "Harry"
+                                        :siblings 2
+                                        :classes #{{:+/db/id (iid :Art)}
+                                                   {:+/db/id (iid :Science)}
+                                                   {:+/db/id (iid :Maths)}}}}}}}}
+    Phew.... So what are we missing?
+                               
+    {:db/id (iid :EnglishA)       ;; What about Engilsh A ?
+     :class {:type :english
+             :name "English A"
+             :teacher {:name "Mr. Anderson" ;; Mr Anderson is the teacher
+                       :teaches  {:+/db/id (iid :Maths)} ;; He also takes Maths
+                       :canTeach :maths
+                       :pets     :dog}
+             :students #{{:name "Bobby"   ;; And the students are listed
+                          :siblings 2
+                          :classes  {:+/db/id (iid :Maths)}}
+                         {:name "David"
+                          :siblings 5
+                          :classes #{{:+/db/id (iid :Science)}
+                                     {:+/db/id (iid :Maths)}}}
+                         {:name "Erin"
+                          :siblings 1
+                          :classes #{{:+/db/id (iid :Art)}}}
+                         {:name "Kelly"
+                          :siblings 0
+                          :classes #{{:+/db/id (iid :Science)}
+                                     {:+/db/id (iid :Maths)}}}}}}])
 ```
 
 Okay... our data is defined.... and....
@@ -148,12 +149,12 @@ Okay... our data is defined.... and....
 (adi/insert! class-data class-datastore)
 ```
 
-....***!!BAM!!*** .... We are now ready to query!!!
+....***BAM!!*** .... We are now ready to query!!!
 
 ### Selecting
 
 ```clojure
-;; A Gentle Intro
+;; A Gentle Intro with whas 
 ;;
 ;; Find the student with the name Harry
 
@@ -178,9 +179,20 @@ Okay... our data is defined.... and....
                [?c :class/type :sports]] class-datastore)
  (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
 
-(->> ;; The same query with the object syntax 
+(->> ;; The same query with the keyword syntax 
  (adi/select {:student/classes/type :sports} class-datastore)
  (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
+
+(->> ;; The same query with the object syntax
+  (adi/select {:student {:classes {:type :sports}}} class-datastore)
+  (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
+
+;; The following are equivalent:
+(= (adi/select {:student/classes {:type :sports}} class-datastore)
+   (adi/select {:student {:classes/type :sports}} class-datastore)
+   (adi/select {:student/classes/type :sports} class-datastore)
+   (adi/select {:student {:classes {:type :sports}}} class-datastore))
+
 
 ;; Full expressiveness on searches:
 ;;
