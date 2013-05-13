@@ -1,9 +1,12 @@
 (ns adi.test-api-linked
  (:use midje.sweet
-       adi.utils
        adi.schema
-       adi.data
-       adi.checkers)
+       hara.common
+       hara.checkers
+       [adi.utils :only [iid]]
+       [adi.emit.datoms :only [emit-datoms-insert]]
+       [adi.emit.query :only [emit-query]]
+       [adi.emit.process :only [process-init-env]])
  (:require [datomic.api :as d]
            [adi.api :as aa]))
 
@@ -24,13 +27,18 @@
 
 (def l1-fgeni (-> l1-env :schema :fgeni))
 
+(def l1-data
+  {:db/id (iid :start)
+   :link {:value "l1"
+          :next {:value "l2"
+                 :next {:value "l3"
+                        :next {:+ {:db/id (iid :start)}}}}}})
+
+
+(emit-datoms-insert l1-data l1-env)
 (aa/install-schema l1-fgeni *conn*)
-(aa/insert! {:db/id (iid :start)
-             :link {:value "l1"
-                    :next {:value "l2"
-                           :next {:value "l3"
-                                  :next {:+ {:db/id (iid :start)}}}}}}
-            *conn* l1-env)
+(aa/insert! l1-data *conn* l1-env)
+
 
 (fact "select"
   (emit-query {:link/value "l1"} l1-env)
@@ -44,7 +52,6 @@
       first
       seq)
   => (contains [[:link/value "l1"]])
-
 
   (-> (aa/select-entities {:link/value "l1"} (d/db *conn*) l1-env)
       first

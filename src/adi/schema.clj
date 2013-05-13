@@ -1,10 +1,11 @@
 (ns adi.schema
-  (:use [datomic.api :only [tempid]]
-        [hara.control :only [if-let]]
-        adi.utils)
+  (:use hara.common
+        [adi.utils :only [ref? enum?]]
+        hara.hash-map
+        [datomic.api :only [tempid]]
+        [hara.control :only [if-let]])
   (:require [inflections.core :as inf])
   (:refer-clojure :exclude [if-let]))
-
 
 (defn meta-property
     "Returns the keyword enumeration for datomic schemas properties.
@@ -86,13 +87,13 @@
 
 (defn flip-ident [k]
   (let [kval   (name (keyword-val k))
-        rkval  (if (starts-with kval "_")
+        rkval  (if (starts-with? kval "_")
                  (.substring kval 1)
                  (str "_" kval))]
     (keyword-join [(keyword-ns k) rkval])))
 
 (defn ident-reversed? [k]
-  (-> k keyword-val str (starts-with ":_")))
+  (-> k keyword-val str (starts-with? ":_")))
 
 (defn reversible-ref? [[meta]]
   (and (= :ref (:type meta))
@@ -121,7 +122,7 @@
 (defn vec-reversible-lu [[meta]]
   (let [ident  (:ident meta)
         ref-ns (->  meta :ref :ns)]
-    [(keyword-nsroot ident) ref-ns]))
+    [(keyword-root ident) ref-ns]))
 
 (defn determine-ref-rval [[[root ref-ns many?] [meta]]]
   (if-let [rval (-> meta :ref :rval)]
@@ -164,7 +165,7 @@
     [{:ident       f-rident
        :cardinality :many
        :type        :ref
-       :ref         {:ns      (keyword-nsroot ident)
+       :ref         {:ns      (keyword-root ident)
                      :type    :reverse
                      :val     f-rval
                      :key     f-rkey
@@ -207,8 +208,8 @@
                      (map determine-revref-meta))
         get-ident (fn [[meta]] (:ident meta))]
     (merge fsgeni
-           (funcmap get-ident rfcoll)
-           (funcmap get-ident revcoll))))
+           (func-map get-ident rfcoll)
+           (func-map get-ident revcoll))))
 
 
 (defn find-revrefs [fgeni]
@@ -241,7 +242,7 @@
        output)))
 
 (defn infer-fgeni [sgeni]
-  (-> (flatten-keys-in sgeni) infer-idents infer-defaults infer-refs))
+  (-> (flatten-keys-nested sgeni) infer-idents infer-defaults infer-refs))
 
 (defn make-scheme-model [sgeni]
   (let [fgeni (infer-fgeni sgeni)]
@@ -275,7 +276,7 @@
         mfgeni (apply dissoc fgeni (keys es))
         get-ident (fn [[meta]] (:ident meta))]
     (merge mfgeni
-           (funcmap get-ident e-rels))))
+           (func-map get-ident e-rels))))
 
 (defn emit-schema-property [meta k mgprop res]
   (let [dft  (if-let [dft (:default mgprop)

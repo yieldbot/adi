@@ -1,9 +1,12 @@
 (ns adi.test-api
  (:use midje.sweet
-       adi.utils
        adi.schema
-       adi.data
-       adi.checkers)
+       adi.utils
+       hara.common
+       hara.checkers
+       adi.emit.query
+       [adi.emit.view :only [view]]
+       [adi.emit.process :only [process-init-env]])
  (:require [datomic.api :as d]
            [adi.api :as aa]))
 
@@ -39,7 +42,7 @@
                {:account {:cars 2, :name "chris"}, :db hash-map?}]
               :in-any-order)
 
-  (aa/select {:account {:cars (? < 2)}} (d/db *conn*) s0-env)
+  (aa/select {:account {:cars (?q < 2)}} (d/db *conn*) s0-env)
   => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
                {:account {:name "bob", :cars 0}, :db hash-map?}
                {:account {:name "bob", :cars 1}, :db hash-map?}
@@ -48,12 +51,12 @@
                {:account {:name "dave", :cars 1}, :db hash-map?}]
               :in-any-order)
 
-  (aa/select {:account {:cars (? < 2)
+  (aa/select {:account {:cars (?q < 2)
                         :name #{(?not "bob") (?not "dave")}}} (d/db *conn*) s0-env)
   => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
                {:account {:name "chris", :cars 0}, :db hash-map?}])
 
-  (aa/select {:account {:cars (? < 2)
+  (aa/select {:account {:cars (?q < 2)
                         :name #{(?not "bob") (?not "dave")}}}
              (d/db *conn*)
              (assoc s0-env :view {:account/name :hide}))
@@ -66,7 +69,7 @@
               (d/db *conn*)
               s0-env)
   => (just-in [{:db/id long?, :account/cars 1}
-            {:db/id long?, :account/cars 1}]))
+               {:db/id long?, :account/cars 1}]))
 
 (fact "retract"
   (aa/retract- {:account/name "chris"}
@@ -116,6 +119,31 @@
                                              {:value "l1C l2C"}
                                              {:value "l1C l2D"}}}}}}
             *conn* d1-env)
+(def ^:dynamic *uri* "datomic:mem://adi-test-api-linked")
+(def ^:dynamic *conn* (aa/connect! *uri* true))
+
+(def l1-env
+  (process-init-env {:link {:value  [{:fulltext true}]
+                            :next [{:type :ref
+                                    :ref  {:ns :link
+                                           :rval :prev}}]
+                            :node [{:type :ref
+                                    :ref {:ns :node}}]}
+                     :node {:value  [{}]
+                            :parent [{:type :ref
+                                        :ref  {:ns :node
+                                               :rval :children}}]}}))
+(def l1-fgeni (-> l1-env :schema :fgeni))
+(aa/install-schema l1-fgeni *conn*)
+
+
+(def l1-data
+  {:db/id (iid :start)
+   :link {:value "l1"
+          :next {:value "l2"
+                 :next {:value "l3"
+                        :next {:+ {:db/id (iid :start)}}}}}})
+(aa/insert! l1-data *conn* l1-env)
 
 (fact "select"
   (d/q '[:find ?v :where [?e :node/value ?v]] (d/db *conn*))
@@ -209,6 +237,12 @@
 
 (fact "linked-entities"
   (view d1-fgeni)
+  => {:node/value :show
+      :node/children :hide
+      :node/leaves :hide
+      :node/parent :ids
+      :leaf/node :ids
+      :leaf/value :show}
 
   (aa/linked-entities {:node/value "l1A"} (d/db *conn*) d1-env)
   => (two-of ref?)
@@ -255,5 +289,4 @@
   => (just [(contains-in {:node {:value "root"}})
             (contains-in {:node {:value "l1A"}})
 			(contains-in {:node {:value "l1A l2A"}})]
-			:in-any-order)
-  )
+			:in-any-order))

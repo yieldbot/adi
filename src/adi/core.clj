@@ -1,7 +1,6 @@
 (ns adi.core
-  (:use adi.utils)
-  (:require [adi.data :as ad]
-            [adi.schema :as as]
+  (:use [adi.emit.process :only [process-init-env]])
+  (:require [adi.schema :as as]
             [adi.api :as aa]
             [datomic.api :as d]))
 
@@ -9,7 +8,7 @@
   (aa/install-schema (-> ds :schema :fgeni) (:conn ds)))
 
 (defn datastore [uri geni & [install? recreate?]]
-  (let [env  (ad/process-init-env geni)
+  (let [env  (process-init-env geni)
         conn (aa/connect! uri recreate?)
         ds   (assoc env :conn conn)]
     (if install? (init-schema ds))
@@ -35,18 +34,26 @@
   (aa/insert! data (:conn ds) (merge-args ds args)))
 
 (defn select [val ds & args]
-           (aa/select val (d/db (:conn ds)) (merge-args ds args)))
+  (aa/select val (d/db (:conn ds)) (merge-args ds args)))
+
+(defn delete! [val ds & args]
+  (aa/delete! val (:conn ds) (merge-args ds args)))
+
+(defn update! [val data ds & args]
+  (aa/update! val data (:conn ds) (merge-args ds args)))
+
+(defn retract! [val ks ds & args]
+  (aa/retract!  val ks (:conn ds) (merge-args ds args)))
 
 (comment
 
-         (defn select-ids [val ds & args]
-           (aa/select-ids val (d/db (:conn ds)) (merge-args ds args)))
+  (defn select-ids [val ds & args]
+    (aa/select-ids val (d/db (:conn ds)) (merge-args ds args)))
+  (defn select-entities [val ds & args]
+    (aa/select-entities val (d/db (:conn ds)) (merge-args ds args)))
 
-         (defn select-entities [val ds & args]
-           (aa/select-entities val (d/db (:conn ds)) (merge-args ds args)))
-
-         (defn select-first-entity [val ds & args]
-           (first (select-entities val (merge-args ds args))))
+  (defn select-first-entity [val ds & args]
+    (first (select-entities val (merge-args ds args))))
 
 
 

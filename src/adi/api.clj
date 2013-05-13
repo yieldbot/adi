@@ -1,12 +1,14 @@
 (ns adi.api
-  (:use adi.utils
+  (:use hara.common
+        adi.utils
         [adi.schema :only [emit-schema]]
-        [adi.data :only [emit-datoms
-                         emit-datoms-insert
-                         emit-datoms-update
-                         emit-query]])
+        [adi.emit.datoms :only [emit-datoms
+                                emit-datoms-insert
+                                emit-datoms-update]]
+        [adi.emit.query :only [emit-query]])
   (:require [datomic.api :as d]
-            [adi.data :as ad]
+            [adi.emit.deprocess :as ad]
+            [adi.emit.view :as av]
             [adi.schema :as as]))
 
 (defn install-schema [fgeni conn]
@@ -100,7 +102,7 @@
 
 (defn linked-nss [fgeni view]
   (set (filter (fn [k] (= :ref (-> fgeni k first :type)))
-               (ad/view-make-set view))))
+               (av/view-make-set view))))
 
 (defn linked-ids-ref
   [rf vnss env exclude]
@@ -121,7 +123,7 @@
 (defn linked-ids
   ([ent env]
      (let [vw (or (-> env :view)
-                  (ad/view-cfg (-> env :schema :fgeni)
+                  (av/view-cfg (-> env :schema :fgeni)
                                {:refs :show}))]
        (linked-ids ent vw env)))
   ([ent view env]

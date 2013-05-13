@@ -9,11 +9,6 @@ However, it is of the author's opinion that the way data has to be imported into
 # The Basics
 
 
-
-
-
-
-
 # Key Concepts
 
 ## The Scheme Map
@@ -101,7 +96,7 @@ Next, we create a datastore, which in reality, is just a map containing a connec
 
     (def ds (adi/datastore sm-account "datomic:mem://adi-example" true))
 
-    (:fsm ds) ;; => (flatten-keys-in sm-account) 
+    (:fsm ds) ;; => (flatten-keys-nested sm-account) 
     (:conn ds) ;; =>  #<LocalConnection datomic.peer.LocalConnection@512772cd>
 
 ## Inserting Data
@@ -142,7 +137,7 @@ Once a scheme map has been defined, now data can be added:
 
 At a more primitive level, insert! relys on 'emit' to generating datomic data that goes into datomic:
 
-    (apply ad/emit (flatten-keys-in sm-account) data-account)
+    (apply ad/emit (flatten-keys-nested sm-account) data-account)
 
     ;;=> ({:db/id {:part :db.part/user, :idx -1000105},
     ;;     :account/password "a123",
@@ -260,8 +255,6 @@ By Hashmap:
     ;;                :permissions #{:editor :admin :member},
     ;;                :socialMedia #{{:+ {:db/id 17592186045427}}},
     ;;                :password "f123"}})
-
-By Combination:
 
 
 

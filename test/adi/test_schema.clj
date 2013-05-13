@@ -1,8 +1,8 @@
 (ns adi.test-schema
   (:use midje.sweet
-        adi.utils
         adi.schema
-        adi.checkers))
+        hara.common
+        hara.hash-map))
 
 
 (fact "meta-property"
@@ -86,7 +86,7 @@
   (reversible-ref? [(merge rr1 {:type :long})])
   => falsey
 
-  (reversible-ref? [(merge-in rr1 {:ref {:norev true}})])
+  (reversible-ref? [(merge-nested rr1 {:ref {:norev true}})])
   => falsey
 
   (reversible-ref? [(dissoc-in-keep rr1 [:ref :ns])])
@@ -374,8 +374,7 @@
                         :ref {:type :forward}}]}
                (constantly true)
                :type :ref :ref (fn [r] (= :forward (:type r))))
-    => #{:name}
-    )
+    => #{:name})
 
 
 
@@ -541,18 +540,18 @@
     (find-keys {:name [{:type :string}]} :type :other)
     => #{}
 
-    (find-keys (flatten-keys-in (infer-all s1-geni))
+    (find-keys (flatten-keys-nested (infer-all s1-geni))
                :cardinality :many)
     => #{:email/_accounts}
 
-    (find-keys (flatten-keys-in (infer-all s1-geni)) #{:email}
+    (find-keys (flatten-keys-nested (infer-all s1-geni)) #{:email}
                :cardinality :many)
     => #{:email/_accounts}
 
-    (find-keys (flatten-keys-in (infer-all s1-geni)) #{:account}
+    (find-keys (flatten-keys-nested (infer-all s1-geni)) #{:account}
                :cardinality :many)
     => #{}
 
-    (find-keys (flatten-keys-in (infer-all s6-geni))
+    (find-keys (flatten-keys-nested (infer-all s6-geni))
                :cardinality :many)
     => #{:node/_female_node_referrers :node/_male_node_referrers}))
