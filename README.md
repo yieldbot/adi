@@ -139,8 +139,10 @@ Now is the fun part: Lets fill in the data. This is one way of filling out the d
                        :siblings 4
                        :classes #{{:+/db/id (iid :Sports)}
                                   {:+/db/id (iid :Maths)}}}}}])
+```
 
 Okay... our data is defined.... and....
+
 
 ```clojure
 (adi/insert! class-data class-datastore)
