@@ -237,7 +237,7 @@ Okay... our data is defined.... and....
 
 ## Retractions
 
-```
+```clojure
 (->> ;; Find all the students that have class with teachers with dogs
  (adi/select {:student/classes/teacher/pets :dog} class-datastore)
  (map #(-> % :student :name))
@@ -427,7 +427,7 @@ Once a scheme map has been defined, now data can be added:
 ;;=> .... datomic results ...
 ```
 
-At a more primitive level, insert! relys on 'emit-datoms' to generate data. There are different flags set for generating data for insertion as opposed to updating.
+At a more primitive level, `insert!` relys on `emit-datoms` to generate data. There are different flags set for generating data for insertion as opposed to updating.
 
 ```clojure
 (use '[adi.emit.datoms :only [emit-datoms-insert]]
@@ -500,7 +500,7 @@ This syntax is supported at by `emit-query`
 
 ### Data Views
 
-More on this when I have some examples
+More on this when I have some examples. Basically, data views allow construction of any view of the data the programmer wants. See my tests especially [test_core.clj](https://github.com/zcaudate/adi/blob/master/test/adi/test_core.clj) for more details
 
 ### Future Work
 
