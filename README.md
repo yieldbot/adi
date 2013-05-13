@@ -2,7 +2,7 @@
 
 `adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. It has four main objectives
 
-- Using a schema as a `type system` to reason about your data
+- Using the schema as a 'type' system to better reason about your data
 - Implication of Relations mapped to Nesting Structure. 
 - Objects as Declarative Logic Queries.
 - Custom views on your data (Basically a schema for how data is retrieved)
