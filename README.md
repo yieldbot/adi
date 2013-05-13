@@ -142,19 +142,18 @@ Now is the fun part: Lets fill in the data. This is one way of filling out the d
                                      {:+/db/id (iid :Maths)}}}}}}])
 ```
 
-Okay... our data is defined.... and....
-
+Okay... our data is defined... and...
 
 ```clojure
 (adi/insert! class-data class-datastore)
 ```
 
-....***BAM!!*** .... We are now ready to query!!!
+***BAM!!***... We are now ready to query!!!
 
 ### Selecting
 
 ```clojure
-;; A Gentle Intro with whas 
+;; A Gentle Intro
 ;;
 ;; Find the student with the name Harry
 
