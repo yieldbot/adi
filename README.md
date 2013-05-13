@@ -2,11 +2,15 @@
 
 `adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. 
 
-The concept is simple. Adi is a Document Database onto Grafted on Datomic. It makes use of a map/object notation to interface with a Logical Query Engine.
+The concept is simple. `adi` is a Document Database onto Grafted on Datomic. It makes use of a map/object notation to interface with a Logical Query Engine.
 
-Datomic began something brand new for data, and Adi leverages that incredible flexiblility with a syntax that is simple to understand. 
+Datomic began something brand new for data, and Adi leverages that incredible flexiblility with a syntax that is simple to understand.  It converts flat, record-like arrays to tree-like objects and back again so that the user can interface with datomic the way datomic was designed to do.
 
-The power of adi lies in its use of the schema to dictate what you can do with the data. Once a schema for the datset has been defined, the data can be inserted in any shape, as long as it follows the coventions specified within that schema
+The key to understanding `adi` lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her. 
+
+Using `adi` once a schema for an application has been defined, the data can be inserted in any shape, as long as it follows the coventions specified within that schema. Fundamentally, there should be no difference in the data-structure between what the programmer asks for and what the programmer is getting. We shouldn't have to play around turning objects into records, objects into logic queries... etc... 
+
+Well... Not anymore with `datomic` + `adi`.
 
 #### Installation
 
@@ -491,6 +495,10 @@ This syntax is supported at by `emit-query`
 ;;     [?e1 :account/points ?e3]
 ;;     [(< ?e3 6)]]
 ```
+
+### Data Views
+
+More on this when I have some examples
 
 ### Future Work
 
