@@ -1,10 +1,11 @@
 # adi
 
-`adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. It has three main objectives
+`adi`, rhyming with 'hardy' stands for the acronym (a) (d)atomic (i)nterface. It has four main objectives
 
-- freedom from structured data inputs 
-- a schema/type system for data
-- objects as logic queries
+- Using a schema as a `type system` to reason about your data
+- Implication of Relations mapped to Nesting Structure. 
+- Objects as Declarative Logic Queries.
+- Custom views on your data (Basically a schema for how data is retrieved)
 
 The concept is simple. `adi` is a Document Database Syntax grafted on Datomic. It makes use of a Map/Object notation to interface with a Logical Query Engine for an even more declarative view of your data. Fundamentally, there should be no difference in the data-structure between what the programmer uses to ask  and what the programmer is getting back. We shouldn't have to play around turning objects into records, objects into queries... etc... 
 
