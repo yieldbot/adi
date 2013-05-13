@@ -86,7 +86,7 @@
 
 (defn delete!
   [val conn env]
-  (d/transact conn (delete- val (d/db conn env))))
+  (d/transact conn (delete- val (d/db conn) env)))
 
 (defn select [val db env]
   (let [menv (if (-> env :deprocess)
