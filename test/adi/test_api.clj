@@ -101,6 +101,8 @@
 
 (def d1-fgeni (-> d1-env :schema :fgeni))
 
+(def ^:dynamic *uri* "datomic:mem://adi-test-api-linked")
+(def ^:dynamic *conn* (aa/connect! *uri* true))
 (aa/install-schema d1-fgeni *conn*)
 (aa/insert! {:node {:value "root"
                     :children #{{:value "l1A"
@@ -119,8 +121,6 @@
                                              {:value "l1C l2C"}
                                              {:value "l1C l2D"}}}}}}
             *conn* d1-env)
-(def ^:dynamic *uri* "datomic:mem://adi-test-api-linked")
-(def ^:dynamic *conn* (aa/connect! *uri* true))
 
 (def l1-env
   (process-init-env {:link {:value  [{:fulltext true}]

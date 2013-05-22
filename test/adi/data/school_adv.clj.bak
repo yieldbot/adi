@@ -1,4 +1,4 @@
-(ns adi.data.school
+(ns adi.data.adv-school
   (:use [adi.utils :only [iid ?q]]
         [adi.emit.datoms :only [emit-datoms-insert]]
         [adi.emit.process :only [process-init-env]])
@@ -20,7 +20,8 @@
    :student {:name     [{:type :string}]
              :siblings [{:type :long}]
              :classes    [{:type :ref
-                         :ref   {:ns   :class}
+                           :ref   {:ns   :class
+                                   :rval :students}
                          :cardinality :many}]}})
 
 (def class-datastore
@@ -29,7 +30,7 @@
 (keys class-datastore)
 ;; => (:conn :options :schema)
 
-(:conn class-datastore) #<LocalConnection datomic.peer.LocalConnection@2b4a4d56>
+(:conn class-datastore) ;;#<LocalConnection datomic.peer.LocalConnection@2b4a4d56>
 
 (:options class-datastore) ;=> {:defaults? true, :restrict? true, :required? true, :extras? false, :query? false, :sets-only? false}
 
@@ -43,87 +44,86 @@
                       :pets     :dog}}}]
  (process-init-env class-schema))
 
+(def class-data                      ;;; Lets now create the school
+  [{:db/id (iid :Maths)
+    :class {:type :maths             ;;; There's Math, the most important subject
+            :name "Maths"            ;;; We will be giving all the classes ids
+            :accelerated true}}      ;;; for easier reference
 
-(def class-data
-  [{:db/id (iid :EnglishA)
-    :class {:type :english
-            :name "English A"
-            :teacher {:name "Mr. Anderson"
-                      :teaches  {:+/db/id (iid :Maths)}
-                      :canTeach :maths
-                      :pets     :dog}}}
+    {:db/id (iid :Science)           ;;; Lets add science
+     :class {:type :science
+             :name "Science"}}
 
-   {:db/id (iid :EnglishB)
-    :class {:type :english
-            :name "English B"
-            :teacher {:name "Mr. Carpenter"
-                      :canTeach #{:sports :maths}
-                      :teaches {:+/db/id (iid :Sports)}
-                      :pets    #{:dog :fish :bird}}}}
-   {:db/id (iid :Sports)
-    :class {:type :sports
-            :name "Sports"
-            :accelerated false}}
-   {:db/id (iid :Maths)
-    :class {:type :maths
-            :name "Maths"
-            :accelerated true}}
+    {:student {:name "Ivan"          ;;; And then Ivan, who does English, Science and Sports
+           :siblings 2
+           :classes #{{:+/db/id (iid :EnglishA)}
+                      {:+/db/id (iid :Science)}
+                      {:+/db/id (iid :Sports)}}}}
 
-   {:db/id (iid :Art)
-    :class {:type :art
-            :name "Art"
-            :accelerated true}}
-   {:db/id (iid :Science)
-    :class {:type :science
-            :name "Science"
-            :teacher {:name "Mr. Blair"
-                      :teaches {:+/db/id (iid :Art)}
-                      :canTeach #{:maths :science}
-                      :pets    #{:fish :bird}}}}
-   {:db/id (iid :EnglishA)
-    :class/students #{{:name "Bobby"
-                       :siblings 2
-                       :classes  {:+/db/id (iid :Maths)}}
-                      {:name "David"
-                       :siblings 5
-                       :classes #{{:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Maths)}}}
-                      {:name "Erin"
-                       :siblings 1
-                       :classes #{{:+/db/id (iid :Art)}}}
-                      {:name "Ivan"
-                       :siblings 2
-                       :classes #{{:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Sports)}}}
-                      {:name "Kelly"
-                       :siblings 0
-                       :classes #{{:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Maths)}}}}}
-   {:db/id (iid :EnglishB)
-    :class/students #{{:name  "Anna"
-                       :siblings 1
-                       :classes #{{:+/db/id (iid :Sports)}
-                                  {:+/db/id (iid :Art)}}}
-                      {:name    "Charlie"
-                       :siblings 3
-                       :classes {:+/db/id (iid :Art)}}
-                      {:name    "Francis"
-                       :siblings 0
-                       :classes #{{:+/db/id (iid :Art)}
-                                  {:+/db/id (iid :Maths)}}}
-                      {:name    "Harry"
-                       :siblings 2
-                       :classes #{{:+/db/id (iid :Art)}
-                                  {:+/db/id (iid :Science)}
-                                  {:+/db/id (iid :Maths)}}}
-                      {:name    "Jack"
-                       :siblings 4
-                       :classes #{{:+/db/id (iid :Sports)}
-                                  {:+/db/id (iid :Maths)}}}}}])
+    {:teacher {:name "Mr. Blair"                       ;; Here's Mr Blair
+               :teaches #{{:+/db/id (iid :Art)
+                           :type :art                  ;; He teaches Art
+                           :name "Art"
+                           :accelerated true}
+                          {:+/db/id (iid :Science)}}   ;; He also teaches Science
+               :canTeach #{:maths :science}
+               :pets    #{:fish :bird}}}               ;; And a fish and a bird
+
+    {:teacher {:name "Mr. Carpenter"                   ;; This is Mr Carpenter
+               :canTeach #{:sports :maths}
+               :pets    #{:dog :fish :bird}
+               :teaches #{{:+/db/id (iid :Sports)      ;; He teaches sports
+                           :type :sports
+                           :name "Sports"
+                           :accelerated false
+                           :students #{{:name "Jack"   ;; There's Jack
+                                        :siblings 4    ;; Who is also in EnglishB and Maths
+                                        :classes #{{:+/db/id (iid :EnglishB)
+                                                    :students {:name  "Anna"  ;; There's also Anna in the class
+                                                               :siblings 1
+                                                               :classes #{{:+/db/id (iid :Art)}}}}
+                                                                          {:+/db/id (iid :Maths)}}}}}
+                          {:+/db/id (iid :EnglishB)
+                           :type :english             ;; Now we revisit English B
+                           :name "English B"          ;;  Here are all the additional students
+                           :students #{{:name    "Charlie"
+                                        :siblings 3
+                                        :classes  #{{:+/db/id (iid :Art)}}}
+                                       {:name    "Francis"
+                                        :siblings 0
+                                        :classes #{{:+/db/id (iid :Art)}
+                                                   {:+/db/id (iid :Maths)}}}
+                                       {:name    "Harry"
+                                        :siblings 2
+                                        :classes #{{:+/db/id (iid :Art)}
+                                                   {:+/db/id (iid :Science)}
+                                                   {:+/db/id (iid :Maths)}}}}}}}}
+
+    {:db/id (iid :EnglishA)       ;; What about Engilsh A ?
+     :class {:type :english
+             :name "English A"
+             :teacher {:name "Mr. Anderson" ;; Mr Anderson is the teacher
+                       :teaches  {:+/db/id (iid :Maths)}
+                       :canTeach :maths
+                       :pets     :dog}
+             :students #{{:name "Bobby"   ;; And the students are listed
+                          :siblings 2
+                          :classes  {:+/db/id (iid :Maths)}}
+                         {:name "David"
+                          :siblings 5
+                          :classes #{{:+/db/id (iid :Science)}
+                                     {:+/db/id (iid :Maths)}}}
+                         {:name "Erin"
+                          :siblings 1
+                          :classes #{{:+/db/id (iid :Art)}}}
+                         {:name "Kelly"
+                          :siblings 0
+                          :classes #{{:+/db/id (iid :Science)}
+                                     {:+/db/id (iid :Maths)}}}}}}])
 
 (adi/insert! class-data class-datastore)
 
-### Selecting
+;;### Selecting
 
 ;; A Gentle Intro
 ;;
@@ -192,7 +192,7 @@
  (map #(-> % :class :name))) ;=> ("English A" "Maths")
 
 
-### Updating
+;;### Updating
 
 (-> ;; Find the number of siblings Harry has
  (adi/select {:student/name "Harry"} class-datastore)
@@ -205,7 +205,7 @@
  (adi/select {:student/name "Harry"} class-datastore)
  first :student :siblings) ;=> 4
 
-## Retractions
+;;## Retractions
 
 (->> ;; Find all the students that have class with teachers with dogs
  (adi/select {:student/classes/teacher/pets :dog} class-datastore)
@@ -223,7 +223,7 @@
 ;;=> ("Anna" "Charlie" "Francis" "Harry" "Ivan" "Jack")
 
 
-### Deletions
+;;### Deletions
 (->> ;; See who is playing sports
  (adi/select {:student/classes/type :sports} class-datastore)
  (map #(-> % :student :name)))
