@@ -146,7 +146,7 @@ Now is the fun part: Lets fill in the data. This is one way of filling out the d
 Okay... our data is defined... and...
 
 ```clojure
-(adi/insert! class-data class-datastore)
+(adi/insert! class-datastore class-data)
 ```
 
 ***BAM!!***... We are now ready to query!!!
@@ -158,15 +158,16 @@ Okay... our data is defined... and...
 ;;
 ;; Find the student with the name Harry
 
-(adi/select {:student/name "Harry"} class-datastore) ;=> Returns a map with Harry
+(adi/select class-datastore {:student/name "Harry"}) ;=> Returns a map with Harry
 
 (-> ;; Lets get the database id of the student with the name Harry
- (adi/select {:student/name "Harry"} class-datastore)
+ (adi/select class-datastore {:student/name "Harry"})
  first :db :id) ;=>17592186045432 (Will be different)
 
 (-> ;; Lets do the same with a standard datomic query
- (adi/select '[:find ?x :where
-               [?x :student/name "Harry"]] class-datastore)
+ (adi/select class-datastore
+             '[:find ?x :where
+               [?x :student/name "Harry"]])
  first :db :id) ;=> 17592186045432 (The same)
 
 ;; More Advanced Queries
@@ -174,39 +175,40 @@ Okay... our data is defined... and...
 ;; Now lets query across objects:
 ;;
 (->> ;; Find the student that takes sports
- (adi/select '[:find ?x :where
+ (adi/select  class-datastore
+             '[:find ?x :where
                [?x :student/classes ?c]
-               [?c :class/type :sports]] class-datastore)
+               [?c :class/type :sports]])
  (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
 
 (->> ;; The same query with the keyword syntax 
- (adi/select {:student/classes/type :sports} class-datastore)
+ (adi/select class-datastore {:student/classes/type :sports})
  (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
 
 (->> ;; The same query with the object syntax
-  (adi/select {:student {:classes {:type :sports}}} class-datastore)
+  (adi/select class-datastore {:student {:classes {:type :sports}}})
   (map #(-> % :student :name))) ;=> ("Ivan" "Anna" "Jack")
 
 ;; The following are equivalent:
-(= (adi/select {:student/classes {:type :sports}} class-datastore)
-   (adi/select {:student {:classes/type :sports}} class-datastore)
-   (adi/select {:student/classes/type :sports} class-datastore)
-   (adi/select {:student {:classes {:type :sports}}} class-datastore))
+(= (adi/select class-datastore {:student/classes {:type :sports}})
+   (adi/select class-datastore {:student {:classes/type :sports}})
+   (adi/select class-datastore {:student/classes/type :sports})
+   (adi/select class-datastore {:student {:classes {:type :sports}}}))
 
 
 ;; Full expressiveness on searches:
 ;;
 (->> ;; Find the teacher that teaches a student called Harry
- (adi/select {:teacher/teaches/students/name "Harry"} class-datastore)
+ (adi/select class-datastore {:teacher/teaches/students/name "Harry"})
  (map #(-> % :teacher :name))) ;=> ("Mr. Anderson" "Mr. Carpenter" "Mr. Blair")
 
 (->> ;; Find all students taught by Mr Anderson
- (adi/select {:student/classes/teacher/name "Mr. Anderson" } class-datastore)
+ (adi/select class-datastore {:student/classes/teacher/name "Mr. Anderson" })
  (map #(-> % :student :name))) ;=> ("Ivan" "Bobby" "Erin" "Kelly"
                                ;;   "David" "Harry" "Francis" "Jack")
 
 (->> ;; Find all the students that have class with teachers with fish
- (adi/select {:student/classes/teacher/pets :fish } class-datastore)
+ (adi/select class-datastore {:student/classes/teacher/pets :fish })
  (map #(-> % :student :name)) sort)
 ;=> ("Anna" "Charlie" "David" "Francis" "Harry" "Ivan" "Jack" "Kelly")
 
@@ -214,21 +216,23 @@ Okay... our data is defined... and...
      ;;
      ;;  Find the class with the teacher that teaches
      ;;  a student that takes the class taken by Mr. Anderson
- (adi/select {:class/teacher/teaches/students/classes/teacher/name
-              "Mr. Anderson"} class-datastore)
+ (adi/select  class-datastore   {:class/teacher/teaches/students/classes/teacher/name
+              "Mr. Anderson"})
  (map #(-> % :class :name))) ;=> ("English A" "Maths" "English B"
                              ;;   "Sports" "Art" "Science")
 
 ;; Contraints through addtional map parameters
 ;;
 (->> ;; Find students that have less than 2 siblings and take art
- (adi/select {:student {:siblings (?q < 2) ;; <- WE CAN QUERY!!
-                        :classes/type :art}} class-datastore)
+ (adi/select class-datastore
+    {:student {:siblings (?q < 2) ;; <- WE CAN QUERY!!
+               :classes/type :art}})
  (map #(-> % :student :name))) ;=> ("Erin" "Anna" "Francis")
 
 (->> ;; Find the classes that Mr Anderson teaches David
- (adi/select {:class {:teacher/name "Mr. Anderson"
-                      :students/name "David"}} class-datastore)
+ (adi/select class-datastore
+             {:class {:teacher/name "Mr. Anderson"
+                      :students/name "David"}})
  (map #(-> % :class :name))) ;=> ("English A" "Maths")
 ```
 
@@ -236,14 +240,14 @@ Okay... our data is defined... and...
 
 ```clojure
 (-> ;; Find the number of siblings Harry has
- (adi/select {:student/name "Harry"} class-datastore)
+ (adi/select class-datastore {:student/name "Harry"})
  first :student :siblings) ;=> 2
 
 (-> ;; His mum just had twins!
- (adi/update! {:student/name "Harry"} {:student/siblings 4} class-datastore))
+ (adi/update! class-datastore {:student/name "Harry"} {:student/siblings 4}))
 
 (-> ;; Now how many sibling?
- (adi/select {:student/name "Harry"} class-datastore)
+ (adi/select class-datastore {:student/name "Harry"})
  first :student :siblings) ;=> 4
 ```
 
@@ -251,16 +255,17 @@ Okay... our data is defined... and...
 
 ```clojure
 (->> ;; Find all the students that have class with teachers with dogs
- (adi/select {:student/classes/teacher/pets :dog} class-datastore)
+ (adi/select class-datastore {:student/classes/teacher/pets :dog})
  (map #(-> % :student :name))
  sort)
 ;=> ("Anna" "Bobby" "Charlie" "David" "Erin" "Francis" "Harry" "Ivan" "Jack" "Kelly")
 
 ;;That teacher who teaches english-a's dog just died
-(adi/retract! {:teacher/teaches/name "English A"}
-              {:teacher/pets :dog} class-datastore)
+(adi/retract! class-datastore
+              {:teacher/teaches/name "English A"}
+              {:teacher/pets :dog})
 (->> ;; Find all the students that have class with teachers with dogs
- (adi/select {:student/classes/teacher/pets :dog} class-datastore)
+ (adi/select class-datastore {:student/classes/teacher/pets :dog})
  (map #(-> % :student :name))
  sort)
 ;;=> ("Anna" "Charlie" "Francis" "Harry" "Ivan" "Jack")
@@ -270,23 +275,23 @@ Okay... our data is defined... and...
 
 ```clojure
 (->> ;; See who is playing sports
- (adi/select {:student/classes/type :sports} class-datastore)
+ (adi/select class-datastore {:student/classes/type :sports})
  (map #(-> % :student :name)))
 ;=> ("Ivan" "Anna" "Jack")
 
 ;; Ivan went to another school
-(adi/delete! {:student/name "Ivan"} class-datastore)
+(adi/delete! class-datastore {:student/name "Ivan"})
 
 (->> ;; See who is left in the sports class
- (adi/select {:student/classes/type :sports} class-datastore)
+ (adi/select class-datastore {:student/classes/type :sports})
  (map #(-> % :student :name)))
 ;=> ("Anna" "Jack")
 
 ;; The students in english A had a bus accident
-(adi/delete! {:student/classes/name "English A"} class-datastore)
+(adi/delete! class-datastore {:student/classes/name "English A"})
 
 (->> ;; Who is left at the school
- (adi/select :student/name class-datastore)
+ (adi/select class-datastore :student/name)
  (map #(-> % :student :name)))
 ;=> ("Anna" "Charlie" "Francis" "Jack" "Harry")
 ```
@@ -475,20 +480,20 @@ By Datomic Queries:
 By Id:
 
 ```clojure
-(adi/select 17592186045421 ds)
+(adi/select ds 17592186045421)
 ```
 
 By Hashmap:
 
 ```clojure
-(adi/select {:account/permissions :editor} ds)
+(adi/select ds {:account/permissions :editor})
 
 ```
 
 By Hashset (which returns the union of results):
 
 ```clojure
-(adi/select #{17592186045421 {:account/permissions :editor}} ds)
+(adi/select ds #{17592186045421 {:account/permissions :editor}})
 
 ```
 

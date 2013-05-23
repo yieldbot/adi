@@ -23,8 +23,9 @@
 (fact
   (do
     (def ^:dynamic *conn* (aa/connect! *uri* true))
-    (aa/install-schema (-> s0-env :schema :fgeni) *conn*)
-    (aa/insert! [{:account {:cars 2 :name "adam"}}
+    (aa/install-schema *conn* (-> s0-env :schema :fgeni))
+    (aa/insert! *conn*
+                [{:account {:cars 2 :name "adam"}}
                  {:account {:cars 1 :name "adam"}}
                  {:account {:cars 0 :name "bob"}}
                  {:account {:cars 1 :name "bob"}}
@@ -34,15 +35,15 @@
                  {:account {:cars 1 :name "dave"}}
                  {:account {:cars 1 :name "dave"}}
                  {:account {:cars 2 :name "dave"}}]
-                *conn* s0-env)))
+                 s0-env)))
 
 (fact "select"
-  (aa/select {:account/name "chris"} (d/db *conn*) s0-env)
+  (aa/select (d/db *conn*) {:account/name "chris"} s0-env)
   => (just-in [{:account {:cars 0, :name "chris"}, :db hash-map?}
                {:account {:cars 2, :name "chris"}, :db hash-map?}]
               :in-any-order)
 
-  (aa/select {:account {:cars (?q < 2)}} (d/db *conn*) s0-env)
+  (aa/select (d/db *conn*) {:account {:cars (?q < 2)}} s0-env)
   => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
                {:account {:name "bob", :cars 0}, :db hash-map?}
                {:account {:name "bob", :cars 1}, :db hash-map?}
@@ -51,38 +52,40 @@
                {:account {:name "dave", :cars 1}, :db hash-map?}]
               :in-any-order)
 
-  (aa/select {:account {:cars (?q < 2)
-                        :name #{(?not "bob") (?not "dave")}}} (d/db *conn*) s0-env)
+  (aa/select (d/db *conn*)
+             {:account {:cars (?q < 2)
+                        :name #{(?not "bob") (?not "dave")}}} 
+              s0-env)
   => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
                {:account {:name "chris", :cars 0}, :db hash-map?}])
 
-  (aa/select {:account {:cars (?q < 2)
+  (aa/select (d/db *conn*)
+             {:account {:cars (?q < 2)
                         :name #{(?not "bob") (?not "dave")}}}
-             (d/db *conn*)
              (assoc s0-env :view {:account/name :hide}))
   => (just-in [{:account {:cars 1}, :db hash-map?}
                {:account {:cars 0}, :db hash-map?}]))
 
 (fact "update"
-  (aa/update- {:account/name "chris"}
+  (aa/update- (d/db *conn*)
+              {:account/name "chris"}
               {:account/cars 1}
-              (d/db *conn*)
               s0-env)
   => (just-in [{:db/id long?, :account/cars 1}
                {:db/id long?, :account/cars 1}]))
 
 (fact "retract"
-  (aa/retract- {:account/name "chris"}
+  (aa/retract- (d/db *conn*)
+               {:account/name "chris"}
                [:account/cars]
-               (d/db *conn*)
                s0-env)
   => (just-in [[:db/retract long? :account/cars 0]
             [:db/retract long? :account/cars 2]]))
 
 
 (fact "delete"
-  (aa/delete- {:account/name "chris"}
-              (d/db *conn*)
+  (aa/delete- (d/db *conn*)
+              {:account/name "chris"}
               s0-env)
   (just-in [[:db.fn/retractEntity long?]
          [:db.fn/retractEntity long?]]))
@@ -103,8 +106,9 @@
 
 (def ^:dynamic *uri* "datomic:mem://adi-test-api-linked")
 (def ^:dynamic *conn* (aa/connect! *uri* true))
-(aa/install-schema d1-fgeni *conn*)
-(aa/insert! {:node {:value "root"
+(aa/install-schema *conn* d1-fgeni)
+(aa/insert! *conn*
+            {:node {:value "root"
                     :children #{{:value "l1A"
                                  :children #{{:value "l1A l2A"}
                                              {:value "l1A l2B"}
@@ -120,7 +124,7 @@
                                              {:value "l1C l2B"}
                                              {:value "l1C l2C"}
                                              {:value "l1C l2D"}}}}}}
-            *conn* d1-env)
+            d1-env)
 
 (def l1-env
   (process-init-env {:link {:value  [{:fulltext true}]
@@ -134,7 +138,7 @@
                                         :ref  {:ns :node
                                                :rval :children}}]}}))
 (def l1-fgeni (-> l1-env :schema :fgeni))
-(aa/install-schema l1-fgeni *conn*)
+(aa/install-schema *conn* l1-fgeni)
 
 
 (def l1-data
@@ -143,7 +147,7 @@
           :next {:value "l2"
                  :next {:value "l3"
                         :next {:+ {:db/id (iid :start)}}}}}})
-(aa/insert! l1-data *conn* l1-env)
+(aa/insert! *conn* l1-data l1-env)
 
 (fact "select"
   (d/q '[:find ?v :where [?e :node/value ?v]] (d/db *conn*))
@@ -152,20 +156,20 @@
        ["l1B"] ["l1B l2A"] ["l1B l2B"] ["l1B l2C"] ["l1B l2D"]
        ["l1C"] ["l1C l2A"] ["l1C l2B"] ["l1C l2C"] ["l1C l2D"]}
 
-  (aa/select {:node/value (?fulltext "l2A")} (d/db *conn*) d1-env)
+  (aa/select (d/db *conn*) {:node/value (?fulltext "l2A")} d1-env)
   => (just-in [{:node {:value "l1A l2A", :parent anything} :db anything}
                {:node {:value "l1B l2A", :parent anything} :db anything}
                {:node {:value "l1C l2A", :parent anything} :db anything}]
               :in-any-order)
 
-  (aa/select {:node/value (?fulltext "l2A")} (d/db *conn*)
+  (aa/select (d/db *conn*){:node/value (?fulltext "l2A")}
              (assoc d1-env :view {:node/parent :hide}))
   => (just-in [{:node {:value "l1A l2A"} :db anything}
                {:node {:value "l1B l2A"} :db anything}
                {:node {:value "l1C l2A"} :db anything}]
               :in-any-order)
 
-  (aa/select {:node/value "l1A"} (d/db *conn*)
+  (aa/select (d/db *conn*) {:node/value "l1A"}
              (assoc d1-env :view {:node/parent :hide
                                   :node/children :show}))
   => (just-in
@@ -177,7 +181,7 @@
                           {:value "l1A l2D" :+ anything}]}}])
 
 
-  (aa/select {:node/value (?fulltext "l1C")} (d/db *conn*) d1-env)
+  (aa/select (d/db *conn*) {:node/value (?fulltext "l1C")} d1-env)
   => (just-in [{:node {:value "l1C", :parent anything}, :db anything}
                {:node {:value "l1C l2A", :parent anything} :db anything}
                {:node {:value "l1C l2B", :parent anything} :db anything}
@@ -185,10 +189,10 @@
                {:node {:value "l1C l2D", :parent anything} :db anything}]
            :in-any-order)
 
-  (aa/select {:node {:children {:value "l1C"}}} (d/db *conn*) d1-env)
+  (aa/select (d/db *conn*) {:node {:children {:value "l1C"}}} d1-env)
   => (just-in [{:node {:value "root"}, :db anything}])
 
-  (aa/select {:node {:parent {:value "l1C"}}} (d/db *conn*) d1-env)
+  (aa/select (d/db *conn*) {:node {:parent {:value "l1C"}}} d1-env)
   => (just-in [{:node {:value "l1C l2A", :parent anything} :db anything}
                {:node {:value "l1C l2B", :parent anything} :db anything}
                {:node {:value "l1C l2C", :parent anything} :db anything}
@@ -197,7 +201,7 @@
 
 (d1-fgeni :node/parent)
 
-(def l1a-ent (aa/select-first-entity {:node/value "l1A"} (d/db *conn*) d1-env))
+(def l1a-ent (aa/select-first-entity (d/db *conn*) {:node/value "l1A"}  d1-env))
 
 (fact
   (aa/linked-nss d1-fgeni {:node/parent :ids})
@@ -230,7 +234,7 @@
   => (n-of long? 16)
 
   (aa/linked-ids
-   (aa/select-first-entity {:node/value "l1A"} (d/db *conn*)
+   (aa/select-first-entity (d/db *conn*) {:node/value "l1A"}
                            d1-env)
    {:node/children :show}
    d1-env))
@@ -244,19 +248,19 @@
       :leaf/node :ids
       :leaf/value :show}
 
-  (aa/linked-entities {:node/value "l1A"} (d/db *conn*) d1-env)
+  (aa/linked-entities (d/db *conn*) {:node/value "l1A"} d1-env)
   => (two-of ref?)
 
-  (aa/linked-entities {:node/value "l1A"} (d/db *conn*)
+  (aa/linked-entities (d/db *conn*) {:node/value "l1A"}
                       (assoc d1-env :view {:node/children :show}))
   => (five-of ref?)
 
-  (aa/linked {:node/value "l1A"} (d/db *conn*) d1-env)
+  (aa/linked (d/db *conn*) {:node/value "l1A"} d1-env)
   => (contains-in [{:node {:value "root"}}
                    {:node {:value "l1A"}}]
                   :in-any-order)
 
-  (aa/linked {:node/value "l1A"} (d/db *conn*)
+  (aa/linked (d/db *conn*) {:node/value "l1A"}
              (assoc d1-env :view {:node/children :show}))
   => (contains-in [{:node {:value "l1A l2B"}}
                    {:node {:value "l1A l2C"}}
@@ -265,7 +269,7 @@
                    {:node {:value "l1A"}}]
 				  :in-any-order)
 
-  (aa/linked {:node/value "l1A"} (d/db *conn*)
+  (aa/linked (d/db *conn*) {:node/value "l1A"} 
              (assoc d1-env :view {:node/children :show :node/parent :show}))
   => (contains-in [{:node {:value "root"}}
                    {:node {:value "l1C l2D"}}
@@ -284,7 +288,7 @@
                    {:node {:value "l1B l2B"}}
                    {:node {:value "l1B"}}]
                   :in-any-order)
-  (aa/linked {:node/value "l1A l2A"} (d/db *conn*)
+  (aa/linked (d/db *conn*) {:node/value "l1A l2A"}
 	         (assoc d1-env :view {:node/parent :show}))
   => (just [(contains-in {:node {:value "root"}})
             (contains-in {:node {:value "l1A"}})

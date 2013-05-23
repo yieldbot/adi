@@ -36,8 +36,8 @@
 
 
 (emit-datoms-insert l1-data l1-env)
-(aa/install-schema l1-fgeni *conn*)
-(aa/insert! l1-data *conn* l1-env)
+(aa/install-schema *conn* l1-fgeni)
+(aa/insert! *conn* l1-data l1-env)
 
 
 (fact "select"
@@ -46,47 +46,48 @@
                [symbol? :link/value "l1"]])
 
   (-> (aa/select-entities
+       (d/db *conn*)
        '[:find ?x :where
-         [?x :link/value "l1"]] (d/db *conn*)
+         [?x :link/value "l1"]] 
          {})
       first
       seq)
   => (contains [[:link/value "l1"]])
 
-  (-> (aa/select-entities {:link/value "l1"} (d/db *conn*) l1-env)
+  (-> (aa/select-entities (d/db *conn*) {:link/value "l1"} l1-env)
       first
       seq)
   => (contains [[:link/value "l1"]])
 
-  (-> (aa/select-entities {:link/prev/value "l3"} (d/db *conn*) l1-env)
+  (-> (aa/select-entities (d/db *conn*) {:link/prev/value "l3"} l1-env)
       first
       seq)
   => (contains [[:link/value "l1"]])
 
-  (aa/select {:link/value "l1"} (d/db *conn*) l1-env)
+  (aa/select (d/db *conn*) {:link/value "l1"} l1-env)
   => (contains-in [{:link {:next anything, :value "l1"}}])
 
-  (aa/select {:link/next/value "l2"} (d/db *conn*) l1-env)
+  (aa/select (d/db *conn*) {:link/next/value "l2"} l1-env)
   => (contains-in [{:link {:next anything, :value "l1"}}])
 
-  (aa/select {:link/prev/value "l3"} (d/db *conn*) l1-env)
+  (aa/select (d/db *conn*) {:link/prev/value "l3"} l1-env)
   => (contains-in [{:link {:next anything, :value "l1"}}]))
 
 
 (fact "select"
-  (aa/select {:link/prev/value "l3"}
-             (d/db *conn*)
+  (aa/select (d/db *conn*)
+             {:link/prev/value "l3"}
              (assoc l1-env :view {:link/next :hide}))
   => (just-in [{:link {:value "l1"}, :db anything}])
 
 
-  (aa/select {:link/next/next/value "l3"}
-             (d/db *conn*)
+  (aa/select (d/db *conn*)
+             {:link/next/next/value "l3"}
              (assoc l1-env :view {:link/next :hide}))
   => (just-in [{:link {:value "l1"}, :db anything}])
 
-  (aa/select {:link/value "l1"}
-             (d/db *conn*)
+  (aa/select (d/db *conn*)
+             {:link/value "l1"}
              (assoc l1-env :view {:link/next :show}))
   => (just-in [{:db anything
                 :link {:value "l1"
@@ -98,8 +99,8 @@
 
 
 (fact "reverse selection"
-  (aa/select {:link/value "l1"}
-             (d/db *conn*)
+  (aa/select (d/db *conn*)
+             {:link/value "l1"}
              (assoc l1-env :view {:link/prev :ids
                                   :link/next :show}))
   => (contains-in [{:link {:value "l1"
@@ -110,8 +111,8 @@
                                          :prev #{hash-map?}
                                          :next hash-map?}}}}])
 
-  (aa/select {:link/value "l1"}
-             (d/db *conn*)
+  (aa/select (d/db *conn*)
+             {:link/value "l1"}
              (assoc l1-env :view {:link/prev :show
                                   :link/next :hide}))
   => (contains-in [{:link {:value "l1"
@@ -119,8 +120,8 @@
                                     :prev #{{:prev #{hash-map?},
                                              :value "l2"}}}}}}])
 
-  (aa/select {:link/value "l3"}
-             (d/db *conn*)
+  (aa/select (d/db *conn*)
+             {:link/value "l3"}     
              (assoc l1-env :view {:link/prev :show
                                   :link/next :hide}))
 

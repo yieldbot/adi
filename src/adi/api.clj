@@ -11,7 +11,7 @@
             [adi.emit.view :as av]
             [adi.schema :as as]))
 
-(defn install-schema [fgeni conn]
+(defn install-schema [conn fgeni]
   (d/transact conn (emit-schema fgeni)))
 
 (defn connect!
@@ -24,13 +24,13 @@
 (defn insert- [data env]
   (emit-datoms-insert data env))
 
-(defn insert! [data conn env]
+(defn insert! [conn data env]
   (d/transact conn (insert- data env)))
 
-(defn select-ids [val db env]
+(defn select-ids [db val env]
   (cond (number? val) (hash-set val)
 
-        (keyword? val) (select-ids {val '_} db env)
+        (keyword? val) (select-ids db {val '_} env)
 
         (hash-map? val)
         (->> (d/q (emit-query val env) db)
@@ -43,21 +43,21 @@
              set)
 
         (or (set? val))
-        (set (mapcat #(select-ids % db env) val))))
+        (set (mapcat #(select-ids db % env) val))))
 
-(defn select-entities [val db env]
-  (map #(d/entity db %) (select-ids val db env)))
+(defn select-entities [db val env]
+  (map #(d/entity db %) (select-ids db val env)))
 
-(defn select-first-entity [val db env]
-  (first (select-entities val db env)))
+(defn select-first-entity [db val env]
+  (first (select-entities db val env)))
 
-(defn update- [val data db env]
-  (let [ids     (select-ids val db env)
+(defn update- [db val data env]
+  (let [ids     (select-ids db val env)
         id-data (map #(assoc data :db/id %) ids)]
     (mapcat #(emit-datoms-update % env) id-data)))
 
-(defn update! [val data conn env]
-  (d/transact conn (update- val data (d/db conn) env)))
+(defn update! [conn val data env]
+  (d/transact conn (update- (d/db conn) val data env)))
 
 (defn- retract-cmd [ent k]
   (let [id  (:db/id ent)
@@ -68,35 +68,35 @@
         (map (fn [x] [:db/retract id k x]) v)
         [:db/retract id k v]))))
 
-(defn retract- [val ks db env]
-  (let [ents (select-entities val db env)]
+(defn retract- [db val ks env]
+  (let [ents (select-entities db val env)]
     (->> (for [ent ents
                k ks]
            (retract-cmd ent k))
          flatten-to-vecs
          (filter identity))))
 
-(defn retract! [val ks conn env]
-  (d/transact conn (retract- val ks (d/db conn) env)))
+(defn retract! [conn val ks env]
+  (d/transact conn (retract- (d/db conn) val ks env)))
 
 (defn delete-
-  [val db env]
-  (let [ids  (select-ids val db env)]
+  [db val env]
+  (let [ids  (select-ids db val env)]
     (map (fn [x] [:db.fn/retractEntity x]) ids)))
 
 (defn delete!
-  [val conn env]
-  (d/transact conn (delete- val (d/db conn) env)))
+  [conn val env]
+  (d/transact conn (delete- (d/db conn) val env)))
 
-(defn select [val db env]
+(defn select [db val env]
   (let [menv (if (-> env :deprocess)
                env (assoc env :deprocess
                           {:data-default :show
                            :refs-default :ids}))]
     (map #(ad/deprocess % menv)
-         (select-entities val db env))))
+         (select-entities db val env))))
 
-(defn select-first [val db env]  (first (select val db env)))
+(defn select-first [db val env]  (first (select db val env)))
 
 (declare linked-ids)
 
@@ -119,7 +119,7 @@
           (linked-ids-ref res vnss env exclude)
           (vector? res)
           (mapcat #(linked-ids-ref % vnss env exclude) res))))
-
+          
 (defn linked-ids
   ([ent env]
      (let [vw (or (-> env :view)
@@ -135,16 +135,14 @@
                   (mapcat #(linked-ids-key % ent vnss env exclude))
                   (filter identity)))))
 
-(defn linked-entities
-  [val db env]
-  (let [ents (select-entities val db env)]
-    (-> (mapcat #(linked-ids % env) ents)
-        (set)
-        (select-entities db env))))
+(defn linked-all-ids [db val env]
+  (let [ents (select-entities db val env)]
+      (->> ents (mapcat #(linked-ids % env)) set)))
 
-(defn linked [val db env]
+(defn linked-entities
+  [db val env]
+    (select-entities db (linked-all-ids db val env) env))
+
+(defn linked [db val env]
   [val db env]
-  (let [ents (select-entities val db env)]
-    (-> (mapcat #(linked-ids % env) ents)
-        (set)
-        (select db (dissoc env :view :deprocess)))))
+    (select db (linked-all-ids db val env) (dissoc env :view :deprocess)))
