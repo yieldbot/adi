@@ -3,54 +3,63 @@
         hara.common
         adi.emit.adjust))
 
+
+(fact "adjust-patch-enum"
+  (adjust-patch-enum  :anything {})
+  => :anything
+  (adjust-patch-enum  :apples {:type :enum :enum {:ns :likes.food}})
+  => :apples
+  (adjust-patch-enum  :likes.food/apples {:type :enum :enum {:ns :likes.food}})
+  => :apples)
+
 (fact "adjust-safe-check"
-  (adjust-safe-check (fn [x] (throw (Exception.))) :anything {})
+  (adjust-safe-check :anything nil (fn [x] (throw (Exception.))) {})
   => falsey
 
-  (adjust-safe-check long? "1" {})
+  (adjust-safe-check "1" nil long? {})
   => falsey
 
-  (adjust-safe-check long? 2 {})
+  (adjust-safe-check 2 nil long? {})
   => true
 
-  (adjust-safe-check string? "1" {})
+  (adjust-safe-check "1" nil string? {})
   => true
 
-  (adjust-safe-check long? '_ {})
+  (adjust-safe-check '_ nil long?  {})
   => true
 
-  (adjust-safe-check (fn [x] (throw (Exception.))) '_ {})
+  (adjust-safe-check '_ nil (fn [x] (throw (Exception.)))  {})
   => true
 
-  (adjust-safe-check long? '[< _ 3] {})
+  (adjust-safe-check '[< _ 3] nil long? {})
   => falsey
 
-  (adjust-safe-check long? '[< _ 3] {:options {:query? true}})
+  (adjust-safe-check '[< _ 3] nil long? {:options {:query? true}})
   => true)
 
 (fact "adjust-value-sets-only"
-  (adjust-value-sets-only #{} string? {} nil)
+  (adjust-value-sets-only #{} nil string? {} nil)
   => #{}
 
-  (adjust-value-sets-only "1" string? {} nil)
+  (adjust-value-sets-only "1" nil string? {} nil)
   => #{"1"}
 
-  (adjust-value-sets-only #{"1"} string? {} nil)
+  (adjust-value-sets-only #{"1"} nil string? {} nil)
   => #{"1"}
 
-  (adjust-value-sets-only #{"1" "2"} string? {} nil)
+  (adjust-value-sets-only #{"1" "2"} nil string? {} nil)
   => #{"1" "2"}
 
-  (adjust-value-sets-only 1 string? {} nil)
+  (adjust-value-sets-only 1 nil string? {} nil)
   => (throws Exception)
 
-  (adjust-value-sets-only #{1} string? {} nil)
+  (adjust-value-sets-only #{1} nil string? {} nil)
   => (throws Exception)
 
-  (adjust-value-sets-only #{1 "2"} string? {} nil)
+  (adjust-value-sets-only #{1 "2"} nil string? {} nil)
   => (throws Exception)
 
-  (adjust-value-sets-only #{'[< _ 3] '[> _ 6]} long?
+  (adjust-value-sets-only #{'[< _ 3] '[> _ 6]} nil  long?
                           {:options {:query? true}} nil)
   => #{'[< _ 3] '[> _ 6]}
   )

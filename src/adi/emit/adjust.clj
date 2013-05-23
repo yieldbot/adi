@@ -1,5 +1,6 @@
 (ns adi.emit.adjust
   (:use [hara.common :only [error suppress]]
+        [hara.hash-map :only [keyword-ns? keyword-stem]]
         [hara.control :only [if-let]])
   (:require [adi.schema :as as])
   (:refer-clojure :exclude [if-let]))
@@ -35,28 +36,36 @@
       (adjust-value v meta chk env err-one err-many))
     v))
 
+(defn adjust-patch-enum [v meta]
+  (if (and (= :enum (:type meta))
+           (keyword-ns? v (-> meta :enum :ns)))
+    (keyword-stem v)
+    v))
+
 (defn adjust-value [v meta chk env err-one err-many]
   (if (-> env :options :sets-only?)
-      (adjust-value-sets-only v chk env err-many)
+      (adjust-value-sets-only v meta chk env err-many)
       (adjust-value-normal v meta chk env err-one err-many)))
 
-(defn adjust-safe-check [chk v env]
+(defn adjust-safe-check [v meta chk env]
   (or (= v '_)
-      (suppress (chk v))
-      (and (-> env :options :query?) (vector? v))))
+      (suppress (chk (adjust-patch-enum v meta)))
+      (and (-> env :options :query?) (vector? v)) ;; TODO This is going out
+      (and (-> env :options :query?) (list? v))))
 
-(defn adjust-value-sets-only [v chk env err-many]
-  (cond (adjust-safe-check chk v env) #{v}
-        (and (set? v) (every? #(adjust-safe-check chk % env) v)) v
+(defn adjust-value-sets-only [v meta chk env err-many]
+  (cond (and (set? v) (every? #(adjust-safe-check % meta chk env) v)) v
+        (adjust-safe-check v meta chk env) #{v}
+
         :else (error err-many)))
 
 (defn adjust-value-normal [v meta chk env err-one err-many]
   (let [c (or (:cardinality meta) :one)]
     (cond (= c :one)
-          (if (adjust-safe-check chk v env) v
+          (if (adjust-safe-check v meta chk env) v
               (error err-one))
 
           (= c :many)
-          (cond (adjust-safe-check chk v env) #{v}
-                (and (set? v) (every? #(adjust-safe-check chk % env) v)) v
+          (cond (adjust-safe-check v meta chk env) #{v}
+                (and (set? v) (every? #(adjust-safe-check % meta chk env) v)) v
                 :else (error err-many)))))
