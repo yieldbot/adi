@@ -64,7 +64,7 @@
 
 (defn process-make-key-tree
   ([data geni]
-     (let [tdata (-> (treeify-keys-nested data) ;;; **** THIS IS THE PROBLEM
+     (let [tdata (-> (treeify-keys-nested data)
                      (process-unnest-key :+))]
        (process-make-key-tree tdata geni {})))
   ([data geni output]
@@ -111,16 +111,6 @@
                     :sets-only? (or (:sets-only? opts) false)}]
        (assoc env :schema schema :options mopts))))
 
-(defn process-assoc-keyword
-  ([output meta k v]
-     (let [t   (:type meta)
-           kns (-> meta t :ns)]
-       (cond (set? v)
-             (assoc output k (set (map #(keyword-join [kns %]) v)))
-
-             :else
-             (assoc output k (keyword-join [kns v]))))))
-
 (defn process-init
   ([data geni env]
      (let [nss (process-make-nss data geni)]
@@ -149,11 +139,28 @@
                (error "(" k ", " v ") not schema definition:\n" geni)))
        output)))
 
-
 (defn process-init-ref [meta rf env]
-  (let [nsvec (keyword-split (-> meta :ref :ns))
-        data  (nest-keys rf nsvec #{:+ :#})]
-    (process-init data (-> env :schema :geni) env)))
+  (cond (or (long? rf) (db-id? rf))
+        {:db {:id rf}}
+        :else
+        (let [nsvec (keyword-split (-> meta :ref :ns))
+              data  (nest-keys rf nsvec #{:+ :#})]
+            (process-init data (-> env :schema :geni) env))))
+
+(defn process-assoc-keyword-join [kns v]
+  (cond (= v '_) v
+        (= (keyword-ns v) kns) v
+        :else (keyword-join [kns v])))
+
+(defn process-assoc-keyword
+  ([output meta k v]
+     (let [t   (:type meta)
+           kns (-> meta t :ns)]
+       (cond (set? v)
+             (assoc output k (set (map #(process-assoc-keyword-join kns %) v)))
+
+             :else
+             (assoc output k (process-assoc-keyword-join kns v))))))
 
 (defn process-init-assoc [output [meta] v env]
   (cond

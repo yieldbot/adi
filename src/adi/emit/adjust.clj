@@ -1,5 +1,6 @@
 (ns adi.emit.adjust
-  (:use [hara.control :only [if-let]])
+  (:use [hara.common :only [error suppress]]
+        [hara.control :only [if-let]])
   (:require [adi.schema :as as])
   (:refer-clojure :exclude [if-let]))
 
@@ -12,7 +13,7 @@
 (defn adjust
   "Adjusts the `v` according to `:cardinality` in `meta` or the `:sets-only`
    flag in `(env :options)`. Checks to see if the value is of correct type
-   and has an optional `:restrict` parameter as well as ; `:restrict?` flag,
+   and has an optional `:restrict` parameter and it matches the `:restrict?` flag,
    also defined in `(env :options)`."
   [v meta env]
   (-> (adjust-chk-type v meta env)
@@ -40,22 +41,22 @@
       (adjust-value-normal v meta chk env err-one err-many)))
 
 (defn adjust-safe-check [chk v env]
-  (or (try (chk v) (catch Exception e))
-      (= v '_)
+  (or (= v '_)
+      (suppress (chk v))
       (and (-> env :options :query?) (vector? v))))
 
 (defn adjust-value-sets-only [v chk env err-many]
   (cond (adjust-safe-check chk v env) #{v}
         (and (set? v) (every? #(adjust-safe-check chk % env) v)) v
-        :else (throw (Exception. err-many))))
+        :else (error err-many)))
 
 (defn adjust-value-normal [v meta chk env err-one err-many]
   (let [c (or (:cardinality meta) :one)]
     (cond (= c :one)
           (if (adjust-safe-check chk v env) v
-              (throw (Exception. err-one)))
+              (error err-one))
 
           (= c :many)
           (cond (adjust-safe-check chk v env) #{v}
                 (and (set? v) (every? #(adjust-safe-check chk % env) v)) v
-                :else (throw (Exception. err-many))))))
+                :else (error err-many)))))

@@ -96,10 +96,18 @@
                            :type :keyword}]
                       :chris {})
   => {:name :chris}
-
+  
+  (process-init-assoc {} [{:ident :name
+                           :type  :keyword
+                           :keyword  {:ns :name}
+                           :cardinality :many}]
+                      #{:adam :bob :chris} {})
+  => {:name #{:name/adam :name/bob :name/chris}}
+  
+  
   (process-init-assoc {} [{:ident :name
                            :type  :enum
-                           :keyword  {:ns :name}
+                           :enum  {:ns :name}
                            :cardinality :many}]
                       #{:adam :bob :chris} {})
   => {:name #{:name/adam :name/bob :name/chris}}

@@ -1,11 +1,11 @@
 (ns adi.utils
-  (:use [hara.common :only [hash-map?]]
+  (:use [hara.common :only [hash-map? long?]]
         [hara.hash-map :only [keyword-contains? keyword-ns]]
         [datomic.api :only [tempid]]))
 
 (defn enum?
   "Returns `true` if `x` is an enum keyword"
-  [x] (keyword? x))
+  [x] (or (keyword? x) (long? x)))
 
 (defn db-id?
   "Returns `true` if `x` implements `datomic.db.DbId"
@@ -16,9 +16,9 @@
   [x] (instance? datomic.query.EntityMap x))
 
 (defn ref?
-  "Returns `true` if `x` implements `clojure.lang.IPersistentMap`
-   or is of type `datomic.query.EntityMap`."
-  [x] (or (hash-map? x) (entity? x)))
+  "Returns `true` if `x` implements `clojure.lang.APersistentMap`
+   or is of type `datomic.query.EntityMap` or is a long or db-id."
+  [x] (or (hash-map? x) (entity? x) (db-id? x) (long? x)))
 
 (defn iid
   "Constructs a new id"

@@ -56,10 +56,10 @@
 
 (defn emit-query [data env]
   (let [menv (merge-nested env {:options {:restrict? false
-                                      :required? false
-                                      :defaults? false
-                                      :sets-only? true
-                                      :query? true}
+                                          :required? false
+                                          :defaults? false
+                                          :sets-only? true
+                                          :query? true}
                             :generate {:syms {:current true}}})
         chdata  (-> data
                     (process menv)

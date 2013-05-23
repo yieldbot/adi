@@ -255,8 +255,7 @@
 
 (defn make-enum-rel [[enmeta]]
   (-> enmeta
-      (assoc :type :ref)
-      (assoc :ref (:enum enmeta))
+      (assoc :type :ref :ref (:enum enmeta))
       (dissoc :enum)
       (assoc-in [:ref :type] :enum-rel)
       vector))

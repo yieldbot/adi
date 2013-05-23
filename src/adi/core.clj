@@ -36,6 +36,15 @@
 (defn select [ds val & args]
   (aa/select (d/db (:conn ds)) val (merge-args ds args)))
 
+(defn select-first [ds val & args]
+  (first (apply select ds val args)))
+
+(defn select-ids [ds val & args]
+  (aa/select-ids (d/db (:conn ds)) val (merge-args ds args)))
+
+(defn select-entities [ds val & args]
+  (aa/select-entities (d/db (:conn ds)) val (merge-args ds args)))
+
 (defn delete! [ds val & args]
   (aa/delete! (:conn ds) val (merge-args ds args)))
 
@@ -46,11 +55,6 @@
   (aa/retract! (:conn ds) val ks (merge-args ds args)))
 
 (comment
-
-  (defn select-ids [ds val & args]
-    (aa/select-ids (d/db (:conn ds)) val (merge-args ds args)))
-  (defn select-entities [ds val & args]
-    (aa/select-entities (d/db (:conn ds)) val (merge-args ds args)))
 
   (defn select-first-entity [ds val & args]
     (first (select-entities (merge-args ds args) val)))
