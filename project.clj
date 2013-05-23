@@ -1,4 +1,4 @@
-(defproject adi "0.1.2-SNAPSHOT"
+(defproject adi "0.1.2"
   :description "adi (a datomic interface) simplifies usage of datomic by providing
                 a common query, insertion and manipulation interface that produce
                 structured data, yet at the same time keeping with the 'more is less'

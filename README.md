@@ -20,7 +20,7 @@ The key to understanding `adi` lies in understanding the power of a schema. The 
 In your project file, add
 
 ```clojure
-[adi "0.1.1"]
+[adi "0.1.2"]
 ```
 
 ### The Overview
