@@ -43,7 +43,7 @@
  (?q not= val))
 
 (defn ?fulltext [val]
- [[(list 'fulltext '$ '??attr val) [['??sym '??]]]])
+ [[(list 'fulltext '$ '??attr val) [['??sym '?]]]])
 
 (defn ?gensym
   "Returns a new datomic symbol with a unique name. If a prefix string

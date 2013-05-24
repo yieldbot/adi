@@ -6,15 +6,15 @@
        [adi.emit.characterise :only [characterise]]
        midje.sweet))
 
-(fact "?q macro"
+#_(fact "?q macro"
   (?q < 3) => '[[??sym ??attr ??] [(< ?? 3)]]
   (?q not= 3) => '[[??sym ??attr ??] [(not= ?? 3)]])
 
-(fact "?not"
+#_(fact "?not"
   (?not 9) => '[[??sym ??attr ??] [(not= ?? 9)]]
   (?not "this") => '[[??sym ??attr ??] [(not= ?? "this")]])
 
-(fact "?fulltext"
+#_(fact "?fulltext"
   (?fulltext "hello") => '[[(fulltext $ ??attr "hello") [[??sym ??]]]])
 
 (defn query-env [env]
@@ -31,7 +31,7 @@
               (query-env s7-env))
   => '[[?e1 :account/name "chris"]]
 
-  (query-data {:data-many {:account/name #{(?q = "hello")}}
+  (query-data {:data-many {:account/name #{'(= "hello")}}
                          :# {:sym '?x}}
                         (query-env s7-env))
   => '[[?x :account/name ?e1]
@@ -69,8 +69,8 @@
   (query-q {:# {:q '[?e :node/value "root"]}})
   => '[?e :node/value "root"]
 
-  (query-data-val '?x :node/value '[[??sym ??attr ??]
-                                    [(not= ?? "undefined")]]
+  (query-data-val '?x :node/value '[[??sym ??attr ?]
+                                    [(not= ? "undefined")]]
                   (query-env s6-env))
   => '[[?x :node/value ?e1]
        [(not= ?e1 "undefined")]]
@@ -89,9 +89,8 @@
        [?x :node/parent ?e2]
        [?e2 :node/value "root"]])
 
-
 (fact "emit-query-list"
-  (emit-query {:account/id '[[??sym ??attr ??] [(< ?? 3)]]}
+  (emit-query {:account/id '[[??sym ??attr ?] [(< ? 3)]]}
               (query-env s7-env))
   => '[:find ?e1 :where
        [?e1 :account/id ?e2]
@@ -125,20 +124,20 @@
   (emit-query {:account/id '#{(> 3) (< 6 ?)}} (query-env s7-env))
   => '[:find ?e1 :where
        [?e1 :account/id ?e2]
-       [(> ?e2 3)]
+       [(< 6 ?e2)]
        [?e1 :account/id ?e3]
-       [(< 6 ?e3)]]
+       [(> ?e3 3)]]
 
   (emit-query {:# {:sym '?x}
                :account/id '#{(> 3) (?not 6)}
                :account/name '(?fulltext "chris")}
               (query-env s7-env))
   => '[:find ?x :where
-       [(fulltext $ :account/name "chris") [[?x ?e2]]]
-       [?x :account/id ?e3]
-       [(not= ?e3 6)]
-       [?x :account/id ?e4]
-       [(> ?e4 3)]]
+      [(fulltext $ :account/name "chris") [[?x ?e2]]]
+      [?x :account/id ?e3]
+      [(> ?e3 3)]
+      [?x :account/id ?e4]
+      [(not= ?e4 6)]]
 
   (emit-query {:# {:sym '?x}
                :node/children/parent/parent/value '(?not 4)}

@@ -42,7 +42,7 @@
   [?init [(list 'not= '? val)]])
 
 (defn fulltext-fn [val]
-  [[('fulltext '$ '??attr val)] [['??sym '?]]])
+  [[(list 'fulltext '$ '??attr val) [['??sym '?]]]])
 
 (defn query-parse-list [[x & xs :as lst]]
   (cond
