@@ -2,6 +2,7 @@
   (:use [adi.emit.process :only [process-init-env]])
   (:require [adi.schema :as as]
             [adi.api :as aa]
+            [adi.api.schema :as aas]
             [datomic.api :as d]))
 
 (defn init-schema [ds]
@@ -53,6 +54,7 @@
 
 (defn retract! [ds val ks & args]
   (aa/retract! (:conn ds) val ks (merge-args ds args)))
+
 
 (comment
 

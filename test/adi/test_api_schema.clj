@@ -1,67 +1,10 @@
 (ns adi.test-api-schema
  (:use midje.sweet
        adi.utils
-       adi.schema
-       hara.common
-       hara.hash-map
+       adi.api.schema
        hara.checkers)
  (:require [datomic.api :as d]
            [adi.core :as adi]))
-
-(defn schema-properties [ds]
-  (let [data (d/q '[:find ?ident ?type ?cardinality ?e :where
-                    [?e :db/ident ?ident]
-                    [?e :db/valueType ?t]
-                    [?t :db/ident ?type]
-                    [?e :db/cardinality ?c]
-                    [?c :db/ident ?cardinality]]
-                  (d/db (ds :conn)))]
-    (zipmap (map first data) data)))
-
-(defn schema-idents [ds]
-  (d/q '[:find ?ident ?e :where
-         [?e :db/ident ?ident]]
-       (d/db (ds :conn))))
-
-(defn make-enum [[ident id]]
-  {:db/ident ident
-   :db/id id})
-
-(defn filter-keys [m nss]
-  (cond (keyword? nss)
-        (select-keys m [nss])
-
-        (hash-set? nss)
-        (select-keys m nss)))
-
-(defn schema-enums
-  ([ds]
-     (let [data (schema-idents ds)]
-       (treeify-keys
-        (-> (zipmap (map first data)
-                    (map make-enum data))
-            (dissoc (keys (schema-properties ds)))))))
-  ([ds nss]
-     (filter-keys (schema-enums ds) nss)))
-
-(defn schema
-  ([ds]
-      (treeify-keys
-       (into {}
-             (map (fn [[k [ident type car]]]
-                    [ident [{:ident ident
-                             :type (keyword-stem type)
-                             :cardinality (keyword-stem car)}]])
-                  (schema-properties ds)))))
-  ([ds nss]
-     (filter-keys (schema ds) nss)))
-
-(defn schema-namespaces [ds]
-  (keys (schema ds)))
-
-(defn schema-enum-namespaces [ds]
-  (keys (schema-enums ds)))
-
 
 (fact
   (def ds (adi/datastore "datomic:mem://adi-test-api-schema" {}))

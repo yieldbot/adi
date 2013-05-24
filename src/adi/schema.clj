@@ -211,7 +211,6 @@
            (func-map get-ident rfcoll)
            (func-map get-ident revcoll))))
 
-
 (defn find-revrefs [fgeni]
   (->> fgeni
        (filter (fn [[k [meta]]]
@@ -242,7 +241,9 @@
        output)))
 
 (defn infer-fgeni [sgeni]
-  (-> (flatten-keys-nested sgeni) infer-idents infer-defaults infer-refs))
+  (-> (flatten-keys-nested sgeni) infer-idents 
+                                  infer-defaults 
+                                  infer-refs))
 
 (defn make-scheme-model [sgeni]
   (let [fgeni (infer-fgeni sgeni)]
@@ -351,8 +352,3 @@
 (defn find-ref-keys
   ([fgeni] (find-keys fgeni :type :ref))
   ([fgeni nss] (find-keys fgeni nss :type :ref)))
-
-
-; Infer Schema from Datomic Database
-
-(defn propose-geni [conn])

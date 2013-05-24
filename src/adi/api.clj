@@ -9,7 +9,8 @@
   (:require [datomic.api :as d]
             [adi.emit.deprocess :as ad]
             [adi.emit.view :as av]
-            [adi.schema :as as]))
+            [adi.schema :as as]
+            [adi.api.schema :as aas]))
 
 (defn install-schema [conn fgeni]
   (d/transact conn (emit-schema fgeni)))
@@ -27,10 +28,16 @@
 (defn insert! [conn data env]
   (d/transact conn (insert- data env)))
 
+(defn patch-keyword [val env]
+  (if (aas/schema-property? env val) val
+      (or (first (aas/schema-required-keys env val))
+          (error val "is not a correct schema property"))))
+
 (defn select-ids [db val env]
   (cond (number? val) (hash-set val)
 
-        (keyword? val) (select-ids db {val '_} env)
+        (keyword? val)
+        (select-ids db {(patch-keyword val env) '_} env)
 
         (hash-map? val)
         (->> (d/q (emit-query val env) db)
@@ -119,7 +126,7 @@
           (linked-ids-ref res vnss env exclude)
           (vector? res)
           (mapcat #(linked-ids-ref % vnss env exclude) res))))
-          
+
 (defn linked-ids
   ([ent env]
      (let [vw (or (-> env :view)

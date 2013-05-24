@@ -3,7 +3,8 @@
        adi.utils
        adi.schema
        hara.common
-       hara.checkers)
+       hara.checkers
+       adi.api.schema)
  (:require [datomic.api :as d]
            [adi.core :as adi]))
 
@@ -43,7 +44,8 @@
   (fact "Nested Keys" (adi/insert! ds {:account {:id 0}}) => (throws Exception)
     (adi/insert! ds {:account/id 6}) => (throws Exception)
     (do (adi/insert! ds {:account/id 3})
-        (adi/select ds :account/id) => (one-of (contains {:account {:id 3}})))))
+        (adi/select ds :account/id) => (one-of (contains {:account {:id 3}}))
+        (adi/select ds :account) => (throws Exception))))
 
 
 (fact ":required works with nested keys"
@@ -53,6 +55,9 @@
                                       :required true}]
                               :name [{:type :string}]}}
                    true true))
+
+  (schema-required-keys *ds* :account)
+  => #{:account/id}
 
   (fact "Adding a record without the namespace will not do anything"
       (adi/insert! *ds* {})
@@ -71,7 +76,10 @@
   (fact "Adding a record with a required key will result in a normal operation"
     (adi/insert! *ds* {:account {:id 0}})
     (adi/select *ds* {:account/id 0})
-    => (one-of (contains-in {:account {:id 0}}))))
+    => (one-of (contains-in {:account {:id 0}}))
+    (adi/select *ds* :account)
+    => (one-of (contains-in {:account {:id 0}}))
+    ))
 
 (fact ":required behaviour with multiple nested keys"
   (def ^:dynamic *ds*
