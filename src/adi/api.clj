@@ -28,7 +28,7 @@
 (defn insert! [conn data env]
   (d/transact conn (insert- data env)))
 
-(defn patch-keyword [val env]
+(defn- select-patch-keyword [val env]
   (if (aas/schema-property? env val) val
       (or (first (aas/schema-required-keys env val))
           (error val "is not a correct schema property"))))
@@ -37,7 +37,7 @@
   (cond (number? val) (hash-set val)
 
         (keyword? val)
-        (select-ids db {(patch-keyword val env) '_} env)
+        (select-ids db {(select-patch-keyword val env) '_} env)
 
         (hash-map? val)
         (->> (d/q (emit-query val env) db)
@@ -54,6 +54,9 @@
 
 (defn select-entities [db val env]
   (map #(d/entity db %) (select-ids db val env)))
+
+(defn select-fields [db val fields env]
+  (map #(select-keys % fields) (select-entities db val env)))
 
 (defn select-first-entity [db val env]
   (first (select-entities db val env)))

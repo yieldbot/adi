@@ -46,6 +46,9 @@
 (defn select-entities [ds val & args]
   (aa/select-entities (d/db (:conn ds)) val (merge-args ds args)))
 
+(defn select-fields [ds val fields & args]
+  (aa/select-fields (d/db (:conn ds)) val fields (merge-args ds args)))
+
 (defn delete! [ds val & args]
   (aa/delete! (:conn ds) val (merge-args ds args)))
 
