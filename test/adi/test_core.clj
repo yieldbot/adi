@@ -32,13 +32,13 @@
 (reset-database)
 
 (fact
-  (adi/select *ds* {:account/id #{(?q > 2) (?q < 6)}})
+  (adi/select *ds* {:account/id '#{(> 2) (< 6)}})
   => (contains-in [{:account {:tags #{"sun" "boo" "g2"}, :id 3, :name "dave"}}
                    {:account {:tags #{"moon" "boo" "g1"}, :id 4, :name "chris"}}
                    {:account {:tags #{"moon" "boo" "g1"}, :id 5, :name "dave"}}]
                   :in-any-order)
 
-  (adi/select *ds* {:account/id #{(?q > 2) (?q < 6)}} :view {:account/tags :hide})
+  (adi/select *ds* {:account/id '#{(> 2) (< 6)}} :view {:account/tags :hide})
   => (just-in [{:account {:id 3, :name "dave"}, :db anything}
                {:account {:id 4, :name "chris"}, :db anything}
                {:account {:id 5, :name "dave"}, :db anything}]
@@ -47,4 +47,18 @@
   (adi/select *ds* {:account/tags #{"g1" "moon"}} :view {:account/tags :hide})
   => (just-in [{:account {:id 4, :name "chris"} :db anything}
                {:account {:id 5, :name "dave"} :db anything}]
-              :in-any-order))
+              :in-any-order)
+
+  (adi/select *ds* {:account/tags '(.startsWith "m")})
+  => (just-in [{:account {:tags #{"moon" "boo" "g1"}, :id 4, :name "chris"},
+                :db anything}
+               {:account {:tags #{"moon" "boo" "g1"}, :id 5, :name "dave"},
+                :db anything}
+               {:account {:tags #{"moon" "boo" "g2"}, :id 6, :name "chris"},
+                :db anything}
+               {:account {:tags #{"moon" "boo" "g2"}, :id 7, :name "dave"},
+                :db anything}]
+              :in-any-order)
+
+
+  )
