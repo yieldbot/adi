@@ -5,11 +5,11 @@
 
 
 (fact "adjust-patch-enum"
-  (adjust-patch-enum  :anything {})
-  => :anything
-  (adjust-patch-enum  :apples {:type :enum :enum {:ns :likes.food}})
+  (adjust-patch-enum :anything {})
+  => nil
+  (adjust-patch-enum :apples {:type :enum :enum {:ns :likes.food}})
   => :apples
-  (adjust-patch-enum  :likes.food/apples {:type :enum :enum {:ns :likes.food}})
+  (adjust-patch-enum :likes.food/apples {:type :enum :enum {:ns :likes.food}})
   => :apples)
 
 (fact "adjust-safe-check"
@@ -26,16 +26,23 @@
   => true
 
   (adjust-safe-check '_ nil long?  {})
-  => true
+  => falsey
 
   (adjust-safe-check '_ nil (fn [x] (throw (Exception.)))  {})
-  => true
+  => falsey
 
   (adjust-safe-check '[< _ 3] nil long? {})
   => falsey
 
   (adjust-safe-check '[< _ 3] nil long? {:options {:query? true}})
-  => true)
+  => true
+
+   (adjust-safe-check '_ nil long?  {:options {:query? true}})
+  => true
+
+  (adjust-safe-check '_ nil (fn [x] (throw (Exception.)))  {:options {:query? true}})
+  => true
+)
 
 (fact "adjust-value-sets-only"
   (adjust-value-sets-only #{} nil string? {} nil)

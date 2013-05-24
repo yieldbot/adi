@@ -1,5 +1,5 @@
 (ns adi.emit.adjust
-  (:use [hara.common :only [error suppress]]
+  (:use [hara.common :only [error suppress long?]]
         [hara.hash-map :only [keyword-ns? keyword-stem]]
         [hara.control :only [if-let]])
   (:require [adi.schema :as as])
@@ -36,7 +36,7 @@
       (adjust-value v meta chk env err-one err-many))
     v))
 
-(defn adjust-patch-enum [v meta]
+#_(defn adjust-patch-enum [v meta]
   (if (and (= :enum (:type meta))
            (keyword-ns? v (-> meta :enum :ns)))
     (keyword-stem v)
@@ -47,11 +47,33 @@
       (adjust-value-sets-only v meta chk env err-many)
       (adjust-value-normal v meta chk env err-one err-many)))
 
+#_(defn adjust-safe-check [v meta chk env]
+  (or (suppress (chk (adjust-patch-enum v meta)))
+      (and (-> env :options :query?)
+           (or (= v '_)
+               (vector? v) ;; TODO This is going out
+               (list? v)))
+      ))
+
+(defn adjust-patch-enum [v meta]
+  (if (keyword-ns? v (-> meta :enum :ns))
+    (keyword-stem v)
+    v))
+
 (defn adjust-safe-check [v meta chk env]
-  (or (= v '_)
-      (suppress (chk (adjust-patch-enum v meta)))
-      (and (-> env :options :query?) (vector? v)) ;; TODO This is going out
-      (and (-> env :options :query?) (list? v))))
+  (or  (and (-> env :options :query?)
+            (or (= v '_)
+                (vector? v) ;; TODO This is going out
+                (list? v)))
+       (and (= :enum (:type meta))
+            (if (long? v)
+              v
+              (suppress (chk (adjust-patch-enum v meta)))))
+
+       (suppress (chk v))))
+
+
+
 
 (defn adjust-value-sets-only [v meta chk env err-many]
   (cond (and (set? v) (every? #(adjust-safe-check % meta chk env) v)) v

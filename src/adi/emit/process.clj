@@ -149,6 +149,7 @@
 
 (defn process-assoc-keyword-join [kns v]
   (cond (= v '_) v
+        (long? v) v ;; for enums
         (= (keyword-ns v) kns) v
         :else (keyword-join [kns v])))
 

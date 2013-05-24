@@ -27,16 +27,16 @@
      (let [v (if (number? obj) (long obj) (hash obj))
            v (if (< 0 v) (- v) v)]
        (tempid :db.part/user v ))))
-       
+
 (defn ?q-fn [f args]
  [(apply list 'list
          (list 'symbol (str f))
-         (list 'symbol "??") args)])
+         (list 'symbol "?") args)])
 
 (defmacro ?q [f & args]
  [[(list 'symbol "??sym")
    (list 'symbol "??attr")
-   (list 'symbol "??")]
+   (list 'symbol "?")]
   (?q-fn f args)])
 
 (defn ?not [val]

@@ -89,6 +89,20 @@
        [?x :node/parent ?e2]
        [?e2 :node/value "root"]])
 
+
+(fact "emit-query-list"
+  (emit-query {:account/id '[[??sym ??attr ??] [(< ?? 3)]]}
+              (query-env s7-env))
+  => '[:find ?e1 :where
+       [?e1 :account/id ?e2]
+       [(< ?e2 3)]]
+
+  (emit-query {:account/id '(> 3)} (query-env s7-env))
+  => '[:find ?e1 :where
+       [?e1 :account/id ?e2]
+       [(> ?e2 3)]])
+
+
 (fact "emit-query"
   (emit-query {:account {:name "chris"}} s7-env)
   => (just [:find anything :where
@@ -108,16 +122,16 @@
        [?e2 :node/parent ?e1]
        [?e2 :node/value "root"]]
 
-  (emit-query {:account/id #{(?q > 3) (?q < 6)}} (query-env s7-env))
+  (emit-query {:account/id '#{(> 3) (< 6 ?)}} (query-env s7-env))
   => '[:find ?e1 :where
        [?e1 :account/id ?e2]
        [(> ?e2 3)]
        [?e1 :account/id ?e3]
-       [(< ?e3 6)]]
+       [(< 6 ?e3)]]
 
   (emit-query {:# {:sym '?x}
-               :account/id #{(?q > 3) (?not 6)}
-               :account/name (?fulltext "chris")}
+               :account/id '#{(> 3) (?not 6)}
+               :account/name '(?fulltext "chris")}
               (query-env s7-env))
   => '[:find ?x :where
        [(fulltext $ :account/name "chris") [[?x ?e2]]]
@@ -127,7 +141,7 @@
        [(> ?e4 3)]]
 
   (emit-query {:# {:sym '?x}
-               :node/children/parent/parent/value (?not 4)}
+               :node/children/parent/parent/value '(?not 4)}
               (query-env s6-env))
   => '[:find ?x :where
        [?e2 :node/parent ?x]

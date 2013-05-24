@@ -28,11 +28,36 @@
                       (mapcat #(query-init % env) (second x)))
                     (:refs-many chdata)))))
 
+(def ?init '[??sym ??attr ?])
+
+(defn has-placeholder? [lst]
+  (some #(= '? %) lst))
+
+(defn q-fn [[x & xs :as lst]]
+  (if (has-placeholder? lst)
+    [?init [lst]]
+    [?init [(apply list x '? xs)]]))
+
+(defn not-fn [val]
+  [?init [(list 'not= '? val)]])
+
+(defn fulltext-fn [val]
+  [[('fulltext '$ '??attr val)] [['??sym '?]]])
+
+(defn query-parse-list [[x & xs :as lst]]
+  (cond
+   (= x '?fulltext) (fulltext-fn (second lst))
+   (= x '?not) (not-fn (second lst))
+   :else (q-fn lst)))
+
 (defn query-data-val [sym k v env]
-  (cond (vector? v)
+  (cond (list? v)
+        (query-data-val sym k (query-parse-list v) env)
+
+        (vector? v)
         (let [symgen (or (-> env :generate :syms :function) ?gensym)
               esym (symgen)]
-          (walk-replace v {'??sym sym '?? esym '??attr k}))
+          (walk-replace v {'??sym sym '? esym '??attr k}))
         :else
         [[sym k v]]))
 
