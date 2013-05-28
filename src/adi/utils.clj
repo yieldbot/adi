@@ -130,3 +130,12 @@
                                (map #(walk-replace % rep) (vals st)))
         (rep st) (rep st)
         :else st))
+
+(defn auto-pair-seq
+  ([arr] (auto-pair-seq [] arr))
+  ([output [x y & xs :as arr]]
+     (cond (nil? x) output
+           (or (keyword? y)
+               (and (nil? y) (nil? xs)))
+           (recur (conj output [x true]) (next arr))
+           :else (recur (conj output [x y]) xs))))

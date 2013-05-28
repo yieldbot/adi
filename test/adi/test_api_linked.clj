@@ -10,6 +10,7 @@
  (:require [datomic.api :as d]
            [adi.api :as aa]))
 
+
 (def ^:dynamic *uri* "datomic:mem://adi-test-api-linked")
 (def ^:dynamic *conn* (aa/connect! *uri* true))
 
@@ -48,7 +49,7 @@
   (-> (aa/select-entities
        (d/db *conn*)
        '[:find ?x :where
-         [?x :link/value "l1"]] 
+         [?x :link/value "l1"]]
          {})
       first
       seq)
@@ -64,31 +65,34 @@
       seq)
   => (contains [[:link/value "l1"]])
 
-  (aa/select (d/db *conn*) {:link/value "l1"} l1-env)
+  (aa/select (d/db *conn*) {:link/value "l1"}
+             (assoc l1-env :view {:link {:value :show :next :show}}))
   => (contains-in [{:link {:next anything, :value "l1"}}])
 
-  (aa/select (d/db *conn*) {:link/next/value "l2"} l1-env)
+  (aa/select (d/db *conn*) {:link/next/value "l2"}
+             (assoc l1-env :view {:link {:value :show :next :show}}))
   => (contains-in [{:link {:next anything, :value "l1"}}])
 
-  (aa/select (d/db *conn*) {:link/prev/value "l3"} l1-env)
+  (aa/select (d/db *conn*) {:link/prev/value "l3"}
+             (assoc l1-env :view {:link {:value :show :next :show}}))
   => (contains-in [{:link {:next anything, :value "l1"}}]))
 
 
 (fact "select"
   (aa/select (d/db *conn*)
              {:link/prev/value "l3"}
-             (assoc l1-env :view {:link/next :hide}))
+             (assoc l1-env :view {:link/value :show}))
   => (just-in [{:link {:value "l1"}, :db anything}])
 
 
   (aa/select (d/db *conn*)
              {:link/next/next/value "l3"}
-             (assoc l1-env :view {:link/next :hide}))
+             (assoc l1-env :view {:link/value :show}))
   => (just-in [{:link {:value "l1"}, :db anything}])
 
   (aa/select (d/db *conn*)
              {:link/value "l1"}
-             (assoc l1-env :view {:link/next :show}))
+             (assoc l1-env :view {:link/next :follow :link/value :show}))
   => (just-in [{:db anything
                 :link {:value "l1"
                        :next {:+ anything
@@ -101,8 +105,9 @@
 (fact "reverse selection"
   (aa/select (d/db *conn*)
              {:link/value "l1"}
-             (assoc l1-env :view {:link/prev :ids
-                                  :link/next :show}))
+             (assoc l1-env :view {:link/prev :show
+                                  :link/value :show
+                                  :link/next :follow}))
   => (contains-in [{:link {:value "l1"
                            :prev #{hash-map?}
                            :next {:value "l2"
@@ -113,17 +118,17 @@
 
   (aa/select (d/db *conn*)
              {:link/value "l1"}
-             (assoc l1-env :view {:link/prev :show
-                                  :link/next :hide}))
+             (assoc l1-env :view {:link/prev :follow
+                                  :link/value :show}))
   => (contains-in [{:link {:value "l1"
                            :prev #{{:value "l3"
                                     :prev #{{:prev #{hash-map?},
                                              :value "l2"}}}}}}])
 
   (aa/select (d/db *conn*)
-             {:link/value "l3"}     
-             (assoc l1-env :view {:link/prev :show
-                                  :link/next :hide}))
+             {:link/value "l3"}
+             (assoc l1-env :view {:link/prev :follow
+                                  :link/value :show}))
 
   => (contains-in [{:link {:value "l3"
                            :prev #{{:value "l2"

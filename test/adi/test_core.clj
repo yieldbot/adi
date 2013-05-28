@@ -5,7 +5,8 @@
        hara.common
        hara.checkers)
  (:require [datomic.api :as d]
-           [adi.core :as adi]))
+           [adi.core :as adi]
+           [adi.emit.reap :as ar]))
 
 (def ^:dynamic *ds* nil)
 
@@ -58,7 +59,4 @@
                 :db anything}
                {:account {:tags #{"moon" "boo" "g2"}, :id 7, :name "dave"},
                 :db anything}]
-              :in-any-order)
-
-
-  )
+              :in-any-order))

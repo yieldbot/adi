@@ -1,5 +1,5 @@
 (ns adi.api.schema
-  (:use [hara.common :only [hash-set? hash-map?]]
+  (:use [hara.common :only [hash-set? hash-map? error]]
         [hara.hash-map :only [treeify-keys keyword-stem]])
   (:require [datomic.api :as d]
             [hara.hash-map :as h]))
@@ -71,7 +71,10 @@
              res)]
 
            (hash-map? res)
-           (mapcat #(schema-required-keys %) (vals res))))
+           (mapcat #(schema-required-keys %) (vals res))
+
+           :else
+           (error res " is not a valid namespace")))
   ([ds nss]
      (-> (schema-required-keys (schema-nss ds nss))
          (set)

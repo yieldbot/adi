@@ -37,7 +37,6 @@
   => (one-of (contains {:likes :likes.food/carrot})))
 
 
-
 (comment
   (emit-schema
    (infer-fgeni

@@ -6,7 +6,8 @@
        hara.checkers
        adi.api.schema)
  (:require [datomic.api :as d]
-           [adi.core :as adi]))
+           [adi.core :as adi]
+           [adi.emit.reap :as ar]))
 
 (def ^:dynamic *ds* nil)
 
@@ -45,6 +46,8 @@
     (adi/insert! ds {:account/id 6}) => (throws Exception)
     (do (adi/insert! ds {:account/id 3})
         (adi/select ds :account/id) => (one-of (contains {:account {:id 3}}))
+        (adi/select ds :account/id)
+        => (one-of (contains {:account {:id 3}}))
         (adi/select ds :account) => (throws Exception))))
 
 
@@ -77,7 +80,9 @@
     (adi/insert! *ds* {:account {:id 0}})
     (adi/select *ds* {:account/id 0})
     => (one-of (contains-in {:account {:id 0}}))
+    (ar/reap-init-create-view :account *ds*)
     (adi/select *ds* :account)
+
     => (one-of (contains-in {:account {:id 0}}))
     ))
 
@@ -110,6 +115,9 @@
 
   (fact "Adding a nested record with the required key will be fine."
     (adi/insert! *ds* {:account {:icq/id 0}})
+
+    ;;(ar/reap-init-create-keyword-view :account *ds*)
+
     (adi/select *ds* {:account/icq/id 0})
     => (one-of (contains-in {:account {:icq {:id 0}}}))))
 

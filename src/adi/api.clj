@@ -8,6 +8,7 @@
         [adi.emit.query :only [emit-query]])
   (:require [datomic.api :as d]
             [adi.emit.deprocess :as ad]
+            [adi.emit.reap :as ar]
             [adi.emit.view :as av]
             [adi.schema :as as]
             [adi.api.schema :as aas]))
@@ -29,9 +30,11 @@
   (d/transact conn (insert- data env)))
 
 (defn- select-patch-keyword [val env]
-  (if (aas/schema-property? env val) val
-      (or (first (aas/schema-required-keys env val))
-          (error val "is not a correct schema property"))))
+  (cond (aas/schema-property? env val) val
+        :else
+        (if-let [req (first (aas/schema-required-keys env val))]
+          req
+          (error val " does not contain a required key"))))
 
 (defn select-ids [db val env]
   (cond (number? val) (hash-set val)
@@ -98,13 +101,17 @@
   [conn val env]
   (d/transact conn (delete- (d/db conn) val env)))
 
-(defn select [db val env]
+#_(defn select [db val env]
   (let [menv (if (-> env :deprocess)
                env (assoc env :deprocess
                           {:data-default :show
                            :refs-default :ids}))]
     (map #(ad/deprocess % menv)
          (select-entities db val env))))
+
+(defn select [db val env]
+  (map #(ar/reap % env) (select-entities db val env)))
+
 
 (defn select-first [db val env]  (first (select db val env)))
 

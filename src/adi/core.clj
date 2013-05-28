@@ -1,6 +1,9 @@
 (ns adi.core
-  (:use [adi.emit.process :only [process-init-env]])
+  (:use [adi.emit.process :only [process-init-env]]
+        [hara.common :only [hash-map? hash-set?]]
+        hara.hash-map)
   (:require [adi.schema :as as]
+            [adi.utils :as u]
             [adi.api :as aa]
             [adi.api.schema :as aas]
             [datomic.api :as d]))
@@ -34,11 +37,39 @@
 (defn insert! [ds data & args]
   (aa/insert! (:conn ds) data (merge-args ds args)))
 
-(defn select [ds val & args]
-  (aa/select (d/db (:conn ds)) val (merge-args ds args)))
+(defn- select-at [ds t]
+  (let [db (d/db (:conn ds))]
+    (if t (d/as-of db t) db)))
 
-(defn select-first [ds val & args]
-  (first (apply select ds val args)))
+(defn select-first [res first]
+  (if first (clojure.core/first res) res))
+
+
+(defn select-view-val [val]
+  (cond (keyword? val)  (vector (or (keyword-root val) val))
+        (hash-map? val) (set (map #(or (keyword-root %) %)
+                                  (keys (flatten-keys-nested val))))
+        (hash-set? val) (set (mapcat select-view-val val))))
+
+(defn select-view [ds val opts]
+  (let [{:keys [view hide-ids hide-data
+                hide-refs follow-refs]} opts]
+    ;;(println (vec (concat (select-view-val val) view)))
+    (assoc ds :reap {:data (if hide-data :hide :show)
+                     :refs (cond follow-refs   :follow
+                                 hide-refs     :hide
+                                 :else         :show)
+                     :ids  (if hide-ids :hide :show)}
+           :view (if (vector? view)
+                   (vec (concat (select-view-val val) view))
+                   (conj (vec (select-view-val val)) view)))))
+
+(defn select [ds val & args]
+  (let [opts (into {} (u/auto-pair-seq args))
+        {:keys [at first]} opts
+        res (aa/select (select-at ds at) val (select-view ds val opts))]
+    ;;(println (:view (select-view ds val opts)))
+    (select-first res first)))
 
 (defn select-ids [ds val & args]
   (aa/select-ids (d/db (:conn ds)) val (merge-args ds args)))
