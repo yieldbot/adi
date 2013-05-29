@@ -16,6 +16,11 @@ Datomic began something brand new for data, and `adi` leverages that incredible 
 The key to understanding `adi` lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her, much like what a type-system does for programmers - without being suffocatingly restrictive. Once a schema for an application has been defined, the data can be inserted in ANY shape, as long as it follows the coventions specified within that schema.
 
 
+#### Requirements
+
+* Clojure 1.5.x
+* [Datomic](http://downloads.datomic.com/free.html)
+
 #### Installation
 
 In your project file, add
