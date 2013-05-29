@@ -15,7 +15,9 @@
   (let [env  (process-init-env geni)
         conn (aa/connect! uri recreate?)
         ds   (assoc env :conn conn)]
-    (if install? (init-schema ds))
+    (as/verify (-> ds :schema :fgeni))
+    (if install?
+      (init-schema ds))
     ds))
 
 (defn transact [data ds]

@@ -241,8 +241,8 @@
        output)))
 
 (defn infer-fgeni [sgeni]
-  (-> (flatten-keys-nested sgeni) infer-idents 
-                                  infer-defaults 
+  (-> (flatten-keys-nested sgeni) infer-idents
+                                  infer-defaults
                                   infer-refs))
 
 (defn make-scheme-model [sgeni]
@@ -295,9 +295,10 @@
           (let [chk  (or (:check mgprop) (constantly true))
                 f    (or (:fn mgprop) (fn [x & xs] x))
                 attr (or (:attr mgprop) k)]
-            (if (chk v)
+            (if (not (chk v))
+              (error "property " v " failed check on " attr " for " meta)
               (apply assoc res (prop-pair attr k v f))
-              (error "property " v " failed check"))))))
+              )))))
 
 (defn emit-single-schema
   ([[meta]] (emit-single-schema [meta] meta-geni {}))
@@ -322,9 +323,13 @@
      (let [enums  (vals (find-enums fgeni))
            metas  (-> fgeni remove-revrefs remove-enums vals)]
        (concat
-        (map emit-single-schema metas)
+        (mapv emit-single-schema metas)
         (mapcat emit-enum-val-schemas enums))))
   ([fgeni & more] (emit-schema (apply merge fgeni more))))
+
+(defn verify [geni]
+  (emit-schema (infer-fgeni geni))
+  true)
 
 ;; ## Geni Search
 
