@@ -15,6 +15,7 @@ Datomic began something brand new for data, and `adi` leverages that incredible 
 
 The key to understanding `adi` lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her, much like what a type-system does for programmers - without being suffocatingly restrictive. Once a schema for an application has been defined, the data can be inserted in ANY shape, as long as it follows the coventions specified within that schema.
 
+
 #### Installation
 
 In your project file, add
@@ -23,10 +24,13 @@ In your project file, add
 [adi "0.1.5"]
 ```
 
+### TODOS
+- Break up the readme into sizable chunks
+- Do self reference tutorials
+
 ### First Steps
 
 Lets show off some things we can do with adi. We start off by defining a user account and gradually add more features as we go along. 
-
 
 #### Step 1
 Fire up nrepl/emacs/vim and load `adi.core`.
@@ -63,6 +67,7 @@ The parameters are:
    install?  - Optional flag (if true, will install the `geni` into the database) 
    recreate? - Optional flag (if true will delete and then create the database)
 
+##### Trial and Error
 So lets attempt to add some data. We'll do this via trial and error:
 ```clojure
 (adi/insert! ds {:account {:credits 10}})
@@ -87,6 +92,7 @@ So lets attempt to add some data. We'll do this via trial and error:
 ;;=> Okay, another record inserted!
 ```
 
+##### Selections
 We can now have a play with the data:
 ```clojure
 (adi/select ds :account)
@@ -136,6 +142,7 @@ Comments
  2. The enum type is a special :ref type that is defined here http://docs.datomic.com/schema.html#sec-3. adi makes it easy to install and manage them. We put them under a common namespace (:account.type) and give them values #{:admin :free :paid}
 
 
+##### enums
 Lets explore enums a little bit more by going under the covers of adi. Using datomic,
 we can see that the enums have been installed as datomic refs:
 
@@ -169,7 +176,7 @@ Comments
   1. data can be formatted arbitrarily as long as the `/` is consistent with the level of map nesting. This is a design decision to allow maximal readability.
   2. enums can be specified fully `:account.type/<value>` or as just `:<value>`, also they will always be outputted as the full version.
 
-
+##### more selections
 We can play with the data again:
 ```clojure
 (adi/select ds :account :hide-ids)
@@ -205,9 +212,12 @@ We can play with the data again:
 
 (adi/select ds {:account/user '(.contains "adi222" ?)} :first :hide-ids)
 ;;=> {:account {:user "adi2", :password "hello2", :credits 0, :type :account.type/admin}}
+```
 
-;; Lets look at transactions again:
+##### additional commands
 
+Lets look at transactions again:
+```clojure
 (adi/transactions ds :account/user)
 ;;=> (1004) 
 
@@ -225,7 +235,7 @@ We can play with the data again:
 #### Step 3
 
 Lets go one step further and start using `refs` in our application. We have 
-
+```clojure
 (def geni-3
  {:account {:user     [{:required true
                         :unique :value}]
@@ -246,8 +256,10 @@ Lets go one step further and start using `refs` in our application. We have
            :author  [{:fulltext true}]}})
 
 (def ds (adi/datastore "datomic:mem://example-3" geni-3 true true))
+```
+Again, we insert some data:
 
-
+```clojure
 (adi/insert! ds
          [{:account {:user "adi1" :password "hello1"}}
           {:account {:user "adi2" :password "hello2"
@@ -265,7 +277,10 @@ Lets go one step further and start using `refs` in our application. We have
 ;;                   {:author "Mark Twain", :name "Tom Sawyer"}
 ;;                   {:author "Victor Hugo", :name "Les Misérables"}},
 ;;           :type :account.type/free}})
+```
+We can insert book information through accounts. We can also insert account information through books.
 
+```clojure
 (def users (adi/select-ids ds :account))
 
 (adi/insert! ds [{:book {:name "Charlie and the Chocolate Factory"
@@ -276,7 +291,10 @@ Lets go one step further and start using `refs` in our application. We have
                  {:book {:name "The Book and the Sword"
                          :author "Louis Cha"
                          :accounts users}}])
+```
+Again, lets play with the data
 
+```clojure
 (adi/select ds {:account/user "adi1"} :view #{:account/books} :first :hide-ids)
 ;;=> {:account {:user "adi1", :password "hello1", :credits 0,
 ;;           :books #{{:author "Louis Cha", :name "The Book and the Sword"}}, :type :account.type/free}}
@@ -307,27 +325,28 @@ Lets go one step further and start using `refs` in our application. We have
 ;;=>  {:book {:author "Louis Cha", :name "The Book and the Sword",
 ;;        :accounts #{{:user "adi2", :password "hello2", :credits 0, :type :account.type/free}
 ;;                   {:user "adi1", :password "hello1", :credits 0, :type :account.type/free}}}}
-
+```
 
 Here, we find all the books that user "adi2" has
 
+```clojure
 (adi/select ds {:book/accounts/user "adi2"} :hide-ids)
 ;;=> ({:book {:author "Alexander Dumas", :name "The Count of Monte Cristo"}}
 ;;  {:book {:author "Mark Twain", :name "Tom Sawyer"}}
 ;;  {:book {:author "Victor Hugo", :name "Les Misérables"}}
 ;;  {:book {:author "Louis Cha", :name "The Book and the Sword"}})
-
+```
 We find all users that have a book with a name that contains `the`.
-
+```clojure
 (adi/select ds {:account/books/name '(.contains ? "the")} :hide-ids)
 ;;=> ({:account {:user "adi1", :password "hello1", :credits 0, :type :account.type/free}}
 ;;    {:account {:user "adi2", :password "hello2", :credits 0, :type :account.type/free}}
 ;;    {:account {:user "adi3", :password "hello3", :credits 100, :type :account.type/free}}
 ;;    {:account {:user "adi4", :password "hello4", :credits 500, :type :account.type/free}}
 ;;    {:account {:user "adi5", :password "hello5", :credits 500, :type :account.type/free}})
+```
 
-
-### The Overview
+### Modelling Example
 
 This is a longish tutorial, mainly because of the data we have to write:
 
