@@ -62,10 +62,10 @@ Now, we construct a datastore.
 (def ds (adi/datastore "datomic:mem://example-1" geni-1 true true))
 ```
 The parameters are:
-   - *uri*   The uri of the datomic database to connect to
-   - *geni*  The previously defined data template 
-   - *install?*  Optional flag (if true, will install the `geni` into the database) 
-   - *recreate?* Optional flag (if true will delete and then create the database)
+   - *uri* - The uri of the datomic database to connect to
+   - *geni* - The previously defined data template 
+   - *install?* - Optional flag (if true, will install the `geni` into the database) 
+   - *recreate?* - Optional flag (if true will delete and then create the database)
 
 ##### Trial and Error
 So lets attempt to add some data. We'll do this via trial and error:
