@@ -1,4 +1,4 @@
-(defproject adi "0.1.5-SNAPSHOT"
+(defproject adi "0.1.5"
   :description "adi (a datomic interface)"
   :url "http://www.github.com/zcaudate/adi"
   :license {:name "Eclipse Public License"
