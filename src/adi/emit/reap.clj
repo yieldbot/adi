@@ -39,9 +39,7 @@
              (if (not= :reverse (-> sch :ref :type))
                (recur (assoc output
                         (:ident sch)
-                        :show
-                        ;;(if (= :ref (:type sch)) :follow :show)
-                        )
+                        (if (= :ref (:type sch)) :hide :show))
                       fds env)
                (recur output fds env)))
 
@@ -139,10 +137,10 @@
 (defn reap-assoc-ref
   [output k v meta env exclude]
   (cond (or (hash-set? v) (vector? v))
-        (assoc output k
-               (-> (map #(reap-ref k % meta env exclude) v)
+        (let [res (-> (map #(reap-ref k % meta env exclude) v)
                    (set)
-                   (disj nil)))
+                   (disj nil))]
+          (if (empty? res) output (assoc output k res)))
         :else
         (if-let [rout (reap-ref k v meta env exclude)]
           (assoc output k rout)

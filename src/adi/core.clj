@@ -55,12 +55,11 @@
 
 (defn select-view [ds val opts]
   (let [{:keys [view hide-ids hide-data
-                hide-refs follow-refs]} opts]
-    ;;(println (vec (concat (select-view-val val) view)))
+                show-refs follow-refs]} opts]
     (assoc ds :reap {:data (if hide-data :hide :show)
                      :refs (cond follow-refs   :follow
-                                 hide-refs     :hide
-                                 :else         :show)
+                                 show-refs     :show
+                                 :else         :hide)
                      :ids  (if hide-ids :hide :show)}
            :view (if (vector? view)
                    (vec (concat (select-view-val val) view))
@@ -68,19 +67,31 @@
 
 (defn select [ds val & args]
   (let [opts (into {} (u/auto-pair-seq args))
-        {:keys [at first]} opts
-        res (aa/select (select-at ds at) val (select-view ds val opts))]
-    ;;(println (:view (select-view ds val opts)))
-    (select-first res first)))
+        {:keys [at first]} opts]
+    (-> (select-at ds at)
+        (aa/select val (select-view ds val opts))
+        (select-first first))))
 
 (defn select-ids [ds val & args]
-  (aa/select-ids (d/db (:conn ds)) val (merge-args ds args)))
+  (let [opts (into {} (u/auto-pair-seq args))
+        {:keys [at first]} opts]
+    (-> (select-at ds at)
+        (aa/select-ids val ds)
+        (select-first first))))
 
 (defn select-entities [ds val & args]
-  (aa/select-entities (d/db (:conn ds)) val (merge-args ds args)))
+  (let [opts (into {} (u/auto-pair-seq args))
+        {:keys [at first]} opts]
+    (-> (select-at ds at)
+        (aa/select-entities val ds)
+        (select-first first))))
 
 (defn select-fields [ds val fields & args]
-  (aa/select-fields (d/db (:conn ds)) val fields (merge-args ds args)))
+  (let [opts (into {} (u/auto-pair-seq args))
+        {:keys [at first]} opts]
+    (-> (select-at ds at)
+        (aa/select-fields val fields ds)
+        (select-first first))))
 
 (defn delete! [ds val & args]
   (aa/delete! (:conn ds) val (merge-args ds args)))
@@ -91,20 +102,24 @@
 (defn retract! [ds val ks & args]
   (aa/retract! (:conn ds) val ks (merge-args ds args)))
 
-
-(comment
-
-  (defn select-first-entity [ds val & args]
-    (first (select-entities (merge-args ds args) val)))
-
-
-
-         (defn select-first [ds val & args]
-           (first (apply select ds val args)))
-
-         #_(defn delete-all! [val ds & args]
-             (let [rrs  (or (aa/emit-ref-set (:fgeni ds)))]
-               (aa/delete! (:conn ds) val (-> (merge-args ds args)
-                                              (into [[:ref-set rrs]])))))
-
-                                              )
+(defn transactions
+  ([ds attr]
+      (->> (d/q '[:find ?tx
+                  :in $ ?a
+                  :where [_ ?a ?v ?tx _]
+                  [?tx :db/txInstant ?tx-time]]
+                (d/history (d/db (:conn ds)))
+                attr)
+           (map #(first %))
+           (map d/tx->t)
+           (sort)))
+  ([ds attr val]
+      (->> (d/q '[:find ?tx
+                  :in $ ?a ?v
+                  :where [_ ?a ?v ?tx _]
+                  [?tx :db/txInstant ?tx-time]]
+                (d/history (d/db (:conn ds)))
+                attr val)
+           (map #(first %))
+           (map d/tx->t)
+           (sort))))

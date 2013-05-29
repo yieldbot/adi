@@ -30,30 +30,17 @@
 
 (defn adjust-chk-restrict [v meta env]
   (if-let [restrict? (-> env :options :restrict?)
-           chk (or (:restrict meta) (-> meta :enum :values))]
-    (let [err-one  (format "The value %s does not meet the restriction %s" v chk)
-          err-many (format "The value/s [%s] do not meet the restriction %s" v chk)]
+           chk (or (:restrict meta) (-> meta :enum :values))
+           [cdoc chk] (if (vector? chk) chk [(str chk) chk])]
+    (let [err-one  (format "The value %s does not meet the restriction: %s" v cdoc)
+          err-many (format "The value/s [%s] do not meet the restriction: %s" v cdoc)]
       (adjust-value v meta chk env err-one err-many))
-    v))
-
-#_(defn adjust-patch-enum [v meta]
-  (if (and (= :enum (:type meta))
-           (keyword-ns? v (-> meta :enum :ns)))
-    (keyword-stem v)
     v))
 
 (defn adjust-value [v meta chk env err-one err-many]
   (if (-> env :options :sets-only?)
       (adjust-value-sets-only v meta chk env err-many)
       (adjust-value-normal v meta chk env err-one err-many)))
-
-#_(defn adjust-safe-check [v meta chk env]
-  (or (suppress (chk (adjust-patch-enum v meta)))
-      (and (-> env :options :query?)
-           (or (= v '_)
-               (vector? v) ;; TODO This is going out
-               (list? v)))
-      ))
 
 (defn adjust-patch-enum [v meta]
   (if (keyword-ns? v (-> meta :enum :ns))
@@ -69,7 +56,6 @@
             (if (long? v)
               v
               (suppress (chk (adjust-patch-enum v meta)))))
-
        (suppress (chk v))))
 
 
