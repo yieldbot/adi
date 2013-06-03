@@ -14,12 +14,13 @@
 (def uri* "datomic:mem://adi-test-schema-initiation")
 (def fgeni (infer-fgeni lab-schema2))
 
+
 (fact
-  (adi/datastore uri* lab-schema2)
+  (def ds (adi/datastore uri* lab-schema2))
   => (throws Exception)
 
-  (aa/install-schema (:conn ds) fgeni)
-  => (throws Exception)
+  ;;(aa/install-schema (:conn ds) fgeni)
+  ;;=> (throws Exception)
 
   (emit-schema fgeni)
   => (throws Exception)

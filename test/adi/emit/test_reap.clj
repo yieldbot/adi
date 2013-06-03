@@ -31,14 +31,14 @@
 
 (fact "reap-init-create-ns-view"
   (reap-init-create-view :node d1-env)
-  => {:node/parent   :show
+  => {
       :node/value    :show}
 
   (reap-init-create-view :node d1-env)
-  => {:node/value :show, :node/parent :show}
+  => {:node/value :show}
 
   (reap-init-create-view [:node] d1-env)
-  => {:node/value :show, :node/parent :show}
+  => {:node/value :show}
 
   (reap-init-create-view #{:node/value :node/parent} d1-env)
   => {:node/parent :follow, :node/value :show}

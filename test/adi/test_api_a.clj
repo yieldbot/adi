@@ -55,26 +55,26 @@
 
   (aa/select (d/db *conn*) {:node/value (?fulltext "l2A")}
              (assoc d1-env :view :node))
-  => (just-in [{:node {:value "l1A l2A", :parent anything} :db anything}
-               {:node {:value "l1B l2A", :parent anything} :db anything}
-               {:node {:value "l1C l2A", :parent anything} :db anything}]
-              :in-any-order)
-
-  (aa/select (d/db *conn*){:node/value (?fulltext "l2A")}
-             (assoc d1-env :view {:node {:parent :hide
-                                         :value :show}}))
   => (just-in [{:node {:value "l1A l2A"} :db anything}
                {:node {:value "l1B l2A"} :db anything}
                {:node {:value "l1C l2A"} :db anything}]
               :in-any-order)
 
+  (aa/select (d/db *conn*){:node/value (?fulltext "l2A")}
+             (assoc d1-env :view {:node {:parent :show
+                                         :value :show}}))
+  => (just-in [{:node {:value "l1A l2A" :parent anything} :db anything}
+               {:node {:value "l1B l2A" :parent anything} :db anything}
+               {:node {:value "l1C l2A" :parent anything} :db anything}]
+              :in-any-order)
+
   (aa/select (d/db *conn*) {:node/value (?fulltext "l1C")}
              (assoc d1-env :view :node))
-  => (just-in [{:node {:value "l1C", :parent anything}, :db anything}
-               {:node {:value "l1C l2A", :parent anything} :db anything}
-               {:node {:value "l1C l2B", :parent anything} :db anything}
-               {:node {:value "l1C l2C", :parent anything} :db anything}
-               {:node {:value "l1C l2D", :parent anything} :db anything}]
+  => (just-in [{:node {:value "l1C"}, :db anything}
+               {:node {:value "l1C l2A"} :db anything}
+               {:node {:value "l1C l2B"} :db anything}
+               {:node {:value "l1C l2C"} :db anything}
+               {:node {:value "l1C l2D"} :db anything}]
               :in-any-order)
 
   (aa/select (d/db *conn*) {:node {:children {:value "l1C"}}}
@@ -83,10 +83,10 @@
 
   (aa/select (d/db *conn*) {:node {:parent {:value "l1C"}}}
              (assoc d1-env :view :node))
-  => (just-in [{:node {:value "l1C l2A", :parent anything} :db anything}
-               {:node {:value "l1C l2B", :parent anything} :db anything}
-               {:node {:value "l1C l2C", :parent anything} :db anything}
-               {:node {:value "l1C l2D", :parent anything} :db anything}]
+  => (just-in [{:node {:value "l1C l2A"} :db anything}
+               {:node {:value "l1C l2B"} :db anything}
+               {:node {:value "l1C l2C"} :db anything}
+               {:node {:value "l1C l2D"} :db anything}]
               :in-any-order))
 
 

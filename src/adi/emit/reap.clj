@@ -9,29 +9,8 @@
 (declare reap
          reap-entity)
 
+
 #_(defn reap-init-create-keyword-hashmap
-  ([nsm env]
-     (let [fields (vals nsm)]
-       (->> fields
-            (filter #(not= :reverse (-> % :ref :type)))
-            (map (fn [x] [(:ident x) (if (= :ref (:type x)) :follow :show)]))
-            (into {})))))
-
-#_(defn reap-init-create-ns-view
-  ([vw env] (reap-init-create-ns-view {} (seq vw) env))
-  ([output [k & ks] env]
-     (if (nil? k) output
-         (let [nsm (-> env :schema :geni (get-in (keyword-split k)))]
-           (cond (hash-map? nsm)
-               (recur (merge output (reap-init-create-ns-hashmap nsm env))
-                      ks env)
-
-               (vector? nsm)
-               (recur (assoc output k :show) ks env)
-
-               :else (recur output ks env))))))
-
-(defn reap-init-create-keyword-hashmap
   ([output [fd & fds] env]
      (cond (nil? fd) output
            (vector? fd)
@@ -40,6 +19,26 @@
                (recur (assoc output
                         (:ident sch)
                         (if (= :ref (:type sch)) :hide :show))
+                      fds env)
+               (recur output fds env)))
+
+           (hash-map? fd)
+           (recur (merge output
+                         (reap-init-create-keyword-hashmap fd env))
+                  fds env)))
+  ([nsm env]
+     (let [fields (vals nsm)]
+       (reap-init-create-keyword-hashmap {} fields env))))
+
+(defn reap-init-create-keyword-hashmap
+  ([output [fd & fds] env]
+     (cond (nil? fd) output
+           (vector? fd)
+           (let [sch (first fd)]
+             (if (not= :ref (:type sch))
+               (recur (assoc output
+                        (:ident sch)
+                        :show)
                       fds env)
                (recur output fds env)))
 

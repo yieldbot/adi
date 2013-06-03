@@ -1,57 +1,6 @@
-# geni
+
 
 The geni is a shorthand version of a datomic schema. This is a short-hand of http://docs.datomic.com/schema.html
-
-### Basics
-
-Lets show off some things we can do with adi. We start off by defining a user account and gradually add more features as we go along. 
-
-Fire up nrepl/emacs/vim and load `adi.core`.
-```clojure
-(require '[adi.core :as adi])
-```
-We first have to define a `geni`, which is a template for our data:
-```clojure            
-(def geni-1
- {:account/user     [{:type :string      ;; (1)
-                      :cardinality :one  
-                      :unique :value     ;; (2)
-                      :required true}]   ;; (3)
-  :account/password [{:required true     ;; (1) (3)
-                      :restrict ["password needs an integer to be in the string" ;; (4)
-                                   #(re-find #"\d" %)]}]}})
-```
-There are a couple of things to note about our definitions the entry.
-  1. We specified the `:type` for `:account/user` to be `:string` and `:cardinality` to be `:one`. However, because these are default options, we can optionally leave them out for `:account/password`.
-  2. We want the value of `:account/user` to be unique.
-  3. We require that both `:account/user` and `:account/password` to be present on insertion.
-  4. We are checking that `:account/password` contains at least one number
-
-Now, we construct a datastore. 
-```clojure            
-(def ds (adi/datastore "datomic:mem://example-1" geni-1 true true))
-```
-The parameters are:
-   uri   The uri of the datomic database to connect to
-   geni  The previously defined data template 
-   install?  - Optional flag (if true, will install the `geni` into the database) 
-   recreate? - Optional flag (if true will delete and then create the database)
-
-So lets attempt to add some data:
-```clojure
-(adi/insert! ds {:account {:user "adi"}})
-;;=> (throws Exception "The following keys are required: #{:account/password}")
-
-(adi/insert! ds {:account {:user "adi" :password "hello"}})
-;;=> (throws Exception "The value hello does not meet the restriction: password needs an integer to be in the string")
-
-(adi/insert! ds {:account {:user "adi" :password "hello1" :type :vip}})
-;;=> (throws Exception "(:type :vip) not in schema definition")
-
-(adi/insert! ds {:account {:user "adi" :password "hello1"}})
-;;=> Yay!!!
-(adi/select ds :account)
-```
 
 ### Reference
 - type  
