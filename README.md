@@ -33,6 +33,11 @@ In your project file, add
 - Break up the readme into sizable chunks
 - Do self reference tutorials
 
+## Contributors
+- Chris Zheng
+- Devin Walters
+- Ruslan Prokopchuk
+
 ### First Steps
 
 Lets show off some things we can do with adi. We start off by defining a user account and gradually add more features as we go along. 
