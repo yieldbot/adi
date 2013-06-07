@@ -9,27 +9,6 @@
 (declare reap
          reap-entity)
 
-
-#_(defn reap-init-create-keyword-hashmap
-  ([output [fd & fds] env]
-     (cond (nil? fd) output
-           (vector? fd)
-           (let [sch (first fd)]
-             (if (not= :reverse (-> sch :ref :type))
-               (recur (assoc output
-                        (:ident sch)
-                        (if (= :ref (:type sch)) :hide :show))
-                      fds env)
-               (recur output fds env)))
-
-           (hash-map? fd)
-           (recur (merge output
-                         (reap-init-create-keyword-hashmap fd env))
-                  fds env)))
-  ([nsm env]
-     (let [fields (vals nsm)]
-       (reap-init-create-keyword-hashmap {} fields env))))
-
 (defn reap-init-create-keyword-hashmap
   ([output [fd & fds] env]
      (cond (nil? fd) output
@@ -57,7 +36,6 @@
           (reap-init-create-keyword-hashmap nsm env)
           (vector? nsm) {k :show}
           :else {})))
-
 
 (defn reap-init-create-field-keyword
   [output k env]

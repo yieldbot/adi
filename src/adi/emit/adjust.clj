@@ -52,14 +52,12 @@
             (or (= v '_)
                 (vector? v) ;; TODO This is going out
                 (list? v)))
+                
        (and (= :enum (:type meta))
             (if (long? v)
               v
               (suppress (chk (adjust-patch-enum v meta)))))
        (suppress (chk v))))
-
-
-
 
 (defn adjust-value-sets-only [v meta chk env err-many]
   (cond (and (set? v) (every? #(adjust-safe-check % meta chk env) v)) v

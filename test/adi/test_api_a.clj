@@ -167,8 +167,8 @@
                     :in-any-order)
 
     (aa/linked (d/db *conn*) {:node/value "l1A"}
-               (assoc d1-env :view {:node/children :show :node/parent :show}))
-    => (contains-in [{:node {:value "root"}}
+               (assoc d1-env :view {:node/children :show :node/parent :hide}))
+    => (just-in [{:node {:value "root"}}
                      {:node {:value "l1C l2D"}}
                      {:node {:value "l1C l2A"}}
                      {:node {:value "l1C l2B"}}

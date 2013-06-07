@@ -7,7 +7,6 @@
                                 emit-datoms-update]]
         [adi.emit.query :only [emit-query]])
   (:require [datomic.api :as d]
-            [adi.emit.deprocess :as ad]
             [adi.emit.reap :as ar]
             [adi.emit.view :as av]
             [adi.schema :as as]
@@ -101,17 +100,8 @@
   [conn val env]
   (d/transact conn (delete- (d/db conn) val env)))
 
-#_(defn select [db val env]
-  (let [menv (if (-> env :deprocess)
-               env (assoc env :deprocess
-                          {:data-default :show
-                           :refs-default :ids}))]
-    (map #(ad/deprocess % menv)
-         (select-entities db val env))))
-
 (defn select [db val env]
   (map #(ar/reap % env) (select-entities db val env)))
-
 
 (defn select-first [db val env]  (first (select db val env)))
 
