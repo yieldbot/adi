@@ -31,10 +31,10 @@
   (adjust-safe-check '_ nil (fn [x] (throw (Exception.)))  {})
   => falsey
 
-  (adjust-safe-check '[< _ 3] nil long? {})
+  (adjust-safe-check '(< 3) nil long? {})
   => falsey
 
-  (adjust-safe-check '[< _ 3] nil long? {:options {:query? true}})
+  (adjust-safe-check '(< ? 3) nil long? {:options {:query? true}})
   => true
 
    (adjust-safe-check '_ nil long?  {:options {:query? true}})
@@ -66,9 +66,9 @@
   (adjust-value-sets-only #{1 "2"} nil string? {} nil)
   => (throws Exception)
 
-  (adjust-value-sets-only #{'[< _ 3] '[> _ 6]} nil  long?
+  (adjust-value-sets-only #{'(< 3) '(> 6)} nil  long?
                           {:options {:query? true}} nil)
-  => #{'[< _ 3] '[> _ 6]}
+  => #{'(< 3) '(> 6)}
   )
 
 (fact "adjust-value-normal"
@@ -103,10 +103,10 @@
                 {:options {:sets-only? true}} nil nil)
   => #{"1"}
 
-  (adjust-value '[< _ 3] {} string?
+  (adjust-value '(< 3) {} string?
                 {:options {:sets-only? true
                            :query? true}} nil nil)
-  => #{'[< _ 3]})
+  => #{'(< 3)})
 
 (fact "adjust-chk-type"
   (adjust-chk-type "1" {:type :string} {}) => "1"

@@ -2,7 +2,8 @@
   (:use [hara.common :only [error suppress long?]]
         [hara.hash-map :only [keyword-ns? keyword-stem]]
         [hara.control :only [if-let]])
-  (:require [adi.schema :as as])
+  (:require [adi.schema :as as]
+            [adi.emit.coerce :as ac])
   (:refer-clojure :exclude [if-let]))
 
 ;; ## Adjust Functions
@@ -11,13 +12,32 @@
          adjust-chk-type adjust-chk-restrict
          adjust-value adjust-value-sets-only adjust-value-normal)
 
+(defn adjust-patch-json [v meta env]
+  (if-let [c (-> env :options :coerce?)]
+    (let  [t     (:type meta)
+           chk   (as/geni-type-checks (:type meta))]
+      (cond (vector? v)
+            (set (map #(adjust-patch-json % meta env) v))
+
+            (and (-> env :options :query?) (= v "_")) '_
+
+            :else
+            (cond (suppress (chk v)) v
+
+                  (string? c) (ac/coerce c v t)
+
+                  :else v)))
+    v))
+
 (defn adjust
   "Adjusts the `v` according to `:cardinality` in `meta` or the `:sets-only`
    flag in `(env :options)`. Checks to see if the value is of correct type
    and has an optional `:restrict` parameter and it matches the `:restrict?` flag,
    also defined in `(env :options)`."
   [v meta env]
-  (-> (adjust-chk-type v meta env)
+  (-> v
+      (adjust-patch-json meta env)
+      (adjust-chk-type meta env)
       (adjust-chk-restrict meta env)))
 
 (defn adjust-chk-type [v meta env]
@@ -50,9 +70,8 @@
 (defn adjust-safe-check [v meta chk env]
   (or  (and (-> env :options :query?)
             (or (= v '_)
-                (vector? v) ;; TODO This is going out
                 (list? v)))
-                
+
        (and (= :enum (:type meta))
             (if (long? v)
               v

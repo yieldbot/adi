@@ -214,6 +214,7 @@
                           :restrict? true
                           :required? true
                           :extras? false
+                          :coerce? nil
                           :query? false
                           :sets-only? false}
                 :schema  hash-map?})
@@ -227,6 +228,7 @@
   => (contains {:options {:defaults? false
                           :restrict? false
                           :required? false
+                          :coerce? nil
                           :extras? true
                           :query? true
                           :sets-only? true}
@@ -236,6 +238,7 @@
   => (contains {:options {:defaults? true
                           :extras? false
                           :required? true
+                          :coerce? nil
                           :restrict? true
                           :query? false
                           :sets-only? false}

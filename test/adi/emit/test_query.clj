@@ -90,7 +90,7 @@
        [?e2 :node/value "root"]])
 
 (fact "emit-query-list"
-  (emit-query {:account/id '[[??sym ??attr ?] [(< ? 3)]]}
+  (emit-query {:account/id '(< ? 3)}
               (query-env s7-env))
   => '[:find ?e1 :where
        [?e1 :account/id ?e2]

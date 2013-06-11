@@ -1,7 +1,6 @@
 (ns adi.test-api
  (:use midje.sweet
        adi.schema
-       adi.utils
        hara.common
        hara.checkers
        adi.emit.query
@@ -44,7 +43,7 @@
                {:account {:cars 2, :name "chris"}, :db hash-map?}]
               :in-any-order)
 
-  (aa/select (d/db *conn*) {:account {:cars (?q < 2)}}
+  (aa/select (d/db *conn*) {:account {:cars '(< 2)}}
              (assoc s0-env :view :account))
   => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
                {:account {:name "bob", :cars 0}, :db hash-map?}
@@ -55,15 +54,15 @@
               :in-any-order)
 
   (aa/select (d/db *conn*)
-             {:account {:cars (?q < 2)
-                        :name #{(?not "bob") (?not "dave")}}}
+             {:account {:cars '(< 2)
+                        :name #{'(?not "bob") '(?not "dave")}}}
               (assoc s0-env :view :account))
   => (just-in [{:account {:name "adam", :cars 1}, :db hash-map?}
                {:account {:name "chris", :cars 0}, :db hash-map?}])
 
   (aa/select (d/db *conn*)
-             {:account {:cars (?q < 2)
-                        :name #{(?not "bob") (?not "dave")}}}
+             {:account {:cars '(< 2)
+                        :name #{'(?not "bob") '(?not "dave")}}}
              (assoc s0-env :view {:account {:name :hide
                                             :cars :show}}))
   => (just-in [{:account {:cars 1}, :db hash-map?}

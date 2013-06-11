@@ -13,7 +13,7 @@
             [adi.api.schema :as aas]))
 
 (defn install-schema [conn fgeni]
-  (d/transact conn (emit-schema fgeni)))
+  @(d/transact conn (emit-schema fgeni)))
 
 (defn connect!
   ([uri] (connect! uri false))

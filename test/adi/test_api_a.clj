@@ -1,7 +1,6 @@
 (ns adi.test-api-a
  (:use midje.sweet
        adi.schema
-       adi.utils
        hara.common
        hara.checkers
        adi.emit.query
@@ -53,14 +52,14 @@
        ["l1B"] ["l1B l2A"] ["l1B l2B"] ["l1B l2C"] ["l1B l2D"]
        ["l1C"] ["l1C l2A"] ["l1C l2B"] ["l1C l2C"] ["l1C l2D"]}
 
-  (aa/select (d/db *conn*) {:node/value (?fulltext "l2A")}
+  (aa/select (d/db *conn*) {:node/value '(?fulltext "l2A")}
              (assoc d1-env :view :node))
   => (just-in [{:node {:value "l1A l2A"} :db anything}
                {:node {:value "l1B l2A"} :db anything}
                {:node {:value "l1C l2A"} :db anything}]
               :in-any-order)
 
-  (aa/select (d/db *conn*){:node/value (?fulltext "l2A")}
+  (aa/select (d/db *conn*){:node/value '(?fulltext "l2A")}
              (assoc d1-env :view {:node {:parent :show
                                          :value :show}}))
   => (just-in [{:node {:value "l1A l2A" :parent anything} :db anything}
@@ -68,7 +67,7 @@
                {:node {:value "l1C l2A" :parent anything} :db anything}]
               :in-any-order)
 
-  (aa/select (d/db *conn*) {:node/value (?fulltext "l1C")}
+  (aa/select (d/db *conn*) {:node/value '(?fulltext "l1C")}
              (assoc d1-env :view :node))
   => (just-in [{:node {:value "l1C"}, :db anything}
                {:node {:value "l1C l2A"} :db anything}

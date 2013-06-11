@@ -28,16 +28,16 @@
   (apply d/q qu (d/db (:conn ds)) args))
 
 (defn- merge-args
-           ([ds args]
-              (let [pargs (partition 2 args)]
-                (merge-args nil pargs ds)))
-           ([_  pargs output]
-              (if-let [[k v] (first pargs)]
-                (merge-args nil (next pargs) (assoc output k v))
-                output)))
+  ([ds args]
+     (let [pargs (partition 2 args)]
+       (merge-args nil pargs ds)))
+  ([_  pargs output]
+     (if-let [[k v] (first pargs)]
+       (merge-args nil (next pargs) (assoc output k v))
+       output)))
 
 (defn insert! [ds data & args]
-  (aa/insert! (:conn ds) data (merge-args ds args)))
+  (aa/insert! (:conn ds) data ds))
 
 (defn- select-at [ds t]
   (let [db (d/db (:conn ds))]
@@ -64,6 +64,19 @@
            :view (if (vector? view)
                    (vec (concat (select-view-val val) view))
                    (conj (vec (select-view-val val)) view)))))
+
+(defn select-call [ds val args f]
+  (let [opts (into {} (u/auto-pair-seq args))
+        {:keys [at first]} opts]
+    (-> ds
+        (select-at at)
+        (f val args)
+        (select-first first))))
+
+(defn select [ds val & args]
+  (select-call ds val args
+               (fn [val ds opts]
+                 (aa/select val (select-view ds val opts)))))
 
 (defn select [ds val & args]
   (let [opts (into {} (u/auto-pair-seq args))

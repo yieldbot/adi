@@ -106,6 +106,7 @@
            mopts   {:defaults? (if (nil? (:defaults? opts)) true (:defaults? opts))
                     :restrict? (if (nil? (:restrict? opts)) true (:restrict? opts))
                     :required? (if (nil? (:required? opts)) true (:required? opts))
+                    :coerce? (:coerce? opts)
                     :extras? (or (:extras? opts) false)
                     :query? (or (:query? opts) false)
                     :sets-only? (or (:sets-only? opts) false)}]
