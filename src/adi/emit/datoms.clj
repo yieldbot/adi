@@ -71,6 +71,8 @@
   (emit-datoms data env {:generate {:ids {:current true}}}))
 
 (defn emit-datoms-update [data env]
-  (emit-datoms data env {:options {:required? false
+  (emit-datoms data env
+               {:generate {:ids {:current true}}
+                :options {:required? false
                                    :extras? true
                                    :defaults? false}}))
