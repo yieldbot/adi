@@ -15,13 +15,20 @@
             :enum    (fn [v] (keyword v))
             :instant (fn [v] (.parse date-format-json v))
             :uuid    (fn [v] (hara.common/uuid v))
-            :uri     (fn [v] (hara.common/uri v))}
+            :uri     (fn [v] (hara.common/uri v))
+            :ref     (fn [v] (Long/parseLong v))}
            java.lang.Double
-           {:float (fn [v] (long v))
+           {:float  (fn [v] (long v))
             :bigdec (fn [v] (bigdec v))
             :string (fn [v] (str v))}
            java.lang.Long
            {:bigint (fn [v] (bigint v))
+            :bigdec (fn [v] (bigdec v))
+            :enum   (fn [v] v)
+            :string (fn [v] (str v))}
+           java.lang.Integer
+           {:bigint (fn [v] (bigint v))
+            :bigdec (fn [v] (bigdec v))
             :enum   (fn [v] v)
             :string (fn [v] (str v))}}})
 
