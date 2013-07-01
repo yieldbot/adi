@@ -18,8 +18,9 @@
 (defn connect!
   ([uri] (connect! uri false))
   ([uri recreate?]
-     (if recreate? (d/delete-database uri))
-     (d/create-database uri)
+     (if recreate?
+       (do (d/delete-database uri)
+           (d/create-database uri)))
      (d/connect uri)))
 
 (defn insert- [data env]
