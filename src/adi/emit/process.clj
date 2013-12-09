@@ -142,6 +142,10 @@
 (defn process-init-ref [meta rf env]
   (cond (or (long? rf) (db-id? rf))
         {:db {:id rf}}
+        
+        (entity? rf)
+        {:db {:id (:db/id rf)}}
+        
         :else
         (let [nsvec (keyword-split (-> meta :ref :ns))
               data  (nest-keys rf nsvec #{:+ :#})]
