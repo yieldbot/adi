@@ -1,4 +1,4 @@
-(ns adi.example.schema)
+(ns adi.test.examples)
 
 (def account-name-age-sex
   {:account {:name [{}]

@@ -92,23 +92,31 @@
 
 (defn normalise-expression [subdata [attr] nsv interim env] subdata)
 
+(defn normalise-wrap [fns wrappers]
+  (reduce-kv (fn [out k f]
+               (let [nf (if-let [wrapvec (get wrappers k)]
+                          (reduce (fn [f wrapper] (wrapper f)) f wrapvec)
+                          f)]
+                 (assoc out k nf)))
+             {} fns))
+
 (defn normalise
   "base normalise function for testing purposes
 
   (normalise {:account/name \"Chris\"
               :account/age 10}
-             {:schema (schema/schema example/account-name-age-sex)})
+             {:schema (schema/schema examples/account-name-age-sex)})
   => {:account {:age 10, :name \"Chris\"}}
 
   (normalise {:link/value \"hello\"
               :link {:next/value \"world\"
                      :next/next {:value \"!\"}}}
-             {:schema (schema/schema example/link-value-next)})
+             {:schema (schema/schema examples/link-value-next)})
   => {:link {:next {:next {:value \"!\"}
                     :value \"world\"}
              :value \"hello\"}}"
   {:added "0.3"}
-  ([data env]
+  ([data env & [wrappers]]
      (let [tdata (data/treeify-keys-nested data)
            tsch (-> env :schema :tree)
            interim (:model env)
@@ -117,5 +125,6 @@
                 :normalise-branch normalise-loop
                 :normalise-attr normalise-attr
                 :normalise-expression normalise-expression
-                :normalise-single normalise-single}]
+                :normalise-single normalise-single}
+           fns (normalise-wrap fns wrappers)]
        ((:normalise fns) tdata tsch [] interim fns env))))
