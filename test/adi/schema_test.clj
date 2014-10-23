@@ -1,7 +1,6 @@
 (ns adi.schema-test
   (:use midje.sweet)
-  (:require [adi.schema :refer :all]
-            [adi.schema.struct :as struct]))
+  (:require [adi.schema :refer :all]))
 
 ^{:refer adi.schema/simplify :added "0.3"}
 (fact "helper function for easier display of adi schema"
@@ -61,7 +60,7 @@
                                  :type    :ref
                                  :ref     {:ns  :email}}]})
       :flat
-      struct/simplify)
+      simplify)
   => {:email {:accounts :&account<*>}
       :account {:email :&email
                 :name :string}})

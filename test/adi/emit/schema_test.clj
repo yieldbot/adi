@@ -1,10 +1,10 @@
-(ns adi.schema.emit-test
+(ns adi.emit.schema-test
   (:use midje.sweet)
-  (:require [adi.schema.emit :refer :all]
+  (:require [adi.emit.schema :refer :all]
             [adi.schema.ref :as ref]
             [adi.schema.meta :as meta]))
 
-^{:refer adi.schema.emit/datomic-attr-property :added "0.3"}
+^{:refer adi.emit.schema/datomic-attr-property :added "0.3"}
 (fact "creates a property description from an adi one"
   (datomic-attr-property {:type :string} :type
                          (meta/meta-schema :type) {})
@@ -30,7 +30,7 @@
                         (meta/meta-schema :type) {})
  => (throws Exception))
 
-^{:refer adi.schema.emit/datomic-attr :added "0.3"}
+^{:refer adi.emit.schema/datomic-attr :added "0.3"}
 (fact "creates a field description from a single adi attribute"
   (datomic-attr [{:ident :name
                   :type  :string}])
@@ -53,8 +53,7 @@
                 :db/fulltext     true
                 :db/cardinality  :db.cardinality/many}))
 
-
-^{:refer adi.schema.emit/datomic-enum :added "0.3"}
+^{:refer adi.emit.schema/datomic-enum :added "0.3"}
 (fact "creates schema idents from the adi enum attr"
   (->> (datomic-enum [{:ident   :person/gender
                        :type    :enum
@@ -64,19 +63,19 @@
   => [{:db/ident :person.gender/female}
       {:db/ident :person.gender/male}])
 
-^{:refer adi.schema.emit/datomic :added "0.3"}
- (fact "creates a datomic-compatible schema from an adi one"
-   (->> (datomic {:node/male   [{:ident :node/male
-                                 :type  :ref
-                                 :ref {:ns  :node}}]
-                  :person/gender [{:ident   :person/gender
-                                   :type    :enum
-                                   :enum    {:ns     :person.gender
-                                             :values #{:male  :female}}}]})
-        (map #(dissoc % :db/id)))
-   [{:db.install/_attribute :db.part/db,
-     :db/cardinality :db.cardinality/one,
-     :db/ident :node/male,
-     :db/valueType :db.type/ref}
-    {:db/ident :person.gender/female}
-    {:db/ident :person.gender/male}])
+^{:refer adi.emit.schema/datomic :added "0.3"}
+(fact "creates a datomic-compatible schema from an adi one"
+  (->> (datomic {:node/male   [{:ident :node/male
+                                :type  :ref
+                                :ref {:ns  :node}}]
+                 :person/gender [{:ident   :person/gender
+                                  :type    :enum
+                                  :enum    {:ns     :person.gender
+                                            :values #{:male  :female}}}]})
+       (map #(dissoc % :db/id)))
+  => [{:db.install/_attribute :db.part/db,
+       :db/cardinality :db.cardinality/one,
+       :db/ident :node/male,
+       :db/valueType :db.type/ref}
+      {:db/ident :person.gender/female}
+      {:db/ident :person.gender/male}])

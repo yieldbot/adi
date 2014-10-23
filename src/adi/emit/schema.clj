@@ -1,4 +1,4 @@
-(ns adi.schema.emit
+(ns adi.emit.schema
   (:require [adi.schema.meta :as meta]
             [adi.schema.find :as find]
             [datomic.api :as datomic]
