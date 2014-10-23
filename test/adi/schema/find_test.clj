@@ -23,3 +23,11 @@
                       :type    :instant}]}
    (fn [attr] (= (:type attr) :long)))
   => [:account/number])
+
+^{:refer adi.schema.find/is-reverse-ref? :added "0.3"}
+(fact "predicate for reverse ref"
+
+  (is-reverse-ref? {:ident  :email/accounts
+                    :type   :ref
+                    :ref    {:type :reverse}})
+  => true)

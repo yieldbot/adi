@@ -5,10 +5,6 @@
             [hara.string.path :as path]
             [hara.common.error :refer [error]]))
 
-(defn is-reverse-ref? [attr]
-  (and (= :ref (:type attr))
-       (= :reverse (-> attr :ref :type))))
-
 (defn datomic-attr-property
   "creates a property description from an adi one
   (datomic-attr-property {:type :string} :type
@@ -27,7 +23,8 @@
                         (meta/meta-schema :unique) {})
  => {}
  "
-  {:added "0.3"} [attr k mgprop res]
+  {:added "0.3"}
+  [attr k mgprop res]
   (let [dft  (if (and (:default mgprop)
                       (:auto mgprop))
                (:default mgprop))
@@ -121,12 +118,12 @@
   {:added "0.3"}
   ([fschm]
      (let [attrs  (-> fschm
-                      (remove-attrs is-reverse-ref?)
+                      (remove-attrs find/is-reverse-ref?)
                       (remove-attrs (fn [attr] (#{:enum :alias} (:type attr))))
                       vals
                       (->> (map datomic-attr)))
            enums  (-> fschm
-                      (all-attrs (fn [attr] (= :enum (:type attr))))
+                      (find/all-attrs (fn [attr] (= :enum (:type attr))))
                       vals
                       (->> (mapcat datomic-enum)))]
        (concat attrs enums)))
