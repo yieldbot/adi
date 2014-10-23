@@ -28,10 +28,9 @@
       :account/name :account/name})
 
 ^{:refer adi.schema/create-flat-schema :added "0.3"}
-(fact
-  (create-flat-schema {:account/email [{:ident   :account/email
-                                        :type    :ref
-                                        :ref     {:ns  :email}}]})
+(fact "creates a flat schema from an input map"
+  (create-flat-schema {:account {:email [{:type    :ref
+                                          :ref     {:ns  :email}}]}})
   => {:email/accounts [{:ident :email/accounts
                         :type :ref
                         :cardinality :many

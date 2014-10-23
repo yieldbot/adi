@@ -61,9 +61,9 @@
              {} fschm))
 
 (defn create-flat-schema
-  "(create-flat-schema {:account/email [{:ident   :account/email
-                                        :type    :ref
-                                        :ref     {:ns  :email}}]})
+  "creates a flat schema from an input map
+  (create-flat-schema {:account {:email [{:type    :ref
+                                          :ref     {:ns  :email}}]}})
   => {:email/accounts [{:ident :email/accounts
                         :type :ref
                         :cardinality :many
@@ -93,14 +93,13 @@
     (merge fschm (ref/ref-attrs fschm))))
 
 (defn schema
-  "creates a adi schema
-
+  "creates an extended schema for use by adi
   (-> (schema {:account/name   [{}]
                :account/email  [{:ident   :account/email
                                  :type    :ref
                                  :ref     {:ns  :email}}]})
       :flat
-      struct/simplify)
+      simplify)
   => {:email {:accounts :&account<*>}
       :account {:email :&email
                 :name :string}}"

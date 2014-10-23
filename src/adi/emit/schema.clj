@@ -101,20 +101,20 @@
 
 (defn datomic
   "creates a datomic-compatible schema from an adi one
-   (->> (datomic {:node/male   [{:ident :node/male
-                                 :type  :ref
-                                 :ref {:ns  :node}}]
-                  :person/gender [{:ident   :person/gender
-                                   :type    :enum
-                                   :enum    {:ns     :person.gender
-                                             :values #{:male  :female}}}]})
-        (map #(dissoc % :db/id)))
-   [{:db.install/_attribute :db.part/db,
-     :db/cardinality :db.cardinality/one,
-     :db/ident :node/male,
-     :db/valueType :db.type/ref}
-    {:db/ident :person.gender/female}
-    {:db/ident :person.gender/male}]"
+  (->> (datomic {:node/male   [{:ident :node/male
+                                :type  :ref
+                                :ref {:ns  :node}}]
+                 :person/gender [{:ident   :person/gender
+                                  :type    :enum
+                                  :enum    {:ns     :person.gender
+                                            :values #{:male  :female}}}]})
+       (map #(dissoc % :db/id)))
+  => [{:db.install/_attribute :db.part/db,
+       :db/cardinality :db.cardinality/one,
+       :db/ident :node/male,
+       :db/valueType :db.type/ref}
+      {:db/ident :person.gender/female}
+      {:db/ident :person.gender/male}]"
   {:added "0.3"}
   ([fschm]
      (let [attrs  (-> fschm
