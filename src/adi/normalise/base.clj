@@ -14,7 +14,7 @@
     :fill-empty        ;;
     :ignore            ;;
     :allow             ;;
-    :expressions       ;;
+    :expression        ;;
     :validate          ;;
     :convert           ;;
     :post-transform    ;;

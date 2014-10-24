@@ -8,17 +8,17 @@
   (or (is-query env)
       (= (:cardinality attr) :many)))
   
-(defn wrap-attr-sets
+(defn wrap-attr-set
   "wraps normalise to type check inputs as well as to coerce incorrect inputs
   (normalise/normalise {:account {:tags \"10\"}}
                        {:schema (schema/schema examples/account-orders-items-image)}
-                       {:normalise-attr [wrap-attr-sets]})
+                       {:normalise-attr [wrap-attr-set]})
   => {:account {:tags #{\"10\"}}}
 
   (normalise/normalise {:account {:user #{\"andy\" \"bob\"}}}
                        {:schema (schema/schema examples/account-orders-items-image)
                         :type \"query\"}
-                       {:normalise-attr [wrap-attr-sets]})
+                       {:normalise-attr [wrap-attr-set]})
   => {:account {:user #{\"bob\" \"andy\"}}}"
   {:added "0.3"}
   [f]

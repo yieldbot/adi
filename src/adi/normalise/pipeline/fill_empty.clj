@@ -61,7 +61,8 @@
             *wrappers*)
   => {:account {:name \"Chris\", :age 10}}
   "
-  {:added "0.3"} [f]
+  {:added "0.3"}
+  [f]
   (fn [tdata tsch nsv interim fns env]
     (let [sfill (:fill-empty interim)
           output (process-fill-empty sfill tdata nsv interim tsch env)]
