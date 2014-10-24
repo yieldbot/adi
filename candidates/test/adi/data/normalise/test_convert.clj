@@ -16,7 +16,7 @@
 
   (t/normalise {:account/name "Chris"}
                {:schema account-name-age-sex-xm
-                :model {:convert  {:account {:age  1}}}})
+                :model {:convert  {:account {:age 1}}}})
   => {:account {:name "Chris"}}
 
   (t/normalise {:account {:name "Chris"

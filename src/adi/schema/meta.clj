@@ -1,9 +1,7 @@
 (ns adi.schema.meta
   (:require [hara.common.checks :refer
-             [boolean? long? uuid? uri? bigdec? bigint? instant? bytes? type-checker]]
+             [boolean? long? uuid? uri? bigdec? bigint? instant? bytes? double? type-checker]]
             [adi.data.checks :refer [enum? ref?]]))
-
-(defn double? [x] (instance? java.lang.Double x))
 
 (defn schema-property
   "constructs a :db property out of a value and a type

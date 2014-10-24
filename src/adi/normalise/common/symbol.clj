@@ -9,7 +9,8 @@
                                                                 :keyword {:ns :account.type}}]})}
                        {:normalise-single [wrap-single-symbol]})
   => {:account {:type '?hello}}"
-  {:added "0.3"} [f]
+  {:added "0.3"}
+  [f]
   (fn [subdata [attr] nsv interim fns env]
     (cond (not (symbol? subdata))
           (f subdata [attr] nsv interim fns env)

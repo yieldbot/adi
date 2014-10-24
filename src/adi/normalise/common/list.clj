@@ -1,7 +1,15 @@
 (ns adi.normalise.common.list
   (:require [ribol.core :refer [raise]]))
 
-(defn wrap-single-list [f]
+(defn wrap-single-list
+  "wraps normalise with support for more complex expressions through use of double vector
+
+  (normalise/normalise {:account {:age '(< ? 1)}}
+                       {:schema (schema/schema {:account/age [{:type :long}]})}
+                       {:normalise-single [wrap-single-list]})
+  => {:account {:age '(< ? 1)}}"
+  {:added "0.3"}
+  [f]
   (fn [subdata [attr] nsv interim fns env]
     (if (list? subdata)
       (cond (-> env :options :ban-expressions)

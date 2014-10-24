@@ -4,9 +4,10 @@
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [im.chit/hara.common "2.1.5"]
-                 [im.chit/hara.string "2.1.5"]
-                 [im.chit/hara.data   "2.1.5"]
+                 [im.chit/hara.common    "2.1.6-SNAPSHOT"]
+                 [im.chit/hara.string    "2.1.6-SNAPSHOT"]
+                 [im.chit/hara.data      "2.1.6-SNAPSHOT"]
+                 [im.chit/hara.function  "2.1.6-SNAPSHOT"]
                  [im.chit/ribol "0.4.0"]
                  [inflections "0.9.9"]]
 

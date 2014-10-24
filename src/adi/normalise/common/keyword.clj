@@ -9,7 +9,8 @@
                                                                 :keyword {:ns :account.type}}]})}
                        {:normalise-single [wrap-single-keyword]})
   => {:account {:type :vip}}"
-  {:added "0.3"} [f]
+  {:added "0.3"}
+  [f]
   (fn [subdata [attr] nsv interim fns env]
     (cond (= :keyword (:type attr))
           (let [v (if (path/path-ns? subdata (-> attr :keyword :ns))

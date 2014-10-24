@@ -4,8 +4,6 @@
             [ribol.core :refer [raise]]))
 
 (defn process-fill-assoc [sfill tdata nsv interim tsch env]
- ;; (println (first sfill))
-  ;;(Thread/sleep 100)
   (if-let [[k v] (first sfill)]
     (cond (not (get tdata k))
           (cond (fn? v)

@@ -13,7 +13,8 @@
                        {:normalise-single [wrap-single-enum]})
   => {:account {:type :guest}}
   "
-  {:added "0.3"} [f]
+  {:added "0.3"}
+  [f]
   (fn [subdata [attr] nsv interim fns env]
     (cond (= :enum (:type attr))
           (let [v (if (path/path-ns? subdata (-> attr :enum :ns))
