@@ -12,3 +12,16 @@
           :next  [{:type :ref
                    :ref {:ns :link
                          :rval :prev}}]}})
+
+(def account-orders-items-image
+ {:account {:user     [{}]
+            :tags     [{:cardinality :many}]}
+  :order   {:account [{:type :ref
+                         :ref {:ns :account}}]
+              :number [{:type :long}]}
+  :item    {:name   [{}]
+            :order  [{:type :ref
+                      :ref {:ns :order}}]}
+  :image   {:item  [{:type :ref
+                      :ref {:ns :item}}]
+            :url   [{}]}})

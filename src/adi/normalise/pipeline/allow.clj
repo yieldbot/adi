@@ -3,7 +3,26 @@
             [hara.string.path :as path]
             [ribol.core :refer [raise]]))
 
-(defn wrap-branch-model-allow [f]
+(defn wrap-branch-model-allow
+  "Works together with wrap-attr-model-allow to control access to data
+  (normalise/normalise {:account/name \"Chris\"}
+                       {:schema (schema/schema examples/account-name-age-sex)
+                        :model {:allow {}}}
+                       *wrappers*)
+  => (raises-issue {:adi true
+                    :data {:name \"Chris\"}
+                    :key-path [:account]
+                    :normalise true
+                    :not-allowed true
+                    :nsv [:account]})
+
+  (normalise/normalise {:account/name \"Chris\"}
+                       {:schema (schema/schema examples/account-name-age-sex)
+                        :model {:allow {:account {:name :checked}}}}
+                       *wrappers*)
+  => {:account {:name \"Chris\"}}
+  "
+  {:added "0.3"} [f]
   (fn [subdata subsch nsv interim fns env]
     (let [suballow (:allow interim)
           nsubdata  (if (nil? suballow)

@@ -61,7 +61,7 @@
              {} tdata))
 
 (defn normalise-nil [subdata _ nsv interim env]
-  (raise [:adi :normalise :no-schema {:nsv nsv :key-path (:key-path interim)}]
+  (raise [:adi :normalise :no-schema {:nsv nsv :key-path (:key-path interim) :ref-path (:ref-path interim)}]
          (str "NORMALISE_NIL: " nsv " is not in the schema.")))
 
 (defn normalise-attr [subdata [attr] nsv interim fns env]
