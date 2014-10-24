@@ -16,7 +16,8 @@
                         :model {:validate {:account {:name #(= % \"Bob\")}}}}
                        *wrappers*)
   => {:account {:name \"Bob\"}}"
-  {:added "0.3"} [f]
+  {:added "0.3"}
+  [f]
   (fn [subdata [attr] nsv interim fns env]
     (let [subvalidate (:validate interim)]
       (cond (fn? subvalidate)

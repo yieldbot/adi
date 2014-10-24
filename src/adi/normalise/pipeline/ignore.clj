@@ -17,4 +17,4 @@
   (fn [subdata _ nsv interim env]
     (if (-> interim :ignore)
       subdata
-      (f subdata nsv interim env))))
+      (f subdata nil nsv interim env))))
