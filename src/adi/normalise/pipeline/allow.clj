@@ -22,7 +22,8 @@
                        *wrappers*)
   => {:account {:name \"Chris\"}}
   "
-  {:added "0.3"} [f]
+  {:added "0.3"}
+  [f]
   (fn [subdata subsch nsv interim fns env]
     (let [suballow (:allow interim)
           nsubdata  (if (nil? suballow)

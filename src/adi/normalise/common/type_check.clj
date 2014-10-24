@@ -3,7 +3,22 @@
             [adi.data.coerce :refer [coerce]]
             [ribol.core :refer [raise]]))
 
-(defn wrap-single-type-check [f]
+(defn wrap-single-type-check
+  "wraps normalise to type check inputs as well as to coerce incorrect inputs
+  (normalise/normalise {:account {:age \"10\"}}
+                       {:schema (schema/schema examples/account-name-age-sex)}
+                       {:normalise-single [wrap-single-type-check]})
+  => (raises-issue {:type :long,
+                    :data \"10\",
+                    :wrong-type true})
+
+  (normalise/normalise {:account {:age \"10\"}}
+                       {:schema (schema/schema examples/account-name-age-sex)
+                        :options {:use-coerce true}}
+                       {:normalise-single [wrap-single-type-check]})
+  => {:account {:age 10}}"
+  {:added "0.3"}
+  [f]
   (fn [subdata [attr] nsv interim fns env]
     (let [t (:type attr)
           chk (meta/type-checks t)]

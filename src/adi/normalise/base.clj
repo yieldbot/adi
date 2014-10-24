@@ -66,7 +66,7 @@
 
 (defn normalise-attr [subdata [attr] nsv interim fns env]
   (cond (set? subdata)
-        (-> (map #((:normalise-single fns) % [attr] nsv interim fns env subdata))
+        (-> (map #((:normalise-single fns) % [attr] nsv interim fns env) subdata)
             (set)
             (disj nil))
 

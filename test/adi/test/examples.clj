@@ -14,7 +14,7 @@
                          :rval :prev}}]}})
 
 (def account-orders-items-image
- {:account {:user     [{}]
+ {:account {:user     [{:representative true}]
             :tags     [{:cardinality :many}]}
   :order   {:account [{:type :ref
                          :ref {:ns :account}}]

@@ -3,6 +3,14 @@
             [ribol.core :refer [raise]]))
 
 (defn rep-key
+  "finds the :required or :representative key within a schema,
+  otherwise throws an error
+  (rep-key (:account examples/account-orders-items-image))
+  => [:user]
+
+  (rep-key (:order examples/account-orders-items-image))
+  => (raises-issue {:needs-require-key true})"
+  {:added "0.3"}
   ([tsch]
      (rep-key tsch []))
   ([tsch lvl]
@@ -19,7 +27,15 @@
        (raise [:adi :normalise :needs-require-key]
               (str "REP_KEY: Needs a :required or :representative key for " lvl)))))
 
-(defn wrap-branch-underscore [f]
+(defn wrap-branch-underscore
+  "wraps normalise to process underscores
+  (normalise/normalise {:account '_}
+                       {:schema (schema/schema examples/account-orders-items-image)
+                        :type \"query\"}
+                       {:normalise-branch [wrap-branch-underscore]})
+  => {:account {:user '#{_}}}"
+  {:added "0.3"}
+  [f]
   (fn [subdata subsch nsv interim fns env]
     (cond (not (= subdata '_))
           (f subdata subsch nsv interim fns env)
