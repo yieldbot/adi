@@ -65,7 +65,7 @@
                 :normalise-attr
                 (let [f normalise/normalise-attr
                       f (set/wrap-attr-set f)
-                      f (vector/wrap-attr-vector)
+                      f (vector/wrap-attr-vector f)
                       f (if (-> env :model :allow)   (allow/wrap-attr-model-allow f) f)
                       f (paths/wrap-key-path f)]
                   f)

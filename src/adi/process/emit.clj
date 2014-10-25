@@ -7,4 +7,4 @@
   (let [chdata (characterise/characterise pdata env)]
     (condp = (:type env)
       "query"  (query/query chdata env)
-      "datoms" (datoms/datoms chdata env))))
+      "datoms" (datoms/datoms chdata))))

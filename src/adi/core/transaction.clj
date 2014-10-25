@@ -31,16 +31,16 @@
 
             :else
             (condp = trs
-              nil      @(datomic/transact (:conn adi) dtms)
-              :promise (datomic/transact (:conn adi) dtms)
-              :async   (datomic/transact-async (:conn adi) dtms)
-              :full    (let [res @(datomic/transact (:conn adi) dtms)
+              nil      @(datomic/transact (:connection adi) dtms)
+              :promise (datomic/transact (:connection adi) dtms)
+              :async   (datomic/transact-async (:connection adi) dtms)
+              :full    (let [res @(datomic/transact (:connection adi) dtms)
                              ndb (:db-after res)]
                          (if ids
                            (select/select-fn (assoc adi :db ndb) ids :select
                                              #(unpack/unpack (datomic/entity ndb %) adi))
                            res))
-              :compare (let [res @(datomic/transact (:conn adi) dtms)
+              :compare (let [res @(datomic/transact (:connection adi) dtms)
                              ndb (:db-after res)]
                          (if ids
                            [(select/select-fn adi ids :select

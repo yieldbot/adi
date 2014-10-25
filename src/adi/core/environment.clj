@@ -26,7 +26,7 @@
 
 (defn- wrap-env-setup-db [f]
   (fn [adi data]
-    (let [db (or (:db adi) (datomic/db (:conn adi)))
+    (let [db (or (:db adi) (datomic/db (:connection adi)))
           db (if-let [t (:at adi)] (datomic/as-of db t) db)]
       (f (assoc adi :db db) data))))
 
