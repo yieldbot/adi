@@ -1,11 +1,11 @@
-(ns adi.process.analyse-test
+(ns adi.process.pack.pack.analyse-test
   (:use midje.sweet)
-  (:require [adi.process.analyse :refer :all]
+  (:require [adi.process.pack.analyse :refer :all]
             [adi.schema :as schema]
             [adi.test.examples :as examples]
             [adi.test.checkers :refer :all]))
 
-^{:refer adi.process.analyse/analyse :added "0.3"}
+^{:refer adi.process.pack.analyse/analyse :added "0.3"}
 (fact "turns a nested-tree map into reference maps"
   (analyse {:account {:name "Chris"}}
            {:schema (schema/schema examples/account-name-age-sex)

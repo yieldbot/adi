@@ -1,4 +1,4 @@
-(ns adi.process.characterise
+(ns adi.process.emit.characterise
   (:require [hara.common.error :refer [error]]
             [hara.common.checks :refer [hash-map? long?]]
             [hara.data.nested :refer [merge-nested]]
