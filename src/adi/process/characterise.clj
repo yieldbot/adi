@@ -1,8 +1,9 @@
-(ns adi.data.characterise
-  (:require [hara.common :refer [if-let error merge-nested hash-map? long?]]
-            [adi.common :refer [iid isym]]
-            [adi.schema.types :refer [db-id?]])
-  (:refer-clojure :exclude [if-let]))
+(ns adi.process.characterise
+  (:require [hara.common.error :refer [error]]
+            [hara.common.checks :refer [hash-map? long?]]
+            [hara.data.nested :refer [merge-nested]]
+            [adi.data.common :refer [iid isym]]
+            [adi.data.checks :refer [db-id?]]))
 
 (declare characterise
          characterise-nout)
@@ -80,29 +81,30 @@
     output))
 
 (defn characterise-entry [k v pid fns env output]
-  (if-let [[attr] (-> env :schema :flat k)
-           t (:type attr)]
-    (cond (list? v) (assoc-in output [:db-funcs k] v)
+  (let [[attr] (-> env :schema :flat k)
+        t (:type attr)]
+    (if (and attr t)
+      (cond (list? v) (assoc-in output [:db-funcs k] v)
 
-          (and (set? v) (get v '_)) (assoc-in output [:data-many k] #{'_})
+            (and (set? v) (get v '_)) (assoc-in output [:data-many k] #{'_})
 
-          (not= :ref t)
-          (cond
-                (set? v)  (assoc-in output [:data-many k] v)
-                :else     (assoc-in output [:data-one k] v))
+            (not= :ref t)
+            (cond
+             (set? v)  (assoc-in output [:data-many k] v)
+             :else     (assoc-in output [:data-one k] v))
 
-          (= :ref t)
-          (cond (set? v) (characterise-ref-many k v pid attr fns env output)
-                :else (characterise-ref-single k v pid attr fns env output)))
+            (= :ref t)
+            (cond (set? v) (characterise-ref-many k v pid attr fns env output)
+                  :else (characterise-ref-single k v pid attr fns env output)))
 
-    (cond (= k :db)
-          (assoc output k v)
+      (cond (= k :db)
+            (assoc output k v)
 
-          (= k :#)
-          (assoc output k (merge-nested (output k) v))
+            (= k :#)
+            (assoc output k (merge-nested (output k) v))
 
-          :else
-          (error "key " k " not found in schema."))))
+            :else
+            (error "key " k " not found in schema.")))))
 
 
 (defn characterise-loop

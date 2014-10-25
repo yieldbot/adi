@@ -33,12 +33,12 @@
        (long? v)
        (cond (:ban-ids fns)
              (raise [:adi :analyse :id-banned
-                     {:data v :attr attr}]
+                     {:id v :attr attr}]
                     (str "ANALYSE_ATTR_SINGLE_REF: id " v " is not allowed for refs" ))
 
              (:ban-body-ids fns)
              (raise [:adi :analyse :body-id-banned
-                     {:data v :attr attr}]
+                     {:id v :attr attr}]
                     (str "ANALYSE_ATTR_SINGLE_REF: id " v " is not allowed for refs" ))
 
              :else v)
@@ -195,7 +195,21 @@
      (if (empty? nsv) output
          (update-in output [:# :nss] #(set/union % (set nsv)))))))
 
-(defn analyse [tdata env]
+(defn analyse
+  "turns a nested-tree map into reference maps
+  (analyse {:account {:name \"Chris\"}}
+           {:schema (schema/schema examples/account-name-age-sex)
+            :options {:auto-ids false}})
+  => {:account/name \"Chris\"}
+
+  (analyse {:account {:name :Chris
+                      :age \"10\"}} ;; auto coercion
+           {:schema (schema/schema examples/account-name-age-sex)
+            :options {:auto-ids false}})
+  => {:account/name \"Chris\", :account/age 10}
+  "
+  {:added "0.3"} 
+  [tdata env]
  (let [tsch (-> env :schema :tree)
        fns  {:analyse
              (let [f (-> analyse-loop

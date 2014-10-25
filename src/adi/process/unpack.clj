@@ -1,13 +1,14 @@
-(ns adi.data.unpack
-  (:require [hara.common :refer [error hash-set? hash-map? dissoc-in
-                                 assoc-in-if keyword-split]]
-            [hara.collection.hash-map :refer [treeify-keys]]
+(ns adi.process.unpack
+  (:require [hara.common :refer [error hash-map?]]
+            [hara.data.map :refer [dissoc-in assoc-in-if]]
+            [hara.string.path :as path]
+            [hara.data.path :refer [treeify-keys]]
             [datomic.api :as d]))
 
 (declare unpack)
 
 (defn strip-ns [m ns]
-  (let [nsv (keyword-split ns)
+  (let [nsv (path/split ns)
         nm  (get-in m nsv)
         xm  (dissoc-in m nsv)]
     (if (empty? xm)
@@ -45,7 +46,7 @@
 (defn wrap-unpack-sets [f]
   (fn [ent attr v env]
     (let [rf (get ent (-> attr :ref :key))]
-      (cond (hash-set? rf)
+      (cond (set? rf)
             (set (filter identity (map #(f ent % attr v env) rf)))
             :else (f ent rf attr v env)))))
 
@@ -59,11 +60,11 @@
                              output
 
                              (= :ref (-> attr :type))
-                             (assoc-in-if output (keyword-split k)
+                             (assoc-in-if output (path/split k)
                                           ((wrap-unpack-sets unpack-ref) ent attr v env))
 
                              :else
-                             (assoc-in-if output (keyword-split k) (get ent k)))]
+                             (assoc-in-if output (path/split k) (get ent k)))]
            (recur ent (next model) fmodel env noutput))
          (error "RETURN: key " k " is not in schema"))
        output)))

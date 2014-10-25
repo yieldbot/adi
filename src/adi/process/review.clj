@@ -1,6 +1,17 @@
-(ns adi.data.pack.review
-  (:require [hara.common :refer [error hash-map? hash-set? long? keyword-join keyword-ns]]
-            [adi.schema.find :refer [find-keys]]))
+(ns adi.process.review
+  (:require [hara.common.checks :refer [hash-map? long?]]
+            [hara.common.error :refer [error]]
+            [hara.string.path :as path]
+            [clojure.set :as set]))
+
+(defn find-keys
+  ([fschm mk mv]
+     (find-keys fschm (constantly true) mk mv))
+  ([fschm nss mk mv]
+     (let [comp-fn  (fn [val cmp] (if (fn? cmp) (cmp val) (= val cmp)))
+           filt-fn  (fn [k] (and (nss (path/path-ns k))
+                                (comp-fn (mk (first (fschm k))) mv)))]
+       (set (filter filt-fn (keys fschm))))))
 
 (defn review-required
   [pdata fsch ks env]
@@ -29,7 +40,7 @@
  ([k] (expand-ns-keys k #{}))
  ([k output]
     (if (nil? k) output
-      (if-let [nsk (keyword-ns k)]
+      (if-let [nsk (path/path-ns k)]
         (expand-ns-keys nsk (conj output k))
         (conj output k)))))
 
@@ -38,8 +49,8 @@
  ([s output]
     (if-let [k (first s)]
       (expand-ns-set (next s)
-                     (clojure.set/union output
-                                        (expand-ns-keys k)))
+                     (set/union output
+                                (expand-ns-keys k)))
       output)))
 
 (declare review-current)
@@ -49,8 +60,8 @@
        ks    (find-keys fsch nss (-> merge-fn :label) (complement nil?))
        refks (find-keys fsch nss :type :ref)
        dataks     (set (keys pdata))
-       mergeks    (clojure.set/difference ks dataks)
-       datarefks  (clojure.set/intersection refks dataks)]
+       mergeks    (set/difference ks dataks)
+       datarefks  (set/intersection refks dataks)]
    (-> pdata
        ((-> merge-fn :function) fsch mergeks env)
        (review-current fsch datarefks merge-fn env))))
