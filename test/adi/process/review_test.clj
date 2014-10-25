@@ -6,7 +6,7 @@
             [adi.test.examples :as examples]))
 
 (fact
-  (review {:# {:nss #{:account} :account/name "Chris"}}
+  (review/review {:# {:nss #{:account} :account/name "Chris"}}
           {:schema (schema/schema {:account {:name [{:required true}]
                                              :age  [{:required true}]}})
            :options {:schema-required true}})
