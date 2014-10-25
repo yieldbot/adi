@@ -62,6 +62,7 @@
        dataks     (set (keys pdata))
        mergeks    (set/difference ks dataks)
        datarefks  (set/intersection refks dataks)]
+   (println nss ks refks)
    (-> pdata
        ((-> merge-fn :function) fsch mergeks env)
        (review-current fsch datarefks merge-fn env))))
@@ -82,19 +83,18 @@
   (if (and (not= "query" (:type env))
            (or (-> env :options :schema-defaults)
                (-> env :options :schema-required)))
-    (let
-       [fsch   (-> env :schema :flat)
-        pdata  (if (-> env :options :schema-defaults)
-                (review-fn pdata fsch
-                                {:label :default
-                                 :function review-defaults}
-                                env)
-                pdata)
-       pdata  (if (-> env :options :schema-required)
-                (review-fn pdata fsch
-                                {:label :required
-                                 :function review-required}
-                                env)
-                pdata)]
+    (let [fsch   (-> env :schema :flat)
+          pdata  (if (-> env :options :schema-defaults)
+                   (review-fn pdata fsch
+                              {:label :default
+                               :function review-defaults}
+                              env)
+                   pdata)
+          pdata  (if (-> env :options :schema-required)
+                   (review-fn pdata fsch
+                              {:label :required
+                               :function review-required}
+                              env)
+                   pdata)]
       pdata)
-      pdata))
+    pdata))
