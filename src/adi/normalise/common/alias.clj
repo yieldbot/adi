@@ -1,38 +1,20 @@
 (ns adi.normalise.common.alias
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.string.path :as path]
+            [hara.data.complex :as complex]
             [ribol.core :refer [raise]]
             [clojure.walk :as walk]))
 
 (defn find-aliases
-  ([tsch ks] (find-aliases tsch ks []))
-  ([tsch ks output]
-     (if-let [k (first ks)]
-       (let [sub (get tsch k)
-             noutput (cond (vector? sub)
-                       (if-let [alias (-> sub first :alias)]
-                         (conj output [k alias])
-                         output)
-                       :else output)]
-         (recur tsch (next ks) noutput))
-       output)))
-
-(defn merge-data
-  ([tdata adata]
-     (merge-data tdata adata (keys adata)))
-  ([tdata adata ks]
-     (if-let [k (first ks)]
-       (let [stdata (get tdata k)
-             sadata (get adata k)
-             ntdata (cond (and stdata sadata)
-                          (assoc tdata k #{stdata sadata})
-
-                          (nil? stdata)
-                          (assoc tdata k sadata)
-
-                          (nil? sadata) tdata)]
-         (recur ntdata adata (next ks)))
-       tdata)))
+  [tsch ks]
+  (reduce (fn [out k]
+            (let [sub (get tsch k)]
+              (cond (vector? sub)
+                    (if-let [alias (-> sub first :alias)]
+                      (conj out [k alias])
+                      out)
+                    :else out)))
+          []  ks))
 
 (defn template-alias [tmpl]
   (let [symbols (atom {})
@@ -55,9 +37,25 @@
                  (template-alias atmpl))
         sdata  (get tdata k)
         adata  (update-in atmpl ans merge sdata)]
-    (merge-data (dissoc tdata k) adata)))
+    (complex/merges (dissoc tdata k) adata)))
 
-(defn wrap-alias [f]
+(defn wrap-alias
+  "wraps normalise to process aliases for a database schema
+
+  (normalise/normalise {:db/id 'chris
+                        :male/name \"Chris\"}
+                       {:schema (schema/schema family/family-links)}
+                       *wrappers*)
+  => '{:db {:id ?chris}, :person {:gender :m, :name \"Chris\"}}
+
+  (normalise/normalise {:female {:parent/name \"Sam\"
+                                 :brother {:brother/name \"Chris\"}}}
+                       {:schema (schema/schema family/family-links)}
+                       *wrappers*)
+  => {:person {:gender :f, :parent #{{:name \"Sam\"}},
+               :sibling #{{:gender :m, :sibling #{{:name \"Chris\", :gender :m}}}}}}
+  "
+  {:added "0.3"} [f]
   (fn [tdata tsch nsv interim fns env]
     (let [ks (keys tdata)
           aliases (find-aliases tsch ks)

@@ -1,5 +1,6 @@
 (ns adi.schema
   (:require [hara.data.path :as data]
+            [adi.schema.alias :as alias]
             [adi.schema.find :as find]
             [adi.schema.ref :as ref]
             [adi.schema.meta :as meta]))
@@ -90,7 +91,9 @@
                    (map meta/attr-add-ident)
                    (map #(meta/attr-add-defaults % meta/all-auto-defaults))
                    (into {}))]
-    (merge fschm (ref/ref-attrs fschm))))
+    (merge fschm
+           (ref/ref-attrs fschm)
+           (alias/alias-attrs fschm))))
 
 (defn schema
   "creates an extended schema for use by adi
