@@ -1,4 +1,4 @@
-(ns adi.process.analyse
+(ns adi.process.pack.analyse
   (:require [hara.common.checks :refer [hash-map? long?]]
             [hara.common.error :refer [error suppress]]
             [hara.string.path :as path]

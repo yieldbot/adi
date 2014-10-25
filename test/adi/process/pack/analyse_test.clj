@@ -1,4 +1,4 @@
-(ns adi.process.pack.pack.analyse-test
+(ns adi.process.pack.analyse-test
   (:use midje.sweet)
   (:require [adi.process.pack.analyse :refer :all]
             [adi.schema :as schema]
