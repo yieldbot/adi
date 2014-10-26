@@ -2,7 +2,7 @@
   (:require [adi.process.normalise.base :as normalise]
             [hara.data.path :as data]
             [adi.process.normalise.common
-              [alias :as alias]   
+              [alias :as alias]
               [db :as db]
               [enum :as enum]
               [keyword :as keyword]
@@ -13,7 +13,7 @@
               [type-check :as type-check]
               [underscore :as underscore]
               [vector :as vector]]
-            [adi.process.normalise.pipeline 
+            [adi.process.normalise.pipeline
               [allow :as allow]
               [convert :as convert]
               [expression :as expression]
@@ -57,9 +57,9 @@
                 :normalise-branch
                 (let [f normalise/normalise-loop
                       f (if (-> env :model :allow)    (allow/wrap-branch-model-allow f) f)
+                      f (alias/wrap-alias f)
                       f (underscore/wrap-branch-underscore f)
-                      f (paths/wrap-key-path f)
-                      f (alias/wrap-alias f)]
+                      f (paths/wrap-key-path f)]
                   f)
 
                 :normalise-attr
@@ -92,6 +92,6 @@
          output))))
 
 (defn normalise [data env]
-  (if (-> env :options :skip-normalise) 
+  (if (-> env :options :skip-normalise)
     data
     (normalise-raw data env)))

@@ -1,6 +1,9 @@
 (ns adi.core.select
   (:require [hara.common.checks :refer [hash-map? long?]]
-            [adi.core.environment :as environment]
+            [hara.data
+             [map :refer [assoc-nil]]
+             [nested :refer [merge-nested]]]
+            [adi.core.prepare :as prepare]
             [adi.process
              [normalise :as normalise]
              [pack :as pack]
@@ -30,7 +33,7 @@
                   (if (get res id) #{id} #{})
                   res)))))))
 
-(defn wrap-select-return [f ret-fn]
+(defn wrap-select-return [f return]
   (fn [adi data]
     (let [res (f adi data)]
       (cond (-> adi :options :raw)
@@ -38,10 +41,10 @@
 
             (-> adi :options :first)
             (if-let [fst (first res)]
-              (ret-fn fst))
+              (return fst))
 
             :else
-            (set (map ret-fn res))))))
+            (set (map return res))))))
 
 (defn wrap-select-keyword [f]
   (fn [adi data]
@@ -70,23 +73,15 @@
         (pack/pack adi)
         (emit/emit adi))))
 
-(defn select-fn [adi data op ret-fn]
-  (let [sel-fn (-> gen-query
-                   (wrap-select-data)
-                   (wrap-select-keyword)
-                   (wrap-select-set)
-                   (wrap-select-return ret-fn))]
-    (sel-fn (assoc adi :op op) data)))
-
-(defn select-ids [adi data & args]
-  (let [adi (environment/setup adi args)]
-    (select-fn adi data :select identity)))
-
-(defn select-entities [adi data & args]
-  (let [adi (environment/setup adi args)]
-    (select-fn adi data :select #(datomic/entity (:db adi) %))))
-
-(defn select [adi data & args]
-  (let [adi (environment/setup adi args)
-        view-fn #(unpack/unpack (datomic/entity (:db adi) %) adi)]
-    (select-fn adi data :select view-fn)))
+(defn select [adi data opts]
+  (let [adi (prepare/prepare adi opts)
+        return  (cond (-> adi :options :return-ids) identity
+                      (-> adi :options :return-entities)
+                      #(datomic/entity (:db adi) %)
+                      :else #(unpack/unpack (datomic/entity (:db adi) %) adi))]
+    ((-> gen-query
+         (wrap-select-data)
+         (wrap-select-keyword)
+         (wrap-select-set)
+         (wrap-select-return return))
+     (assoc-nil adi :op :select) data)))

@@ -1,8 +1,10 @@
 (ns adi.core.transaction
   (:require [hara.common.checks :refer [hash-map? long?]]
             [adi.core
-             [environment :as environment]
-             [select :as select]]
+             [prepare :as prepare]
+             [select :as select]
+             [model :as model]
+             [link :as link]]
             [adi.process
              [normalise :as normalise]
              [pack :as pack]
@@ -37,16 +39,18 @@
               :full    (let [res @(datomic/transact (:connection adi) dtms)
                              ndb (:db-after res)]
                          (if ids
-                           (select/select-fn (assoc adi :db ndb) ids :select
-                                             #(unpack/unpack (datomic/entity ndb %) adi))
+                           (select/select adi ids {:db ndb
+                                                   :options {:return-ids false
+                                                             :return-entities false}})
                            res))
               :compare (let [res @(datomic/transact (:connection adi) dtms)
                              ndb (:db-after res)]
                          (if ids
-                           [(select/select-fn adi ids :select
-                                              #(unpack/unpack (datomic/entity (:db adi) %) adi))
-                            (select/select-fn (assoc adi :db ndb) ids :select
-                                              #(unpack/unpack (datomic/entity ndb %) adi))]
+                           [(select/select adi ids {:options {:return-ids false
+                                                              :return-entities false}})
+                            (select/select adi ids {:db ndb
+                                                    :options {:return-ids false
+                                                              :return-entities false}})]
                            res)))))))
 
 (defn wrap-vector-inserts [f]
@@ -57,39 +61,62 @@
         (vfn adi data))
       (f adi data))))
 
-(defn insert! [adi data & args]
-  (let [adi (environment/setup adi args)
-        in-fn (-> gen-datoms
-                  (wrap-vector-inserts)
-                  (wrap-transaction-return))]
-    (in-fn (assoc adi :op :insert) data)))
+(defn insert! [adi data opts]
+  (let [adi (-> adi
+                (prepare/prepare opts)
+                (assoc :op :insert))
+        f   (-> gen-datoms
+                (wrap-vector-inserts)
+                (wrap-transaction-return))]
+    (f adi data)))
 
-(defn transact! [adi data & args]
-  (let [adi (environment/setup adi args)
-        in-fn (-> (fn [adi data] data)
-                  (wrap-transaction-return))]
-    (in-fn (assoc adi :op :transact) data)))
+(defn transact! [adi datoms opts]
+  (let [adi (-> adi
+                (prepare/prepare opts)
+                (assoc :op :transact))
+        f (-> (fn [_ datoms] datoms)
+              (wrap-transaction-return))]
+    (f adi datoms)))
 
-(defn delete! [adi data & args]
-  (let [adi (environment/setup adi args)
-        ids (select/select-fn (assoc-in adi [:options :raw] false)
-                              data :delete identity)
-        del-fn (-> (fn [adi data]
-                     (map (fn [x] [:db.fn/retractEntity x]) ids))
-                   (wrap-transaction-return ids))]
-    (del-fn adi data)))
+(defn delete! [adi data opts]
+  (let [adi (-> adi
+                (prepare/prepare opts)
+                (assoc :op :delete))
+        ids (select/select adi data {:options {:raw false
+                                               :return-ids true}})
+        f (-> (fn [adi data]
+                (map (fn [x] [:db.fn/retractEntity x]) ids))
+              (wrap-transaction-return ids))]
+    (f adi data)))
 
-(defn update! [adi data update & args]
-  (let [adi (environment/setup adi args)
-        ids (select/select-fn (assoc-in adi [:options :raw] false)
-                              data :update identity)
+(defn update! [adi data update opts]
+  (let [adi (prepare/prepare adi opts)
+        ids (select/select adi data {:options {:raw false :return-ids true}})
         updates (mapv (fn [id] (assoc update :db/id id)) ids)
         adi (if (-> adi :options :ban-ids)
               (-> adi
                   (assoc-in [:options :ban-ids] false)
                   (assoc-in [:options :ban-body-ids] true))
               adi)
-        in-fn (-> gen-datoms
-                  (wrap-vector-inserts)
-                  (wrap-transaction-return ids))]
-    (in-fn (assoc adi :op :update) updates)))
+        adi (assoc adi :op :modify)
+        f  (-> gen-datoms
+               (wrap-vector-inserts)
+               (wrap-transaction-return ids))]
+    (f adi updates)))
+
+(defn delete-all! [adi data opts]
+  (let [adi (prepare/prepare adi opts)
+        ids (select/select adi data {:options {:raw false :return-ids true}})
+        rmodel (if-let [imodel (-> adi :model :allow)]
+                 (model/model-unpack imodel (-> adi :schema :tree))
+                 (raise :missing-allow-model))
+        ents    (map #(datomic/entity (:db adi) %) ids)
+        all-ids (mapcat (fn [ent]
+                          (link/linked-ids ent rmodel (-> adi :schema :flat)))
+                        ents)
+        output  (delete! adi (set all-ids) {:options {:raw true
+                                                      :ban-ids false
+                                                      :ban-top-id false}})
+        f (-> (fn [adi data] output)
+              (wrap-transaction-return ids))]
+    (f adi output)))
