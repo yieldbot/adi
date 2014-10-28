@@ -66,13 +66,15 @@
 
 (defn wrap-attr-restrict [f]
   (fn [v [attr] tsch fns]
-     (if-let [chk (:restrict attr)]
-       (if-not (suppress (chk v))
-         (raise [:adi :analyse :failed-restriction
-                 {:data v :attr attr :chk chk}]
-                (str "WRAP_ATTR_RESTRICT: " v " fails restriction: " chk))
-         (f v [attr] tsch fns))
-       (f v [attr] tsch fns))))
+    (if-let [chk (:restrict attr)]
+      (let [[msg chk] (if (vector? chk) chk
+                          ["" chk])]
+        (if-not (suppress (chk v))
+          (raise [:adi :analyse :failed-restriction
+                  {:data v :attr attr :message msg}]
+                 (str "WRAP_ATTR_RESTRICT: " v " fails restriction: " msg))
+          (f v [attr] tsch fns)))
+      (f v [attr] tsch fns))))
 
 (defn wrap-attr-type-check [f]
   (fn [v [attr] tsch fns]
@@ -91,6 +93,12 @@
  (if-let [t (:type attr)]
    (cond (= t :ref)
          ((wrap-mutual-ref analyse-attr-single-ref) v [attr] tsch fns)
+
+         (= t :enum)
+         (if-let [ens (-> attr :enum :ns)]
+           (path/join [ens v])
+           v)
+
          :else v)
    (error "ANALYSE-ATTR-SINGLE: Type data of " attr " missing")))
 
@@ -208,7 +216,7 @@
             :options {:auto-ids false}})
   => {:account/name \"Chris\", :account/age 10}
   "
-  {:added "0.3"} 
+  {:added "0.3"}
   [tdata env]
  (let [tsch (-> env :schema :tree)
        fns  {:analyse

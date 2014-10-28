@@ -1,9 +1,14 @@
 (ns adi.core
   (:require [hara.namespace.import :as ns]
             [hara.common [checks :refer [boolean?]]]
-            [adi.core [connection :as connection]]
-            [adi.core [select :as select]]
-            [adi.core [transaction :as transaction]]))
+            [adi.core
+             [connection :as connection]
+             [helpers :as helpers]
+             [prepare :as prepare]
+             [nested :as nested]
+             [retract :as retract]
+             [select :as select]
+             [transaction :as transaction]]))
 
 (def options
   #{:ban-expressions
@@ -53,31 +58,35 @@
        (map create-function-template)
        (vec)))
 
-(ns/import adi.core.connection [connect! disconnect!])
+(ns/import adi.core.connection [connect! disconnect!]
+           adi.core.helpers    [transactions])
 
 (define-database-functions
   [select/select
    transaction/insert!
    transaction/transact!
+   transaction/update!
    transaction/delete!
-   transaction/update!])
+   transaction/delete-all!
+   retract/retract!
+   nested/update-in!
+   nested/delete-in!
+   nested/retract-in!])
 
+(def transaction-ops
+  #{#'transact! #'insert! #'update! #'delete! #'retract!
+    #'retract-in! #'update-in! #'delete-in! #'delete-all!})
 
+(defn create-data-form [form env]
+  (let [[f & args] form]
+    (if (transaction-ops (resolve f))
+      (concat (list f env) args (list :raw))
+      (throw (AssertionError. (str "Only " transaction-ops " allowed."))))))
 
-
-
-
-(comment
-  (def adi (connect! "datomic:mem://adi-test-select" {:account/name [{}]} true true))
-
-  (insert! adi [{:account/name "Chris"}
-                {:account/name "Bob"}] :raw)
-
-  (transaction/insert! adi [{:account/name "Chris"}
-                            {:account/name "Bob"}]
-                       (args->opts [:raw]))
-  (connect! (disconnect! adi))
-
-
-  (datomic/db (:connection adi))
-  (datomic/tx-range t->tx 1000))
+(defmacro sync-> [adi args? & trns]
+  (let [[opts trns] (if (vector? args?)
+                      [(args->opts args?) trns] [{} (cons args? trns)])
+        adisym (gensym)
+        forms (filter identity (map #(create-data-form % adisym) trns))]
+    `(let [~adisym  (prepare/prepare ~adi ~opts)]
+       (transact! ~adisym (concat ~@forms)))))

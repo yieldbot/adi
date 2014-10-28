@@ -15,7 +15,8 @@
 
 (defn datom-ids [chd]
   (let [cid (get-in chd [:# :id])
-        rfs-fn (fn [rids k] (if (empty? rids) nil [:db/add cid k rids]))
+        rfs-fn (fn [rids k]
+                 (map (fn [rid] [:db/add cid k rid]) rids))
         rvs-fn (fn [rids k]
                  (map (fn [rid] [:db/add rid k cid]) rids))]
     (concat
@@ -23,7 +24,7 @@
      (mapcat datom-ids (vals (:revs-one chd)))
      (mapcat datom-ids (apply concat (vals (:refs-many chd))))
      (mapcat datom-ids (apply concat (vals (:revs-many chd))))
-     (filter identity (map rfs-fn (vals (:ref-ids chd)) (keys (:ref-ids chd))))
+     (mapcat rfs-fn (vals (:ref-ids chd)) (keys (:ref-ids chd)))
      (mapcat rvs-fn (vals (:rev-ids chd)) (keys (:rev-ids chd))))))
 
 (defn datom-tree [chd]

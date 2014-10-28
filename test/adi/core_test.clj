@@ -1,13 +1,14 @@
 (ns adi.core-test
   (:use midje.sweet)
-  (:require [adi.core
-             [connection :refer [connect! disconnect!]]
-             [select :refer [select]]
-             [transaction :refer [insert! transact! delete! update!]]]
-            [hara.data.nested :refer [merge-nested]]
+  (:require [adi.core :refer :all]
             [datomic.api :as datomic]))
 
-(fact "first end-to-end insert and select"
+
+
+
+
+
+#_(fact "first end-to-end insert and select"
   (def adi (connect! "datomic:mem://adi-core-test"
                      {:account/name [{:representative true}]} true true))
 

@@ -124,7 +124,10 @@
                       (->> (map datomic-attr)))
            enums  (-> fschm
                       (find/all-attrs (fn [attr] (= :enum (:type attr))))
-                      vals
-                      (->> (mapcat datomic-enum)))]
-       (concat attrs enums)))
+                      vals)
+           enum-attrs (->> enums
+                           (map #(assoc-in % [0 :type] :ref))
+                           (map datomic-attr))
+           enum-data  (mapcat datomic-enum enums)]
+       (concat attrs enum-attrs enum-data)))
   ([fschm & more] (datomic (apply merge fschm more))))

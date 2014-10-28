@@ -5,6 +5,7 @@
 
 (defn emit [pdata env]
   (let [chdata (characterise/characterise pdata env)]
+    ;;(println chdata)
     (condp = (:type env)
       "query"  (query/query chdata env)
       "datoms" (datoms/datoms chdata))))

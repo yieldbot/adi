@@ -21,7 +21,8 @@
     (cond (nil? rf) nil
 
           (= v :id)
-          (:db/id ent)
+          (let [k (:ident attr)]
+            (-> ent k :db/id))
 
           (hash-map? v)
           (strip-ns (unpack rf v env) ns)
@@ -63,20 +64,40 @@
                              (assoc-in-if output (path/split k)
                                           ((wrap-unpack-sets unpack-ref) ent attr v env))
 
+
+                             (= :enum (-> attr :type))
+                             (assoc-in-if output (path/split k)
+                                          (if-let [ens (-> attr :enum :ns)]
+                                            (-> ent (get k) path/split last)
+                                            (get ent k)))
+
                              :else
                              (assoc-in-if output (path/split k) (get ent k)))]
            (recur ent (next model) fmodel env noutput))
          (error "RETURN: key " k " is not in schema"))
        output)))
 
+(defn unpack-enums [ent env]
+  (let [ekeys (filter (fn [k] (= :enum (-> env :schema :flat k first :type)))
+                      (keys ent))
+        evals (map (fn [k] (let [v (get ent k)
+                                ens (-> env :schema :flat k first :enum :ns)]
+                            (if ens
+                              (-> (path/split v) last)
+                              v)))
+                   ekeys)]
+    (zipmap ekeys evals)))
+
 (defn unpack
   ([ent env]
      (if-let [fmodel (-> env :model :return)]
        (unpack ent fmodel (assoc env :seen-ids (atom #{})))
        (let [ent (d/touch ent)
-             ks  (filter (fn [k] (not= :ref (-> env :schema :flat k first :type)))
+             ks  (filter (fn [k] (not (#{:enum :alias :ref} (-> env :schema :flat k first :type))))
                          (keys ent))
-             res (treeify-keys (select-keys ent ks))]
+             res (-> (select-keys ent ks)
+                     (merge (unpack-enums ent env))
+                     (treeify-keys))]
          (if (-> env :options :ids)
            (assoc-in res
                      [:db :id] (:db/id ent))

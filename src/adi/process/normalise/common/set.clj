@@ -7,7 +7,7 @@
 (defn is-set [attr env]
   (or (is-query env)
       (= (:cardinality attr) :many)))
-  
+
 (defn wrap-attr-set
   "wraps normalise to type check inputs as well as to coerce incorrect inputs
   (normalise/normalise {:account {:tags \"10\"}}

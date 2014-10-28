@@ -1,4 +1,6 @@
-(ns adi.process.normalise.common.db)
+(ns adi.process.normalise.common.db
+  (:require [adi.data.checks :refer [vexpr?]]
+            [adi.data.common :refer [vexpr->expr]]))
 
 (defn db-id-syms
   "creates a compatible db/id symbol
@@ -8,12 +10,15 @@
   {:added "0.3"}
   [db]
   (if-let [id (and db (:id db))]
-    (cond (symbol? id)
-          (let [nid (cond (= id '_) '_
-                          (.startsWith (name id) "?") id
-                           :else (symbol (str "?" (name id))))]
-            (assoc db :id nid))
-          :else db)))
+    (let [id (if (vexpr? id) (vexpr->expr id) id)
+          id (if (symbol? id)
+               (cond (= id '_) '_
+
+                               (.startsWith (name id) "?") id
+
+                               :else (symbol (str "?" (name id))))
+               id)]
+      (assoc db :id id))))
 
 (defn wrap-db
   "allows the :db/id key to be used when specifying refs

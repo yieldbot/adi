@@ -1,5 +1,6 @@
 (ns adi.core.transaction
   (:require [hara.common.checks :refer [hash-map? long?]]
+            [hara.data.nested :refer [merge-nil-nested]]
             [adi.core
              [prepare :as prepare]
              [select :as select]
@@ -62,7 +63,10 @@
       (f adi data))))
 
 (defn insert! [adi data opts]
-  (let [adi (-> adi
+  (let [opts (merge-nil-nested opts {:options {:schema-restrict true
+                                               :schema-required true
+                                               :schema-defaults true}})
+        adi (-> adi
                 (prepare/prepare opts)
                 (assoc :op :insert))
         f   (-> gen-datoms

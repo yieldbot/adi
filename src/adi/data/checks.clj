@@ -37,3 +37,13 @@
   (ref? (datomic/tempid :db.user))"
   {:added "0.3"}
   [x] (or (hash-map? x) (entity? x) (db-id? x) (long? x)))
+  
+(defn vexpr?
+  "checks whether an input is a vector expression
+  (vecxpr? [[\":hello\"]]) => true"
+  {:added "0.3"}
+  [v]
+  (and (vector? v)
+       (= 1 (count v))
+       (vector? (first v))
+       (= 1 (count (first v)))))

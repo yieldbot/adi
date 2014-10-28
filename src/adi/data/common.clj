@@ -1,5 +1,8 @@
 (ns adi.data.common
-  (:require [datomic.api :as d]))
+  (:require [datomic.api :as d]
+            [clojure.edn :as edn]
+            [hara.common.checks :refer [long?]]
+            [ribol.core :refer [raise]]))
 
 (defn iid
   "Constructs a new datomic db/id
@@ -25,3 +28,32 @@
   {:added "0.3"}
   ([] (isym 'e_))
  ([prefix] (symbol (str "?" (name (gensym prefix))))))
+
+(defn vexpr->expr
+ "checks whether an input is a vector expression
+ (vecxpr->xpr [[\"_\"]]) => '_
+
+ (vecxpr->xpr [[\"?hello\"]]) => '?hello
+
+ (vecxpr->xpr [[\"(< ? 1)\"]]) => '(< ? 1)
+
+ (vecxpr->xpr [[\":hello\"]]) => #db/id[:db.part/user -245025397]"
+ {:added "0.3"}
+ [v]
+ (let [[[s]] v]
+   (let [xpr (if (string? s) (edn/read-string s) s)]
+     (cond
+      (= '_ xpr) '_
+
+      (list? xpr) xpr
+
+      (long? xpr) xpr
+
+      (and (symbol? xpr) (.startsWith s "?")) xpr
+
+      (or (keyword? xpr)
+          (symbol? xpr)) (iid xpr)
+
+      :else
+      (raise [:adi :wrong-input {:data v}]
+             (str "VEXPR->EXPR: wrong input given in vector expression: " v))))))

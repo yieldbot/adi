@@ -73,9 +73,13 @@
                                   :enum    {:ns     :person.gender
                                             :values #{:male  :female}}}]})
        (map #(dissoc % :db/id)))
-  => [{:db.install/_attribute :db.part/db,
-       :db/cardinality :db.cardinality/one,
-       :db/ident :node/male,
+  => [{:db.install/_attribute :db.part/db
+       :db/cardinality :db.cardinality/one
+       :db/ident :node/male
+       :db/valueType :db.type/ref}
+      {:db.install/_attribute :db.part/db
+       :db/cardinality :db.cardinality/one
+       :db/ident :person/gender
        :db/valueType :db.type/ref}
       {:db/ident :person.gender/female}
       {:db/ident :person.gender/male}])
