@@ -1,0 +1,690 @@
+<html><head><meta content="chrome=1" http-equiv="X-UA-Compatible" /><meta charset="utf-8" /><meta content="width=device-width, initial-scale=1, user-scalable=no" name="viewport" /><title>adi</title><style>body {
+  padding:50px;
+  font:14px/1.5 Helvetica, Arial, sans-serif;
+  color:#777;
+  font-weight:300;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color:#222;
+  margin:0 0 20px;
+}
+
+p, ul, ol, table, pre, dl {
+  margin:0 0 20px;
+}
+
+h1, h2, h3 {
+  line-height:1.1;
+}
+
+h1 {
+  font-size:28px;
+}
+
+h2 {
+  color:#393939;
+}
+
+h4, h5, h6 {
+  color:#494949;
+  margin:0;
+}
+
+header h4{
+  margin: 10 0 0 0px;
+}
+
+a {
+  color:#39c;
+  font-weight:400;
+  text-decoration:none;
+}
+
+a small {
+  font-size:11px;
+  color:#777;
+  margin-top:-0.6em;
+  display:block;
+}
+
+.wrapper {
+  width:860px;
+  margin:0 auto;
+}
+
+.figure div.img {
+  text-align: center;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  padding: 10px;
+}
+
+blockquote {
+  border-left:1px solid #e5e5e5;
+  margin:0;
+  padding:0 0 0 20px;
+  font-style:italic;
+}
+
+code, pre {
+  font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
+  color:#333;
+  font-size:12px;
+}
+
+pre {
+  padding:8px 15px;
+  background: #f8f8f8;  
+  border-radius:5px;
+  border:1px solid #e5e5e5;
+  overflow-x: auto;
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+}
+
+th, td {
+  text-align:left;
+  padding:5px 10px;
+  border-bottom:1px solid #e5e5e5;
+}
+
+dt {
+  color:#444;
+  font-weight:700;
+}
+
+th {
+  color:#444;
+}
+
+img {
+  max-width:100%;
+}
+
+header {
+  width:270px;
+  float:left;
+  /*position:fixed;*/
+}
+
+header ul {
+  list-style:none;
+  height:40px;
+  
+  padding:0;
+  
+  background: #eee;
+  background: -moz-linear-gradient(top, #f8f8f8 0%, #dddddd 100%);
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#f8f8f8), color-stop(100%,#dddddd));
+  background: -webkit-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: -o-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: -ms-linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  background: linear-gradient(top, #f8f8f8 0%,#dddddd 100%);
+  
+  border-radius:5px;
+  border:1px solid #d2d2d2;
+  box-shadow:inset #fff 0 1px 0, inset rgba(0,0,0,0.03) 0 -1px 0;
+  width:270px;
+}
+
+header li {
+  width:89px;
+  float:left;
+  border-right:1px solid #d2d2d2;
+  height:40px;
+}
+
+header ul a {
+  line-height:1;
+  font-size:11px;
+  color:#999;
+  display:block;
+  text-align:center;
+  padding-top:6px;
+  height:40px;
+}
+
+strong {
+  font-weight:700;
+}
+
+header ul li + li {
+  width:88px;
+  border-left:1px solid #fff;
+}
+
+header ul li + li + li {
+  border-right:none;
+  width:89px;
+}
+
+header ul a strong {
+  font-size:14px;
+  display:block;
+  color:#222;
+}
+
+section {
+  width: 60%;
+  float:right;
+  padding-bottom:50px;
+  padding-right: 10%;
+}
+
+small {
+  font-size:11px;
+}
+
+hr {
+  border:0;
+  background:#e5e5e5;
+  height:1px;
+  margin:0 0 20px;
+}
+
+footer {
+  width:270px;
+  float:left;
+  position:fixed;
+  bottom:50px;
+}
+
+header div.heading {
+  display:none;
+}
+
+
+@media print, screen and (max-width: 960px) {
+  
+  div.wrapper {
+    width:auto;
+    margin:0;
+  }
+  
+  header, section, footer {
+    float:none;
+    position:static;
+    width:auto;
+  }
+  
+  header div.heading {
+    display:block;
+  }
+    
+  section div.heading {
+    display:none;
+  }
+  
+  section {
+    border:1px solid #e5e5e5;
+    border-width:1px 0;
+    padding:20px 0;
+    margin:0 0 20px;
+  }
+  
+  header a small {
+    display:inline;
+  }
+  
+  header ul {
+    position:absolute;
+    right:50px;
+    top:52px;
+  }
+}
+
+@media print, screen and (max-width: 720px) {
+  body {
+    word-wrap:break-word;
+  }
+  
+  header {
+    padding:0;
+  }
+  
+  header ul, header p.view {
+    position:static;
+  }
+  
+  pre, code {
+    word-wrap:normal;
+  }
+}
+
+@media print, screen and (max-width: 480px) {
+  body {
+    padding:15px;
+  }
+  
+  header ul {
+    display:none;
+  }
+}
+
+@media print {
+  body {
+    padding:0.4in;
+    font-size:12pt;
+    color:#444;
+  }
+}
+
+
+.highlight  { background: #ffffff; }
+.highlight .c { color: #999988; font-style: italic } /* Comment */
+.highlight .err { color: #a61717; background-color: #e3d2d2 } /* Error */
+.highlight .k { font-weight: bold } /* Keyword */
+.highlight .o { font-weight: bold } /* Operator */
+.highlight .cm { color: #999988; font-style: italic } /* Comment.Multiline */
+.highlight .cp { color: #999999; font-weight: bold } /* Comment.Preproc */
+.highlight .c1 { color: #999988; font-style: italic } /* Comment.Single */
+.highlight .cs { color: #999999; font-weight: bold; font-style: italic } /* Comment.Special */
+.highlight .gd { color: #000000; background-color: #ffdddd } /* Generic.Deleted */
+.highlight .gd .x { color: #000000; background-color: #ffaaaa } /* Generic.Deleted.Specific */
+.highlight .ge { font-style: italic } /* Generic.Emph */
+.highlight .gr { color: #aa0000 } /* Generic.Error */
+.highlight .gh { color: #999999 } /* Generic.Heading */
+.highlight .gi { color: #000000; background-color: #ddffdd } /* Generic.Inserted */
+.highlight .gi .x { color: #000000; background-color: #aaffaa } /* Generic.Inserted.Specific */
+.highlight .go { color: #888888 } /* Generic.Output */
+.highlight .gp { color: #555555 } /* Generic.Prompt */
+.highlight .gs { font-weight: bold } /* Generic.Strong */
+.highlight .gu { color: #800080; font-weight: bold; } /* Generic.Subheading */
+.highlight .gt { color: #aa0000 } /* Generic.Traceback */
+.highlight .kc { font-weight: bold } /* Keyword.Constant */
+.highlight .kd { font-weight: bold } /* Keyword.Declaration */
+.highlight .kn { font-weight: bold } /* Keyword.Namespace */
+.highlight .kp { font-weight: bold } /* Keyword.Pseudo */
+.highlight .kr { font-weight: bold } /* Keyword.Reserved */
+.highlight .kt { color: #445588; font-weight: bold } /* Keyword.Type */
+.highlight .m { color: #009999 } /* Literal.Number */
+.highlight .s { color: #d14 } /* Literal.String */
+.highlight .na { color: #008080 } /* Name.Attribute */
+.highlight .nb { color: #0086B3 } /* Name.Builtin */
+.highlight .nc { color: #445588; font-weight: bold } /* Name.Class */
+.highlight .no { color: #008080 } /* Name.Constant */
+.highlight .ni { color: #800080 } /* Name.Entity */
+.highlight .ne { color: #990000; font-weight: bold } /* Name.Exception */
+.highlight .nf { color: #990000; font-weight: bold } /* Name.Function */
+.highlight .nn { color: #555555 } /* Name.Namespace */
+.highlight .nt { color: #000080 } /* Name.Tag */
+.highlight .nv { color: #008080 } /* Name.Variable */
+.highlight .ow { font-weight: bold } /* Operator.Word */
+.highlight .w { color: #bbbbbb } /* Text.Whitespace */
+.highlight .mf { color: #009999 } /* Literal.Number.Float */
+.highlight .mh { color: #009999 } /* Literal.Number.Hex */
+.highlight .mi { color: #009999 } /* Literal.Number.Integer */
+.highlight .mo { color: #009999 } /* Literal.Number.Oct */
+.highlight .sb { color: #d14 } /* Literal.String.Backtick */
+.highlight .sc { color: #d14 } /* Literal.String.Char */
+.highlight .sd { color: #d14 } /* Literal.String.Doc */
+.highlight .s2 { color: #d14 } /* Literal.String.Double */
+.highlight .se { color: #d14 } /* Literal.String.Escape */
+.highlight .sh { color: #d14 } /* Literal.String.Heredoc */
+.highlight .si { color: #d14 } /* Literal.String.Interpol */
+.highlight .sx { color: #d14 } /* Literal.String.Other */
+.highlight .sr { color: #009926 } /* Literal.String.Regex */
+.highlight .s1 { color: #d14 } /* Literal.String.Single */
+.highlight .ss { color: #990073 } /* Literal.String.Symbol */
+.highlight .bp { color: #999999 } /* Name.Builtin.Pseudo */
+.highlight .vc { color: #008080 } /* Name.Variable.Class */
+.highlight .vg { color: #008080 } /* Name.Variable.Global */
+.highlight .vi { color: #008080 } /* Name.Variable.Instance */
+.highlight .il { color: #009999 } /* Literal.Number.Integer.Long */
+
+.type-csharp .highlight .k { color: #0000FF }
+.type-csharp .highlight .kt { color: #0000FF }
+.type-csharp .highlight .nf { color: #000000; font-weight: normal }
+.type-csharp .highlight .nc { color: #2B91AF }
+.type-csharp .highlight .nn { color: #000000 }
+.type-csharp .highlight .s { color: #A31515 }
+.type-csharp .highlight .sc { color: #A31515 }
+
+
+</style></head><body><header><div class="heading"><h1>adi</h1><h3>a datomic interface</h3><hr /><div class="info"><h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5><h5>Library: v0.3.1-SNAPSHOT</h5><h5>Date: 28 October 2014</h5><h5>Website: <a href="https://www.github.com/zcaudate/adi">https://www.github.com/zcaudate/adi</a></h5><h5>Generated By: <a href="http://www.github.com/zcaudate/lein-midje-doc">MidjeDoc</a></h5></div><br /><hr /></div><h4><a href="#introduction">1 &nbsp; Introduction</a></h4><h4><a href="#tutorial">2 &nbsp; Tutorial</a></h4><h5>&nbsp;&nbsp;<i><a href="#step-1---schema-basics">2.1 &nbsp; Step 1 - Schema Basics</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#step-2---enums-and-query">2.2 &nbsp; Step 2 - Enums and Query</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#step-3---refs-and-entities">2.3 &nbsp; Step 3 - Refs and Entities</a></i></h5><h4><a href="#example---bookstore">3 &nbsp; Example - Bookstore</a></h4><h5>&nbsp;&nbsp;<i><a href="#definition-and-setup">3.1 &nbsp; Definition and Setup</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#updating-data">3.2 &nbsp; Updating Data</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#different-semantics,-same-result">3.3 &nbsp; Different Semantics, Same Result</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#expanding-the-business">3.4 &nbsp; Expanding the Business</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#moving-stock">3.5 &nbsp; Moving Stock</a></i></h5><br /></header><section><div class="heading"><h1>adi</h1><h3>a datomic interface</h3><hr /><div class="info"><h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5><h5>Library: v0.3.1-SNAPSHOT</h5><h5>Date: 28 October 2014</h5><h5>Website: <a href="https://www.github.com/zcaudate/adi">https://www.github.com/zcaudate/adi</a></h5><h5>Generated By: <a href="http://www.github.com/zcaudate/lein-midje-doc">MidjeDoc</a></h5></div><br /><hr /></div><div><a name="introduction"></a><h2><b>1 &nbsp;&nbsp; Introduction</b></h2></div><div><h3>Installation</h3><p>Add to <code>project.clj</code> dependencies</p><p><code>&#91;im.chit/adi </code>&quot;<code>0.3.1-SNAPSHOT</code>&quot;<code>&#93;</code>.</p><p>All the functionality can be loaded using:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">require</span> <span class="o">&#39;</span><span class="p">[</span><span class="nv">adi.core</span> <span class="ss">:as</span> <span class="nv">adi</span><span class="p">])</span>
+</pre></div>
+</div><div><h3>Overview</h3><p><code>adi</code> is not for the faint of heart. It has been built especially for the creative, crazy and super ambitious. <code>adi</code> is a modelling and data-access language for datomic, allowing one to create rich applications through schema driven expression. <code>adi</code> especially was designed for modelling complexity - little apps just don't cut it - the bigger, more intertwined the data model becomes, the more <code>adi</code> will have its chance to shine.</p><p>So what exactly is <code>adi</code>?</p><ul><li>It empowers <code>datomic</code> to something best described as a <code>&quot;document database on steroids&quot;</code>.</li><li>It functions as a <code>schema-driven</code>, <code>document</code> and <code>graph</code> database hybrid.</li><li>It simplifies <code>crud</code> operations to be <code>logical</code>, <code>declarative</code> and <code>data-centric</code>.</li><li>It uses the <code>schema</code> and an application <code>pipeline</code> to process incoming data, similar to that of what a <code>type system</code>.</li><li>It is <code>simple</code> and <code>expressive</code>, a pure <code>joy</code> to use.</li></ul><p>The concept is simple. <code>adi</code> is a document-database syntax grafted on <code>datomic</code>. It makes use of a map/object notation to generate datastructure for the <code>datomic</code> query engine. This provides for an even more declarative syntax for relational search. Fundamentally, there should be no difference in the data-structure between what the programmer uses to ask and what the programmer is getting back. We shouldn't have to play around turning objects into records, objects into queries... etc...</p><p><em>Not Anymore.</em></p><p><code>adi</code> converts flat, record-like arrays to tree-like objects and back again. The key to understanding adi lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her, much like what a type-system does for programmers - without being suffocatingly restrictive. Once a schema for an application has been defined, the data can be inserted in ANY shape or form, as long as it follows the conventions specified within that schema.</p></div><div><a name="tutorial"></a><h2><b>2 &nbsp;&nbsp; Tutorial</b></h2></div><div><a name="step-1---schema-basics"></a><h3>2.1 &nbsp;&nbsp; Step 1 - Schema Basics</h3></div><div><p>The fundamental building </p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">schema-1</span>
+  <span class="p">{</span><span class="ss">:account/user</span>     <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:string</span>      <span class="c1">;; (1)</span>
+                       <span class="ss">:cardinality</span> <span class="ss">:one</span>
+                       <span class="ss">:unique</span> <span class="ss">:value</span>     <span class="c1">;; (2)</span>
+                       <span class="ss">:required</span> <span class="nv">true</span><span class="p">}]</span>   <span class="c1">;; (3)</span>
+   <span class="ss">:account/password</span> <span class="p">[{</span><span class="ss">:required</span> <span class="nv">true</span>     <span class="c1">;; (1) (3)</span>
+                       <span class="ss">:restrict</span> <span class="p">[</span><span class="s">&quot;password needs an integer to be in the string&quot;</span>
+                                  <span class="o">#</span><span class="p">(</span><span class="nb">re-find </span><span class="o">#</span><span class="s">&quot;\d&quot;</span> <span class="nv">%</span><span class="p">)]}]</span> <span class="c1">;; (4)</span>
+   <span class="ss">:account/credits</span>  <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:long</span>
+                       <span class="ss">:default</span> <span class="mi">0</span><span class="p">}]})</span>
+</pre></div>
+</div><div><p>There are a couple of things to note about our definitions the entry.</p><ol><li>We specified the <code>:type</code> for <code>:account/user</code> to be <code>:string</code> and <code>:cardinality</code> to be <code>:one</code>. However, because these are default options, we can optionally leave them out for <code>:account/password</code>.</li><li>We want the value of <code>:account/user</code> to be unique.</li><li>We require that both <code>:account/user</code> and <code>:account/password</code> to be present on insertion.</li><li>We are checking that <code>:account/password</code> contains at least one number</li><li>We set the default amount of <code>:account/credits</code> to be <code>0</code></li></ol><p>Now, we construct a datastore.</p></div><div><div class="highlight"><pre><span class="s">&quot;restrictions and checks&quot;</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">ds</span> <span class="p">(</span><span class="nf">adi/connect!</span> <span class="s">&quot;datomic:mem://adi-examples-step-1&quot;</span> <span class="nv">schema-1</span> <span class="nv">true</span> <span class="nv">true</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:credits</span> <span class="mi">10</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="p">(</span><span class="nf">throws</span> <span class="nv">Exception</span> <span class="s">&quot;The following keys are required: #{:account/password :account/user}&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="p">(</span><span class="nf">throws</span> <span class="nv">Exception</span> <span class="s">&quot;The following keys are required: #{:account/password}&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello&quot;</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="p">(</span><span class="nf">raises-issue</span> <span class="p">{</span><span class="ss">:failed-restriction</span> <span class="nv">true</span><span class="p">})</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span> <span class="ss">:type</span> <span class="ss">:vip</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="p">(</span><span class="nf">raises-issue</span> <span class="p">{</span><span class="ss">:nsv</span> <span class="p">[</span><span class="ss">:account</span> <span class="ss">:type</span><span class="p">]</span> <span class="ss">:no-schema</span> <span class="nv">true</span><span class="p">})</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="s">&quot;uniqueness&quot;</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">ds</span> <span class="p">(</span><span class="nf">adi/connect!</span> <span class="s">&quot;datomic:mem://adi-examples-step-1&quot;</span> <span class="nv">schema-1</span> <span class="nv">true</span> <span class="nv">true</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span><span class="p">}})</span>
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span> <span class="ss">:credits</span> <span class="mi">10</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="nv">throws</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span> <span class="ss">:credits</span> <span class="mi">10</span><span class="p">}})</span>
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">10</span><span class="p">}}}</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="s">&quot;selections through history&quot;</span>
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span> <span class="ss">:ids</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:db</span> <span class="p">{</span><span class="ss">:id</span> <span class="mi">17592186045418</span><span class="p">}</span>, <span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:db</span> <span class="p">{</span><span class="ss">:id</span> <span class="mi">17592186045420</span><span class="p">}</span>, <span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">10</span><span class="p">}}}</span>
+
+<span class="p">(</span><span class="nf">adi/transactions</span> <span class="nv">ds</span> <span class="ss">:account/user</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[</span><span class="mi">1001</span> <span class="mi">1003</span><span class="p">]</span>
+
+<span class="p">(</span><span class="nf">adi/transactions</span> <span class="nv">ds</span> <span class="ss">:account/user</span> <span class="s">&quot;adi&quot;</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[</span><span class="mi">1001</span><span class="p">]</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span> <span class="ss">:at</span> <span class="mi">1001</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span><span class="p">}}}</span>
+</pre></div>
+</div><div><a name="step-2---enums-and-query"></a><h3>2.2 &nbsp;&nbsp; Step 2 - Enums and Query</h3></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">schema-2</span>
+  <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span>     <span class="p">[{</span><span class="ss">:required</span> <span class="nv">true</span>
+                         <span class="ss">:unique</span> <span class="ss">:value</span><span class="p">}]</span>
+             <span class="ss">:password</span> <span class="p">[{</span><span class="ss">:required</span> <span class="nv">true</span>
+                         <span class="ss">:restrict</span> <span class="p">[</span><span class="s">&quot;password needs an integer to be in the string&quot;</span>
+                                    <span class="o">#</span><span class="p">(</span><span class="nb">re-find </span><span class="o">#</span><span class="s">&quot;\d&quot;</span> <span class="nv">%</span><span class="p">)]}]</span>
+             <span class="ss">:credits</span>  <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:long</span>
+                         <span class="ss">:default</span> <span class="mi">0</span><span class="p">}]</span>
+             <span class="ss">:type</span>     <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:enum</span>        <span class="c1">;; (2)</span>
+                         <span class="ss">:default</span> <span class="ss">:free</span>
+                         <span class="ss">:enum</span> <span class="p">{</span><span class="ss">:ns</span> <span class="ss">:account.type</span>
+                                <span class="ss">:values</span> <span class="o">#</span><span class="p">{</span><span class="ss">:admin</span> <span class="ss">:free</span> <span class="ss">:paid</span><span class="p">}}}]}})</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">ds</span> <span class="p">(</span><span class="nf">adi/connect!</span> <span class="s">&quot;datomic:mem://adi-examples-step-2&quot;</span> <span class="nv">schema-2</span> <span class="nv">true</span> <span class="nv">true</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi1&quot;</span>          <span class="c1">;; (1)</span>
+                           <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span><span class="p">}</span>
+                 <span class="ss">:account/type</span> <span class="ss">:paid</span><span class="p">})</span>
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:type</span> <span class="ss">:paid</span>, <span class="ss">:user</span> <span class="s">&quot;adi1&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span><span class="p">}}}</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">[{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>
+                            <span class="ss">:type</span> <span class="ss">:account.type/admin</span><span class="p">}</span>  <span class="c1">;; (2)</span>
+                  <span class="ss">:account/user</span> <span class="s">&quot;adi2&quot;</span><span class="p">}</span>
+                 <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>
+                            <span class="ss">:credits</span> <span class="mi">1000</span><span class="p">}</span>
+                  <span class="ss">:account/password</span> <span class="s">&quot;hello3&quot;</span><span class="p">}])</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi1&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:paid</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:admin</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span>, <span class="ss">:credits</span> <span class="mi">1000</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}}</span>
+
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi4&quot;</span>
+                           <span class="ss">:password</span> <span class="s">&quot;hello4&quot;</span>
+                           <span class="ss">:type</span> <span class="ss">:vip</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="nv">throws</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="s">&quot;Different Selection&quot;</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/type</span> <span class="ss">:admin</span><span class="p">}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:admin</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/credits</span> <span class="mi">1000</span><span class="p">}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span>, <span class="ss">:credits</span> <span class="mi">1000</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/credits</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">&gt; </span><span class="mi">10</span><span class="p">)}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span>, <span class="ss">:credits</span> <span class="mi">1000</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/credits</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">&gt; </span><span class="nv">?</span> <span class="mi">10</span><span class="p">)}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span>, <span class="ss">:credits</span> <span class="mi">1000</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/credits</span> <span class="o">&#39;</span><span class="p">(</span><span class="nb">&lt; </span><span class="mi">10</span> <span class="nv">?</span><span class="p">)}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span>, <span class="ss">:credits</span> <span class="mi">1000</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/user</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">.contains</span> <span class="s">&quot;2&quot;</span><span class="p">)}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:admin</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/user</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">.contains</span> <span class="nv">?</span> <span class="s">&quot;2&quot;</span><span class="p">)}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:admin</span><span class="p">}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account/user</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">.contains</span> <span class="s">&quot;adi222&quot;</span> <span class="nv">?</span><span class="p">)}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:admin</span><span class="p">}}</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="s">&quot;Historical Data&quot;</span>
+<span class="p">(</span><span class="nf">adi/transactions</span> <span class="nv">ds</span> <span class="ss">:account/user</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">[</span><span class="mi">1004</span> <span class="mi">1006</span><span class="p">]</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span> <span class="ss">:at</span> <span class="mi">1004</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi1&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span>, <span class="ss">:credits</span> <span class="mi">0</span>, <span class="ss">:type</span> <span class="ss">:paid</span><span class="p">}}}</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">select/select</span> <span class="nv">ds</span> <span class="ss">:account</span> <span class="p">{</span><span class="ss">:at</span> <span class="mi">1004</span>
+                            <span class="ss">:options</span> <span class="p">{</span><span class="ss">:first</span> <span class="nv">true</span><span class="p">}})</span>
+</pre></div>
+</div><div><a name="step-3---refs-and-entities"></a><h3>2.3 &nbsp;&nbsp; Step 3 - Refs and Entities</h3></div><div></div><div></div><div><div class="highlight"><pre><span class="s">&quot;Adding ids&quot;</span>
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">account-ids</span> <span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:account</span> <span class="ss">:return-ids</span><span class="p">)]</span>
+  <span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">[{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;The Book and the Sword&quot;</span>
+                           <span class="ss">:author</span> <span class="s">&quot;Louis Cha&quot;</span>
+                           <span class="ss">:accounts</span> <span class="nv">account-ids</span><span class="p">}}]))</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:accounts/user</span> <span class="s">&quot;adi1&quot;</span><span class="p">}}</span> <span class="ss">:return</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="ss">:unchecked</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;The Book and the Sword&quot;</span><span class="p">}}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:accounts/user</span> <span class="s">&quot;adi1&quot;</span><span class="p">}}</span>
+            <span class="ss">:access</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:accounts</span> <span class="ss">:checked</span><span class="p">}}</span>
+            <span class="ss">:return</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="ss">:unchecked</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;The Book and the Sword&quot;</span><span class="p">}}}</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="s">&quot;Queries across references&quot;</span>
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span>
+             <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Charlie and the Chocolate Factory&quot;</span>
+                     <span class="ss">:author</span> <span class="s">&quot;Roald Dahl&quot;</span>
+                     <span class="ss">:accounts</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span> <span class="ss">:credits</span> <span class="mi">100</span><span class="p">}</span>
+                                 <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi4&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello4&quot;</span> <span class="ss">:credits</span> <span class="mi">500</span><span class="p">}</span>
+                                 <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi5&quot;</span> <span class="ss">:password</span> <span class="s">&quot;hello5&quot;</span> <span class="ss">:credits</span> <span class="mi">500</span><span class="p">}}}})</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book/author</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">?fulltext</span> <span class="s">&quot;Louis&quot;</span><span class="p">)}</span> <span class="ss">:return</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:accounts</span> <span class="ss">:checked</span><span class="p">}}</span> <span class="ss">:first</span><span class="p">)</span>
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Louis Cha&quot;</span> <span class="ss">:name</span> <span class="s">&quot;The Book and the Sword&quot;</span>
+           <span class="ss">:accounts</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:credits</span> <span class="mi">0</span> <span class="ss">:type</span> <span class="ss">:free</span> <span class="ss">:password</span> <span class="s">&quot;hello2&quot;</span> <span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span><span class="p">}</span>
+                       <span class="p">{</span><span class="ss">:credits</span> <span class="mi">0</span> <span class="ss">:type</span> <span class="ss">:free</span> <span class="ss">:password</span> <span class="s">&quot;hello1&quot;</span> <span class="ss">:user</span> <span class="s">&quot;adi1&quot;</span><span class="p">}}}}</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:books/name</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">?fulltext</span> <span class="s">&quot;Charlie&quot;</span><span class="p">)}})</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello3&quot;</span>, <span class="ss">:credits</span> <span class="mi">100</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi4&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello4&quot;</span>, <span class="ss">:credits</span> <span class="mi">500</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi5&quot;</span>, <span class="ss">:password</span> <span class="s">&quot;hello5&quot;</span>, <span class="ss">:credits</span> <span class="mi">500</span>, <span class="ss">:type</span> <span class="ss">:free</span><span class="p">}}}</span>
+</pre></div>
+</div><div><div class="highlight"><pre><span class="s">&quot;reflection stuff&quot;</span>
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:books/name</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">.contains</span> <span class="nv">?</span> <span class="s">&quot;the&quot;</span><span class="p">)}}</span>
+            <span class="ss">:return</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:password</span> <span class="ss">:unchecked</span>
+                               <span class="ss">:type</span>     <span class="ss">:unchecked</span>
+                               <span class="ss">:credits</span>  <span class="ss">:unchecked</span><span class="p">}})</span>
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi1&quot;</span><span class="p">}}</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi2&quot;</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi3&quot;</span><span class="p">}}</span> <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi4&quot;</span><span class="p">}}</span>
+     <span class="p">{</span><span class="ss">:account</span> <span class="p">{</span><span class="ss">:user</span> <span class="s">&quot;adi5&quot;</span><span class="p">}}}</span>
+</pre></div>
+</div><div><a name="example---bookstore"></a><h2><b>3 &nbsp;&nbsp; Example - Bookstore</b></h2></div><div><p>Lets go ahead and model a network of bookstores around the world. We apply the knowledge of <code>:ref</code> and <code>:enum</code> types from previous tutorial to good use:</p></div><div><a name="definition-and-setup"></a><h3>3.1 &nbsp;&nbsp; Definition and Setup</h3></div><div><p>The schema for our bookstore model can be seen in <code>Figure 1</code>. It is a rather simplistic model. The two main concepts being a <code>Book</code> and a <code>Store</code>. They are connected together through an <code>Inventory</code>, which keeps how many books there are in a store:</p></div><div class="figure"><a name="schema-4"></a><h4><i>fig.1  &nbsp;-&nbsp; Schema Diagram</i></h4><div class="img"><img src="example4.png" title="Schema Diagram" /></div><p /></div><div><p>The actual schema code is defined as follows:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">schema-4</span>
+ <span class="p">{</span><span class="ss">:book</span>   <span class="p">{</span><span class="ss">:name</span>    <span class="p">[{</span><span class="ss">:required</span> <span class="nv">true</span>
+                    <span class="ss">:fulltext</span> <span class="nv">true</span><span class="p">}]</span>
+         <span class="ss">:author</span>  <span class="p">[{</span><span class="ss">:fulltext</span> <span class="nv">true</span><span class="p">}]}</span>
+
+<span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:long</span><span class="p">}]</span>
+            <span class="ss">:cover</span> <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:enum</span>
+                     <span class="ss">:enum</span> <span class="p">{</span><span class="ss">:ns</span> <span class="ss">:cover.type</span>
+                            <span class="ss">:values</span> <span class="o">#</span><span class="p">{</span><span class="ss">:hard</span> <span class="ss">:soft</span><span class="p">}}}]</span>
+            <span class="ss">:book</span>    <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:ref</span>
+                       <span class="ss">:ref</span>  <span class="p">{</span><span class="ss">:ns</span> <span class="ss">:book</span><span class="p">}}]</span>
+            <span class="ss">:store</span>   <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:ref</span>
+                       <span class="ss">:ref</span>  <span class="p">{</span><span class="ss">:ns</span> <span class="ss">:store</span><span class="p">}}]}</span>
+<span class="ss">:store</span>  <span class="p">{</span><span class="ss">:name</span>    <span class="p">[{</span><span class="ss">:required</span> <span class="nv">true</span>
+                    <span class="ss">:fulltext</span> <span class="nv">true</span><span class="p">}]</span>
+         <span class="ss">:address</span> <span class="p">[{</span><span class="ss">:type</span> <span class="ss">:ref</span>
+                    <span class="ss">:ref</span>  <span class="p">{</span><span class="ss">:ns</span> <span class="ss">:address</span><span class="p">}}]}</span>
+
+<span class="ss">:address</span> <span class="p">{</span><span class="ss">:country</span> <span class="p">[{</span><span class="ss">:required</span> <span class="nv">true</span><span class="p">}]}})</span>
+</pre></div>
+</div><div><p>Once again, the adi datastore is created and the seed stores created</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">def </span><span class="nv">ds</span> <span class="p">(</span><span class="nf">adi/connect!</span> <span class="s">&quot;datomic:mem://adi-example-step-4&quot;</span> <span class="nv">schema-4</span> <span class="nv">true</span> <span class="nv">true</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">adi/insert!</span> <span class="nv">ds</span> <span class="p">[{</span><span class="ss">:address</span> <span class="p">{</span><span class="ss">:country</span> <span class="s">&quot;USA&quot;</span>
+                            <span class="ss">:stores</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:name</span> <span class="s">&quot;Canyon Books&quot;</span><span class="p">}</span>
+                                      <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}}}}</span>
+                 <span class="p">{</span><span class="ss">:db/id</span> <span class="p">[[</span><span class="ss">:AUS</span><span class="p">]]</span>
+                  <span class="ss">:address</span> <span class="p">{</span><span class="ss">:country</span> <span class="s">&quot;Australia&quot;</span><span class="p">}}</span>
+                 <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:address</span> <span class="p">[[</span><span class="ss">:AUS</span><span class="p">]]</span>
+                          <span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}])</span>
+</pre></div>
+</div><div><p>We can see our stores from Australia:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:address/country</span> <span class="s">&quot;Australia&quot;</span><span class="p">}})</span>
+
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}}</span>
+</pre></div>
+</div><div><p>As well as the USA:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:address/country</span> <span class="s">&quot;USA&quot;</span><span class="p">}})</span>
+
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Canyon Books&quot;</span><span class="p">}}</span> <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}}}</span>
+</pre></div>
+</div><div><a name="updating-data"></a><h3>3.2 &nbsp;&nbsp; Updating Data</h3></div><div><p>We can now start adding some books to our Australian store:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/update!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:address/country</span> <span class="s">&quot;Australia&quot;</span><span class="p">}}</span>
+             <span class="p">{</span><span class="ss">:store/inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:count</span> <span class="mi">10</span>
+                                    <span class="ss">:cover</span> <span class="ss">:hard</span>
+                                    <span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;The Count of Monte Cristo&quot;</span>
+                                           <span class="ss">:author</span> <span class="s">&quot;Alexander Dumas&quot;</span><span class="p">}}</span>
+                                   <span class="p">{</span><span class="ss">:count</span> <span class="mi">5</span>
+                                    <span class="ss">:cover</span> <span class="ss">:hard</span>
+                                    <span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Tom Sawyer&quot;</span>
+                                           <span class="ss">:author</span> <span class="s">&quot;Mark Twain&quot;</span><span class="p">}}</span>
+                                   <span class="p">{</span><span class="ss">:count</span> <span class="mi">3</span>
+                                    <span class="ss">:cover</span> <span class="ss">:soft</span>
+                                    <span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Les Miserables&quot;</span>
+                                           <span class="ss">:author</span> <span class="s">&quot;Victor Hugo&quot;</span><span class="p">}}}})</span>
+</pre></div>
+</div><div><p>Query for the inventory containing a book in our network starting with <code>&quot;Les&quot;</code>. Notice the   use of the <code>:first</code> keyword, this will return a single result as opposed to a set of results:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">?fulltext</span> <span class="s">&quot;Les&quot;</span><span class="p">)}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="mi">3</span>, <span class="ss">:cover</span> <span class="ss">:soft</span><span class="p">}}</span>
+</pre></div>
+</div><div><p><code>update-in!</code> is a very useful function as it can be used to set values across references.   In this case, we set the inventory count of <code>&quot;Tom Sawyer&quot;</code> in <code>&quot;Koala Books&quot;</code> to <code>4</code>:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/update-in!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}</span>
+                <span class="p">[</span><span class="ss">:store/inventories</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}]</span>
+                <span class="p">{</span><span class="ss">:count</span> <span class="mi">4</span><span class="p">})</span>
+</pre></div>
+</div><div><p>We can look at the inventory of a specific book and store by specifying more search keys:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span>
+                            <span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="mi">4</span>, <span class="ss">:cover</span> <span class="ss">:hard</span><span class="p">}}</span>
+</pre></div>
+</div><div><p>We can also return all the books in the network, along with their inventories and stores.   This is done by providing an <code>:access &lt;MODEL&gt;</code> pair of args. In this case, we specify that   linked refs in <code>:inventories</code> and <code>:stores</code> are also returned:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:book</span> <span class="ss">:access</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:inventories</span> <span class="p">{</span><span class="ss">:store</span> <span class="ss">:checked</span><span class="p">}}})</span>
+
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Mark Twain&quot;</span> <span class="ss">:name</span> <span class="s">&quot;Tom Sawyer&quot;</span>
+             <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}</span>
+                             <span class="ss">:count</span> <span class="mi">4</span> <span class="ss">:cover</span> <span class="ss">:hard</span><span class="p">}}}}</span>
+     <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Victor Hugo&quot;</span> <span class="ss">:name</span> <span class="s">&quot;Les Miserables&quot;</span>
+             <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}</span>
+                             <span class="ss">:count</span> <span class="mi">3</span>  <span class="ss">:cover</span> <span class="ss">:soft</span><span class="p">}}}}</span>
+     <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Alexander Dumas&quot;</span> <span class="ss">:name</span> <span class="s">&quot;The Count of Monte Cristo&quot;</span>
+             <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}</span>
+                             <span class="ss">:count</span> <span class="mi">10</span> <span class="ss">:cover</span> <span class="ss">:hard</span><span class="p">}}}}}</span>
+</pre></div>
+</div><div><a name="different-semantics,-same-result"></a><h3>3.3 &nbsp;&nbsp; Different Semantics, Same Result</h3></div><div><p>Lets test out some other functions, starting with <code>retract!</code>. Retract takes a set of    keys to remove from an entity:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/retract!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span>
+                              <span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}</span>
+              <span class="o">#</span><span class="p">{</span><span class="ss">:inventory/cover</span><span class="p">})</span>
+</pre></div>
+</div><div><p>The result of the retract is that the cover information is missing when we do a search:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span>
+                            <span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="mi">4</span><span class="p">}}</span>
+</pre></div>
+</div><div><p>We can update the cover information using <code>update-in!</code>:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/update-in!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}</span>
+                <span class="p">[</span><span class="ss">:book/inventories</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}]</span>
+                <span class="p">{</span><span class="ss">:cover</span> <span class="ss">:soft</span><span class="p">})</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="mi">4</span>, <span class="ss">:cover</span> <span class="ss">:soft</span><span class="p">}}</span>
+</pre></div>
+</div><div><p>Oops. we made a mistake. The cover can also be changed using <code>update!</code>   using slightly different semantics:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/update!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span>
+                             <span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}</span>
+             <span class="p">{</span><span class="ss">:inventory/cover</span> <span class="ss">:hard</span><span class="p">})</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="mi">4</span>, <span class="ss">:cover</span> <span class="ss">:hard</span><span class="p">}}</span>
+</pre></div>
+</div><div><p>The choice of using <code>update!</code> and  <code>update-in!</code> is purely in its communication:</p><ul><li><code>update!</code>: Find an inventory entity that has <code>:book/name</code> of <code>&quot;Tom Sawyer&quot;</code> and <code>:store/name</code> of <code>&quot;Koala Books&quot;</code> and change the value of <code>:inventory/cover</code> to <code>:soft</code>.</li><li><code>update-in!</code>: Start off by finding a book with <code>:book/name</code> of <code>&quot;Tom Sawyer&quot;</code>. Then follow the entity accessible through <code>:book/inventories</code> which must be linked to a store with the name <code>&quot;Koala Books&quot;</code>. Then make the update of <code>:cover</code> to <code>:hard</code>.</li></ul></div><div><p>Another way to reach the inventory entity is to start by finding the store, then following the <code>:store/stock</code> link. This time, we are changing the <code>:inventory/count</code> value to <code>3</code>:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/update-in!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}</span>
+                <span class="p">[</span><span class="ss">:store/inventories</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}]</span>
+                <span class="p">{</span><span class="ss">:count</span> <span class="mi">3</span><span class="p">})</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:count</span> <span class="mi">3</span>, <span class="ss">:cover</span> <span class="ss">:hard</span><span class="p">}}</span>
+</pre></div>
+</div><div><a name="expanding-the-business"></a><h3>3.4 &nbsp;&nbsp; Expanding the Business</h3></div><div><p>Lets replicate the stock at <code>Koala Books</code> to <code>Capital Books</code>. So basically, we are creating inventory   records that have a link to the already existing books. It is very simple to do using adi:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">koala-inventories</span> <span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}</span>
+                                    <span class="ss">:return</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:book</span> <span class="ss">:id</span><span class="p">}})]</span>
+  <span class="p">(</span><span class="nf">adi/update!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}</span>
+               <span class="p">{</span><span class="ss">:store/inventories</span> <span class="p">(</span><span class="nb">set </span><span class="p">(</span><span class="nb">map </span><span class="ss">:inventory</span> <span class="nv">koala-inventories</span><span class="p">))}))</span>
+</pre></div>
+</div><div><p>Now, lets look at where we can find <code>Tom Sawyer</code> in our stores:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}</span> <span class="ss">:return</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:inventories</span> <span class="p">{</span><span class="ss">:store</span> <span class="ss">:checked</span><span class="p">}}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Mark Twain&quot;</span>, <span class="ss">:name</span> <span class="s">&quot;Tom Sawyer&quot;</span>,
+           <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:cover</span> <span class="ss">:hard</span>, <span class="ss">:count</span> <span class="mi">3</span>, <span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}</span>
+                          <span class="p">{</span><span class="ss">:cover</span> <span class="ss">:hard</span>, <span class="ss">:count</span> <span class="mi">3</span>, <span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}}}}}</span>
+</pre></div>
+</div><div><p>A fire burnt all the copies of the <code>Count of Monte Cristo</code> from <code>Koala Books</code>. Instead of   setting the count to <code>0</code>, we can use <code>delete!</code> to get rid of the inventory entity entirely</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/delete!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Koala Books&quot;</span>
+                             <span class="ss">:book/name</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">?fulltext</span> <span class="s">&quot;Count&quot;</span><span class="p">)}})</span>
+</pre></div>
+</div><div><p>We see that now there is only one inventory record:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="o">&#39;</span><span class="p">(</span><span class="nf">?fulltext</span> <span class="s">&quot;Count&quot;</span><span class="p">)}</span>
+            <span class="ss">:return</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:inventories</span> <span class="p">{</span><span class="ss">:store</span> <span class="ss">:checked</span><span class="p">}}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Alexander Dumas&quot;</span>, <span class="ss">:name</span> <span class="s">&quot;The Count of Monte Cristo&quot;</span>,
+           <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:cover</span> <span class="ss">:hard</span>, <span class="ss">:count</span> <span class="mi">10</span>, <span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}}}}}</span>
+</pre></div>
+</div><div><p>The copies of <code>Tom Sawyer</code> exceeded expectations and sold out. We will delete the   inventory record but this time using <code>delete-in!</code>:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/delete-in!</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}</span>
+                <span class="p">[</span><span class="ss">:store/inventories</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}])</span>
+
+<span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:book/name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}</span>
+            <span class="ss">:return</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:inventories</span> <span class="p">{</span><span class="ss">:store</span> <span class="ss">:checked</span><span class="p">}}}</span> <span class="ss">:first</span><span class="p">)</span>
+
+<span class="nv">=&gt;</span> <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="s">&quot;Mark Twain&quot;</span>, <span class="ss">:name</span> <span class="s">&quot;Tom Sawyer&quot;</span>,
+           <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:cover</span> <span class="ss">:hard</span>, <span class="ss">:count</span> <span class="mi">3</span>, <span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span><span class="p">}}}}}</span>
+</pre></div>
+</div><div><a name="moving-stock"></a><h3>3.5 &nbsp;&nbsp; Moving Stock</h3></div><div><p><code>Capital Books</code> ran into financial problems and had to close down. All the stock was   transfered to <code>Canyon Books</code>. In order to perform the whole lot in one transaction, the   macro <code>sync-&gt;</code> is used:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">inventory-ids</span> <span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="p">{</span><span class="ss">:inventory</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">}}</span>
+                                <span class="ss">:return-ids</span><span class="p">)]</span>
+  <span class="p">(</span><span class="nf">adi/sync-&gt;</span> <span class="nv">ds</span>
+   <span class="p">(</span><span class="nf">adi/update!</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Canyon Books&quot;</span><span class="p">}</span>
+                <span class="p">{</span><span class="ss">:store/inventories</span> <span class="nv">inventory-ids</span><span class="p">})</span>
+   <span class="p">(</span><span class="nf">adi/delete!</span> <span class="p">{</span><span class="ss">:store/name</span> <span class="s">&quot;Capital Books&quot;</span><span class="p">})))</span>
+</pre></div>
+</div><div><p>Now we can see that <code>Capital Books</code> is no more:</p></div><div><div class="highlight"><pre><span class="p">(</span><span class="nf">adi/select</span> <span class="nv">ds</span> <span class="ss">:store</span> <span class="ss">:return</span> <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:inventories</span> <span class="p">{</span><span class="ss">:cover</span> <span class="ss">:unchecked</span>
+                                                     <span class="ss">:book</span> <span class="p">{</span><span class="ss">:author</span> <span class="ss">:unchecked</span><span class="p">}}}})</span>
+
+<span class="nv">=&gt;</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Koala Books&quot;</span>
+              <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Les Miserables&quot;</span><span class="p">}</span> <span class="ss">:count</span> <span class="mi">3</span><span class="p">}</span>
+                             <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Tom Sawyer&quot;</span><span class="p">}</span> <span class="ss">:count</span> <span class="mi">3</span><span class="p">}}}}</span>
+     <span class="p">{</span><span class="ss">:store</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Canyon Books&quot;</span>
+              <span class="ss">:inventories</span> <span class="o">#</span><span class="p">{{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;The Count of Monte Cristo&quot;</span><span class="p">}</span> <span class="ss">:count</span> <span class="mi">10</span><span class="p">}</span>
+                             <span class="p">{</span><span class="ss">:book</span> <span class="p">{</span><span class="ss">:name</span> <span class="s">&quot;Les Miserables&quot;</span><span class="p">}</span> <span class="ss">:count</span> <span class="mi">3</span><span class="p">}}}}}</span>
+</pre></div>
+</div></section></body><script type="text/javascript">var metas = document.getElementsByTagName('meta');
+var i;
+if (navigator.userAgent.match(/iPhone/i)) {
+  for (i=0; i<metas.length; i++) {
+    if (metas[i].name == "viewport") {
+      metas[i].content = "width=device-width, minimum-scale=1.0, maximum-scale=1.0";
+    }
+  }
+  document.addEventListener("gesturestart", gestureStart, false);
+}
+function gestureStart() {
+  for (i=0; i<metas.length; i++) {
+    if (metas[i].name == "viewport") {
+      metas[i].content = "width=device-width, minimum-scale=0.25, maximum-scale=1.6";
+    }
+  }
+}</script></html>
