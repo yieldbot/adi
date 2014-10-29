@@ -6,7 +6,7 @@
 
 [[:chapter {:title "Example - Schoolyard"}]]
 
-[[:section {:title "Definition and Setup"}]]
+[[:section {:title "Data Setup"}]]
 
 "We want to model a simple school, and we have the standard information like classes, teachers students.
 The schema for our bookstore model can be seen in `Figure {{schema-4}}`. It is a rather simplistic
