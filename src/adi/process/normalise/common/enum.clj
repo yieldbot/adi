@@ -15,9 +15,10 @@
   "
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (cond (= :enum (:type attr))
-          (let [v (if (path/path-ns? subdata (-> attr :enum :ns))
+          (let [kns (-> attr :enum :ns)
+                v (if (and kns (path/path-ns? subdata kns))
                     (path/path-stem subdata)
                     subdata)
                 chk (-> attr :enum :values)]
@@ -25,6 +26,6 @@
               (raise [:adi :normalise :wrong-input
                 {:data subdata :nsv nsv :key-path (:key-path interim) :check chk}]
                 (str "WRAP_SINGLE_ENUMS: " v " in " nsv " can only be one of: " chk))
-              (f v [attr] nsv interim fns env)))
+              (f v [attr] nsv interim fns adi)))
           :else
-          (f subdata [attr] nsv interim fns env))))
+          (f subdata [attr] nsv interim fns adi))))

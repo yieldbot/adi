@@ -17,17 +17,17 @@
   => {}
   "
   {:added "0.3"}
-  [smask tdata nsv interim tsch env]
+  [smask tdata nsv interim tsch adi]
   (if-let [[k v] (first smask)]
     (cond (and (hash-map? v)
                (-> tsch (get k) vector?)
                (-> tsch (get k) first :type (= :ref)))
-          (recur (next smask) tdata nsv interim tsch env)
+          (recur (next smask) tdata nsv interim tsch adi)
 
           :else
           (let [subdata (get tdata k)]
             (cond (nil? subdata)
-                  (recur (next smask) tdata nsv interim tsch env)
+                  (recur (next smask) tdata nsv interim tsch adi)
 
                   (hash-map? v)
                   (recur (next smask)
@@ -36,11 +36,11 @@
                                                       (conj nsv k)
                                                       interim
                                                       (get tsch k)
-                                                      env))
-                         nsv interim tsch env)
+                                                      adi))
+                         nsv interim tsch adi)
 
                   :else
-                  (recur (next smask) (dissoc tdata k) nsv interim tsch env))))
+                  (recur (next smask) (dissoc tdata k) nsv interim tsch adi))))
     tdata))
 
 (defn wrap-model-pre-mask
@@ -54,17 +54,17 @@
                           {:items {:name \"two\"}}}}}"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
+  (fn [tdata tsch nsv interim fns adi]
     (let [smask (:pre-mask interim)
-          output (process-mask smask tdata nsv interim tsch env)]
+          output (process-mask smask tdata nsv interim tsch adi)]
       (f output tsch nsv (update-in interim [:ref-path]
                                     #(-> %
                                          (pop)
                                          (conj output)))
-         fns env))))
+         fns adi))))
 
 (defn wrap-model-post-mask [f]
- (fn [tdata tsch nsv interim fns env]
+ (fn [tdata tsch nsv interim fns adi]
    (let [smask (:post-mask interim)
-         output (f tdata tsch nsv interim fns env)]
-     (process-mask smask output nsv interim tsch env))))
+         output (f tdata tsch nsv interim fns adi)]
+     (process-mask smask output nsv interim tsch adi))))

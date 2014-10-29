@@ -37,24 +37,24 @@
    (= x '?not) (not-fn (second lst))
    :else (q-fn lst)))
 
-(defn query-replace-fn [sym k v env]
-  (let [gen (-> env :options :generate-syms)
+(defn query-replace-fn [sym k v adi]
+  (let [gen (-> adi :options :generate-syms)
         symgen (if (fn? gen) gen isym)
         esym (symgen)]
     (walk-replace v {'??sym sym '? esym '??attr k})))
 
-(defn query-data-val [sym k v env]
+(defn query-data-val [sym k v adi]
   (cond (list? v)
-        (query-replace-fn sym k (query-parse-list v) env)
+        (query-replace-fn sym k (query-parse-list v) adi)
 
         :else
         [[sym k v]]))
 
-(defn query-data [chdata env]
+(defn query-data [chdata adi]
   (let [sym  (query-sym chdata)
         data (for [[k vs] (:data-many chdata)
                    v     vs]
-               (query-data-val sym k v env))]
+               (query-data-val sym k v adi))]
     (apply concat data)))
 
 (defn query-refs [chdata]
@@ -83,20 +83,25 @@
            id ids]
        [id k sym]))))
 
-(defn query-init [chdata env]
+(defn query-init [chdata adi]
   (cond
    (nil? (seq chdata)) []
    :else
-   (concat  (query-data chdata env)
+   (concat  (query-data chdata adi)
             (query-refs chdata)
             (mapcat (fn [x]
-                      (mapcat #(query-init % env) (second x)))
+                      (mapcat #(query-init % adi) (second x)))
                     (concat (:refs-many chdata) (:revs-many chdata))))))
 
-(defn query
-  [chdata env]
-  (let [res (query-init chdata env)]
+(defn query-raw
+  [chdata adi]
+  (let [res (query-init chdata adi)]
     (if (empty? res)
       (error "QUERY The generated query is empty for " chdata))
     (vec (concat [:find (query-sym chdata) :where]
                  res))))
+
+(defn query [adi]
+  (let [chdata (-> adi :process :characterised)
+        ndata (query-raw chdata adi)]
+    (assoc-in adi [:process :emitted] ndata)))

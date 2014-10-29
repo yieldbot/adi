@@ -35,24 +35,24 @@
           (apply dissoc m (seq options))
           options))
 
-(defn normalise-loop [tdata tsch nsv interim fns env]
+(defn normalise-loop [tdata tsch nsv interim fns adi]
   (reduce-kv (fn [output k subdata]
                (let [subsch (get tsch k)
                      pinterim (submaps interim tree-directives k)]
                 (cond (nil? subsch)
                       (assoc-if output k
                                 ((:normalise-nil fns)
-                                 subdata nil (conj nsv k) pinterim env))
+                                 subdata nil (conj nsv k) pinterim adi))
 
                       (hash-map? subsch)
                       (assoc-if output k
                                 ((:normalise-branch fns)
-                                 subdata subsch (conj nsv k) pinterim fns env))
+                                 subdata subsch (conj nsv k) pinterim fns adi))
 
                       (vector? subsch)
                       (assoc-if output k
                                 ((:normalise-attr fns)
-                                 subdata subsch (conj nsv k) pinterim fns env))
+                                 subdata subsch (conj nsv k) pinterim fns adi))
                       :else
                       (let [nnsv (conj nsv k)]
                         (raise [:adi :normalise :wrong-input {:data subdata :nsv nnsv :key-path (:key-path interim)}]
@@ -60,27 +60,27 @@
                       )))
              {} tdata))
 
-(defn normalise-nil [subdata _ nsv interim env]
+(defn normalise-nil [subdata _ nsv interim adi]
   (raise [:adi :normalise :no-schema {:nsv nsv :key-path (:key-path interim) :ref-path (:ref-path interim)}]
          (str "NORMALISE_NIL: " nsv " is not in the schema.")))
 
-(defn normalise-attr [subdata [attr] nsv interim fns env]
+(defn normalise-attr [subdata [attr] nsv interim fns adi]
   (cond (set? subdata)
-        (-> (map #((:normalise-single fns) % [attr] nsv interim fns env) subdata)
+        (-> (map #((:normalise-single fns) % [attr] nsv interim fns adi) subdata)
             (set)
             (disj nil))
 
         :else
-        ((:normalise-single fns) subdata [attr] nsv interim fns env)))
+        ((:normalise-single fns) subdata [attr] nsv interim fns adi)))
 
-(defn normalise-single [subdata [attr] nsv interim fns env]
+(defn normalise-single [subdata [attr] nsv interim fns adi]
   (if (= (:type attr) :ref)
     (cond (hash-map? subdata)
           (let [nnsv (path/split (-> attr :ref :ns))]
             ((:normalise fns)
              (data/treeify-keys-nested subdata)
-             (get-in env (concat [:schema :tree] nnsv))
-             nnsv interim fns env))
+             (get-in adi (concat [:schema :tree] nnsv))
+             nnsv interim fns adi))
 
           (or (long? subdata) (db-id? subdata))
           subdata
@@ -90,7 +90,7 @@
             (str "NORMALISE_SINGLE: In " nsv "," subdata " should be either a hashmaps or ids, not ")))
     subdata))
 
-(defn normalise-expression [subdata [attr] nsv interim env] subdata)
+(defn normalise-expression [subdata [attr] nsv interim adi] subdata)
 
 (defn normalise-wrap [fns wrappers]
   (reduce-kv (fn [out k f]
@@ -116,10 +116,10 @@
                     :value \"world\"}
              :value \"hello\"}}"
   {:added "0.3"}
-  ([data env & [wrappers]]
+  ([data adi & [wrappers]]
      (let [tdata (data/treeify-keys-nested data)
-           tsch (-> env :schema :tree)
-           interim (:model env)
+           tsch (-> adi :schema :tree)
+           interim (:model adi)
            fns {:normalise normalise-loop
                 :normalise-nil normalise-nil
                 :normalise-branch normalise-loop
@@ -127,4 +127,4 @@
                 :normalise-expression normalise-expression
                 :normalise-single normalise-single}
            fns (normalise-wrap fns wrappers)]
-       ((:normalise fns) tdata tsch [] interim fns env))))
+       ((:normalise fns) tdata tsch [] interim fns adi))))

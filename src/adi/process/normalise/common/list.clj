@@ -10,12 +10,12 @@
   => {:account {:age '(< ? 1)}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (if (list? subdata)
-      (cond (-> env :options :ban-expressions)
+      (cond (-> adi :options :ban-expressions)
             (raise [:adi :normalise :not-allowed {:data subdata :nsv nsv :key-path (:key-path interim)}]
                (str "WRAP_SINGLE_LIST: " subdata " not allowed"))
 
           :else
-          ((:normalise-expression fns) subdata [attr] nsv interim env))
-      (f subdata [attr] nsv interim fns env))))
+          ((:normalise-expression fns) subdata [attr] nsv interim adi))
+      (f subdata [attr] nsv interim fns adi))))

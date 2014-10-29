@@ -14,19 +14,19 @@
        (set (filter filt-fn (keys fschm))))))
 
 (defn review-required
-  [pdata fsch ks env]
+  [pdata fsch ks adi]
   (if (empty? ks) pdata
       (error "The following keys are required: " ks)))
 
 (defn review-defaults
-  [pdata fsch ks env]
+  [pdata fsch ks adi]
   (if-let [k (first ks)]
     (let [[attr] (fsch k)
           t      (:type attr)
           dft    (:default attr)
           value  (if (fn? dft) (dft) dft)
           value  (if (and (not (set? value))
-                          (or (= "query" (:type env))
+                          (or (= "query" (:type adi))
                               (= :many (:cardinality attr))))
                    #{value} value)
           npdata  (cond (= t :keyword)
@@ -38,7 +38,7 @@
                                          value))
                         :else
                         (assoc pdata k value))]
-      (recur npdata fsch (next ks) env))
+      (recur npdata fsch (next ks) adi))
     pdata))
 
 (defn expand-ns-keys
@@ -61,13 +61,13 @@
 (declare review-current)
 
 (defn wrap-id [f k]
-  (fn [pdata fsch merge-fn env]
+  (fn [pdata fsch merge-fn adi]
     (if (and (long? pdata)
-             (-> env :schema :flat k first :type (= :ref)))
+             (-> adi :schema :flat k first :type (= :ref)))
       pdata
-      (f pdata fsch merge-fn env))))
+      (f pdata fsch merge-fn adi))))
 
-(defn review-fn [pdata fsch merge-fn env]
+(defn review-fn [pdata fsch merge-fn adi]
  (let [nss   (expand-ns-set (get-in pdata [:# :nss]))
        ks    (find-keys fsch nss (-> merge-fn :label) (complement nil?))
        refks (find-keys fsch nss :type :ref)
@@ -78,44 +78,50 @@
        mergeks    (set/difference ks dataks)
        datarefks  (set/intersection refks dataks)]
    (-> pdata
-       ((-> merge-fn :function) fsch mergeks env)
-       (review-current fsch datarefks merge-fn env))))
+       ((-> merge-fn :function) fsch mergeks adi)
+       (review-current fsch datarefks merge-fn adi))))
 
 (defn review-current
-  [pdata fsch ks merge-fn env]
+  [pdata fsch ks merge-fn adi]
   (if-let [k (first ks)]
     (let [meta   (-> (fsch k) first)
-          pr-fn  (fn [rf] ((wrap-id review-fn k) rf fsch merge-fn env))
-          npdata  (if (or (= "query" (:type env))
+          pr-fn  (fn [rf] ((wrap-id review-fn k) rf fsch merge-fn adi))
+          npdata  (if (or (= "query" (:type adi))
                           (= :many (:cardinality meta)))
                     (assoc pdata k (set (map pr-fn (pdata k))))
                     (assoc pdata k (pr-fn (pdata k))))]
-      (recur npdata fsch (next ks) merge-fn env))
+      (recur npdata fsch (next ks) merge-fn adi))
     pdata))
 
-(defn review
+(defn review-raw
   "
   (review {:# {:nss #{:account} :account/name \"Chris\"}}
           {:schema (schema/schema {:account {:name [{:required true}]
                                              :age  [{:required true}]}})
            :options {:schema-required true}})
   => (throws)"
-  {:added "0.3"} [pdata env]
-  (if (and (not= "query" (:type env))
-           (or (-> env :options :schema-defaults)
-               (-> env :options :schema-required)))
-    (let [fsch   (-> env :schema :flat)
-          pdata  (if (-> env :options :schema-defaults)
+  {:added "0.3"}
+  [pdata adi]
+  (if (and (not= "query" (:type adi))
+           (or (-> adi :options :schema-defaults)
+               (-> adi :options :schema-required)))
+    (let [fsch   (-> adi :schema :flat)
+          pdata  (if (-> adi :options :schema-defaults)
                    (review-fn pdata fsch
                               {:label :default
                                :function review-defaults}
-                              env)
+                              adi)
                    pdata)
-          pdata  (if (-> env :options :schema-required)
+          pdata  (if (-> adi :options :schema-required)
                    (review-fn pdata fsch
                               {:label :required
                                :function review-required}
-                              env)
+                              adi)
                    pdata)]
       pdata)
     pdata))
+
+(defn review [adi]
+  (let [data (-> adi :process :analysed)
+        ndata (review-raw data adi)]
+    (assoc-in adi [:process :reviewed] ndata)))

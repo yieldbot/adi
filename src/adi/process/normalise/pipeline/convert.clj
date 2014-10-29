@@ -10,9 +10,9 @@
   => {:account {:name \"chris\"}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (let [trans-fn (:convert interim)
           nsubdata (if (fn? trans-fn)
-                     (op trans-fn subdata env)
+                     (op trans-fn subdata adi)
                      subdata)]
-      (f nsubdata [attr] nsv interim fns env))))
+      (f nsubdata [attr] nsv interim fns adi))))

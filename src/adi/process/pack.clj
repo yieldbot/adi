@@ -1,10 +1,12 @@
 (ns adi.process.pack
-  (:require [adi.process.pack [analyse :as analyse]
+  (:require [hara.common.error :refer [error]]
+            [adi.process.pack [analyse :as analyse]
                               [review :as review]]))
 
-(defn pack [ndata env]
-  (if (-> env :options :skip-pack) ndata
-    (let [pdata (-> ndata
-                    (analyse/analyse env)
-                    (review/review env))]
-      pdata)))
+(defn pack [adi]
+  (let [data (-> adi :process :normalised)]
+    (if (-> adi :options :skip-pack)
+      (assoc-in adi [:process :reviewed] data)
+      (-> adi
+          (analyse/analyse)
+          (review/review)))))

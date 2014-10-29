@@ -15,12 +15,14 @@
             [datomic.api :as datomic]))
 
 (defn gen-datoms [adi data]
-  (let [adi (-> adi
-                (assoc :type "datoms"))]
-    (-> data
-        (normalise/normalise adi)
-        (pack/pack adi)
-        (emit/emit adi))))
+  (let [nadi (-> adi
+                 (assoc :type "datoms")
+                 (assoc-in [:process :input] data)
+                 (normalise/normalise)
+                 (pack/pack)
+                 (emit/emit))]
+    ;;(println (-> nadi :process))
+    (get-in nadi [:process :emitted])))
 
 (defn wrap-transaction-return [f & [ids]]
   (fn [adi data]

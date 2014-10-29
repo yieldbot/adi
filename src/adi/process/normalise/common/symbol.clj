@@ -11,11 +11,11 @@
   => {:account {:type '?hello}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (cond (not (symbol? subdata))
-          (f subdata [attr] nsv interim fns env)
+          (f subdata [attr] nsv interim fns adi)
 
-          (and (= (:type env) "datoms")
+          (and (= (:type adi) "datoms")
                (not= (:type attr) :ref))
           (raise [:adi :normalise :ref-only
                   {:nsv nsv :key-path (:key-path interim)}]

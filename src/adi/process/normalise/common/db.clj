@@ -31,10 +31,10 @@
       :account {:orders {:+ {:db {:id '_} :account {:user \"Chris\"}}}}}"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
+  (fn [tdata tsch nsv interim fns adi]
     (let [db (:db tdata)
           db (db-id-syms db)
-          output (f (dissoc tdata :db) tsch nsv interim fns env)]
+          output (f (dissoc tdata :db) tsch nsv interim fns adi)]
       (if db
         (assoc output :db db)
         output))))

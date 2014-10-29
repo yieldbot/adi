@@ -10,13 +10,13 @@
   "
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
-    (let [output (f (dissoc tdata :+) tsch nsv interim fns env)
+  (fn [tdata tsch nsv interim fns adi]
+    (let [output (f (dissoc tdata :+) tsch nsv interim fns adi)
           pinterim  (normalise/submaps interim normalise/tree-directives :+)]
       (if-let [tplus (:+ tdata)]
         (let [pinterim (update-in pinterim [:key-path] conj :+)]
           (assoc output :+
-                 ((:normalise fns) tplus (-> env :schema :tree) [] pinterim fns env)))
+                 ((:normalise fns) tplus (-> adi :schema :tree) [] pinterim fns adi)))
         output))))
 
 (defn wrap-ref-path
@@ -30,8 +30,8 @@
                      {:account {:WRONG \"Chris\"}}]})"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
-    (f tdata tsch nsv (update-in interim [:ref-path] (fnil #(conj % tdata) [])) fns env)))
+  (fn [tdata tsch nsv interim fns adi]
+    (f tdata tsch nsv (update-in interim [:ref-path] (fnil #(conj % tdata) [])) fns adi)))
 
 (defn wrap-key-path
   "Used for tracing the keys through `normalise`
@@ -43,5 +43,5 @@
   =>  (raises-issue {:key-path [:account :orders :+ :account]})"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
-    (f tdata tsch nsv (update-in interim [:key-path] (fnil #(conj % (last nsv)) [])) fns env)))
+  (fn [tdata tsch nsv interim fns adi]
+    (f tdata tsch nsv (update-in interim [:key-path] (fnil #(conj % (last nsv)) [])) fns adi)))

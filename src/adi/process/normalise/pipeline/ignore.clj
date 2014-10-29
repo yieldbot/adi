@@ -14,7 +14,7 @@
   "
   {:added "0.3"}
   [f]
-  (fn [subdata _ nsv interim env]
+  (fn [subdata _ nsv interim adi]
     (if (-> interim :ignore)
       subdata
-      (f subdata nil nsv interim env))))
+      (f subdata nil nsv interim adi))))

@@ -16,7 +16,7 @@
       (assoc nm :+ xm))))
 
 (defn unpack-ref
-  [ent rf attr v env]
+  [ent rf attr v adi]
   (let [ns  (-> attr :ref :ns)]
     (cond (nil? rf) nil
 
@@ -29,49 +29,49 @@
                   (:db/id entv)))
 
           (hash-map? v)
-          (strip-ns (unpack rf v env) ns)
+          (strip-ns (unpack rf v adi) ns)
 
           (= v :yield)
-          (if (not (@(:seen-ids env) (:db/id ent)))
-            (strip-ns (unpack rf env) ns)
+          (if (not (@(:seen-ids adi) (:db/id ent)))
+            (strip-ns (unpack rf adi) ns)
             {:+ {:db {:id (:db/id ent)}}})
 
           :else
           (error "RETURN_REF: Cannot process directive: " v))))
 
 (defn wrap-db-id [f]
-  (fn [ent model fmodel env]
-    (let [output (f ent model fmodel env)
+  (fn [ent model fmodel adi]
+    (let [output (f ent model fmodel adi)
           id     (:db/id ent)
-          _      (swap! (:seen-ids env) conj id)]
-      (if (-> env :options :ids)
+          _      (swap! (:seen-ids adi) conj id)]
+      (if (-> adi :options :ids)
         (assoc-in output [:db :id] id)
         output))))
 
 (defn wrap-unpack-sets [f]
-  (fn [ent attr v env]
+  (fn [ent attr v adi]
     (let [rf (get ent (-> attr :ref :key))]
       (cond (set? rf)
-            (let [res (set (filter identity (map #(f ent % attr v env) rf)))]
+            (let [res (set (filter identity (map #(f ent % attr v adi) rf)))]
               (if (and (= 1 (count res))
                        (set? (first res)))
                 (first res)
                 res))
 
-            :else (f ent rf attr v env)))))
+            :else (f ent rf attr v adi)))))
 
 (defn unpack-loop
-  ([ent model fmodel env]
-     (unpack-loop ent fmodel fmodel env {}))
-  ([ent model fmodel env output]
+  ([ent model fmodel adi]
+     (unpack-loop ent fmodel fmodel adi {}))
+  ([ent model fmodel adi output]
      (if-let [[k v] (first model)]
-       (if-let [[attr] (-> env :schema :flat (get k))]
+       (if-let [[attr] (-> adi :schema :flat (get k))]
          (let [noutput (cond (= v :unchecked)
                              output
 
                              (= :ref (-> attr :type))
                              (assoc-in-if output (path/split k)
-                                          ((wrap-unpack-sets unpack-ref) ent attr v env))
+                                          ((wrap-unpack-sets unpack-ref) ent attr v adi))
 
 
                              (= :enum (-> attr :type))
@@ -82,15 +82,15 @@
 
                              :else
                              (assoc-in-if output (path/split k) (get ent k)))]
-           (recur ent (next model) fmodel env noutput))
+           (recur ent (next model) fmodel adi noutput))
          (error "RETURN: key " k " is not in schema"))
        output)))
 
-(defn unpack-enums [ent env]
-  (let [ekeys (filter (fn [k] (= :enum (-> env :schema :flat k first :type)))
+(defn unpack-enums [ent adi]
+  (let [ekeys (filter (fn [k] (= :enum (-> adi :schema :flat k first :type)))
                       (keys ent))
         evals (map (fn [k] (let [v (get ent k)
-                                ens (-> env :schema :flat k first :enum :ns)]
+                                ens (-> adi :schema :flat k first :enum :ns)]
                             (if ens
                               (-> (path/split v) last)
                               v)))
@@ -98,18 +98,18 @@
     (zipmap ekeys evals)))
 
 (defn unpack
-  ([ent env]
-     (if-let [fmodel (-> env :model :return)]
-       (unpack ent fmodel (assoc env :seen-ids (atom #{})))
+  ([ent adi]
+     (if-let [fmodel (-> adi :model :return)]
+       (unpack ent fmodel (assoc adi :seen-ids (atom #{})))
        (let [ent (d/touch ent)
-             ks  (filter (fn [k] (not (#{:enum :alias :ref} (-> env :schema :flat k first :type))))
+             ks  (filter (fn [k] (not (#{:enum :alias :ref} (-> adi :schema :flat k first :type))))
                          (keys ent))
              res (-> (select-keys ent ks)
-                     (merge (unpack-enums ent env))
+                     (merge (unpack-enums ent adi))
                      (treeify-keys))]
-         (if (-> env :options :ids)
+         (if (-> adi :options :ids)
            (assoc-in res
                      [:db :id] (:db/id ent))
            res))))
-  ([ent fmodel env]
-     ((wrap-db-id unpack-loop) ent fmodel fmodel env)))
+  ([ent fmodel adi]
+     ((wrap-db-id unpack-loop) ent fmodel fmodel adi)))

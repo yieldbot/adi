@@ -60,13 +60,13 @@
                     :no-required true})"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
+  (fn [tdata tsch nsv interim fns adi]
     (let [req (:pre-require interim)]
       (process-require req :no-required tdata nsv tsch)
-      (f tdata tsch nsv interim fns env))))
+      (f tdata tsch nsv interim fns adi))))
 
 (defn wrap-model-post-require [f]
-  (fn [tdata tsch nsv interim fns env]
+  (fn [tdata tsch nsv interim fns adi]
     (let [req (:post-require interim)
-          output (f tdata tsch nsv interim fns env)]
+          output (f tdata tsch nsv interim fns adi)]
       (process-require req :no-required output nsv tsch))))

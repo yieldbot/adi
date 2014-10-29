@@ -18,10 +18,11 @@
                         :sub-title "a datomic interface"
                         :author "Chris Zheng"
                         :email  "z@caudate.me"}}}
-                        
+
   :profiles {:dev {:plugins [[lein-midje "3.1.1"]
                              [lein-midje-doc "0.0.24"]]
-                   :dependencies [[com.datomic/datomic-free "0.9.4899" :exclusions [joda-time]]
+                   :dependencies [;;[com.datomic/datomic-free "0.8.3971"]
+                                  [com.datomic/datomic-free "0.9.5052" :exclusions [joda-time]]
                                   [midje "1.6.3"]
                                   [clj-time "0.6.0"]
                                   [me.raynes/fs "1.4.5"]

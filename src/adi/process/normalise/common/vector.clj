@@ -16,17 +16,17 @@
   => {:account {:email #db/id[:db.part/user -245025397]}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (cond (and (vector? subdata)
                (not (vexpr? subdata)))
-          (f (set subdata) [attr] nsv interim fns env)
+          (f (set subdata) [attr] nsv interim fns adi)
 
           :else
-          (f subdata [attr] nsv interim fns env))))
+          (f subdata [attr] nsv interim fns adi))))
 
 (defn wrap-single-vector [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
 
     (if (vexpr? subdata)
-      (f (vexpr->expr subdata) [attr] nsv interim fns env)
-      (f subdata [attr] nsv interim fns env))))
+      (f (vexpr->expr subdata) [attr] nsv interim fns adi)
+      (f subdata [attr] nsv interim fns adi))))

@@ -5,30 +5,27 @@
             [adi.data.common :refer [iid isym]]
             [adi.data.checks :refer [db-id?]]))
 
-(declare characterise
-         characterise-nout)
-
 (defn wrap-gen-id [f]
-  (fn [pdata fns env]
+  (fn [pdata fns adi]
     (let [id  (get-in pdata [:# :id])
           nid (cond (nil? id)
-                    (let [gen  (-> env :options :generate-ids)]
+                    (let [gen  (-> adi :options :generate-ids)]
                       (if (fn? gen) (gen) (iid)))
 
                     (symbol? id) (iid id)
 
                     :else id)]
-      (f (assoc-in pdata [:# :id] nid) fns env))))
+      (f (assoc-in pdata [:# :id] nid) fns adi))))
 
 (defn wrap-gen-sym [f]
-  (fn [pdata fns env]
+  (fn [pdata fns adi]
     (if (nil? (get-in pdata [:# :sym]))
-      (let [gen    (-> env :options :generate-syms)
+      (let [gen    (-> adi :options :generate-syms)
             sym (if (fn? gen) (gen) (isym))]
-        (assoc-in (f pdata fns env) [:# :sym] sym))
-      (f pdata fns env))))
+        (assoc-in (f pdata fns adi) [:# :sym] sym))
+      (f pdata fns adi))))
 
-(defn wrap-reverse [f is-reverse pid attr env]
+(defn wrap-reverse [f is-reverse pid attr adi]
   (fn [x]
     (let [res (f x)]
       (if is-reverse
@@ -37,7 +34,7 @@
             (assoc-in [:# :rkey] (-> attr :ref :rkey)))
         res))))
 
-(defn characterise-ref-single [k v pid attr fns env output]
+(defn characterise-ref-single [k v pid attr fns adi output]
   (let [is-reverse (not= k (-> attr :ref :key))
         lu         (if is-reverse (-> attr :ref :rkey) (-> attr :ref :key))
         cat-data   (if is-reverse :revs-one :refs-one)
@@ -49,13 +46,13 @@
 
           (hash-map? v)
           (let [id   (get-in v [:# :id])
-                f    (wrap-reverse #((:characterise fns) % fns env)
-                                   is-reverse pid attr env)
+                f    (wrap-reverse #((:characterise fns) % fns adi)
+                                   is-reverse pid attr adi)
                 res  (f v)
                 output (assoc-in output [cat-data lu] res)]
             output))))
 
-(defn characterise-ref-many [k vs pid attr fns env output]
+(defn characterise-ref-many [k vs pid attr fns adi output]
   (let [is-reverse  (not= k (-> attr :ref :key))
         lu         (if is-reverse (-> attr :ref :rkey) (-> attr :ref :key))
         cat-data   (if is-reverse :revs-many :refs-many)
@@ -75,13 +72,13 @@
         output   (if (empty? all-maps) output
                      (assoc-in output [cat-data lu]
                                (set (map (wrap-reverse
-                                          #((:characterise fns) % fns env)
-                                          is-reverse pid attr env)
+                                          #((:characterise fns) % fns adi)
+                                          is-reverse pid attr adi)
                                          all-maps))))]
     output))
 
-(defn characterise-entry [k v pid fns env output]
-  (let [[attr] (-> env :schema :flat k)
+(defn characterise-entry [k v pid fns adi output]
+  (let [[attr] (-> adi :schema :flat k)
         t (:type attr)]
     (if (and attr t)
       (cond (list? v) (assoc-in output [:db-funcs k] v)
@@ -94,8 +91,8 @@
              :else     (assoc-in output [:data-one k] v))
 
             (= :ref t)
-            (cond (set? v) (characterise-ref-many k v pid attr fns env output)
-                  :else (characterise-ref-single k v pid attr fns env output)))
+            (cond (set? v) (characterise-ref-many k v pid attr fns adi output)
+                  :else (characterise-ref-single k v pid attr fns adi output)))
 
       (cond (= k :db)
             (assoc output k v)
@@ -108,27 +105,32 @@
 
 
 (defn characterise-loop
-  ([pdata fns env]
+  ([pdata fns adi]
      (let [id (get-in pdata [:# :id])]
-       (characterise-loop pdata id fns env {})))
-  ([pdata id fns env output]
+       (characterise-loop pdata id fns adi {})))
+  ([pdata id fns adi output]
      (if-let [[k v] (first pdata)]
-      (recur (next pdata) id fns env
-             (characterise-entry k v id fns env output))
+      (recur (next pdata) id fns adi
+             (characterise-entry k v id fns adi output))
       output)))
 
-(defn characterise
-  [pdata env]
+(defn characterise-raw
+  [pdata adi]
   (let [fns {:characterise
              (let [f characterise-loop
-                   f (cond (and (= "query" (:type env))
-                                (not (false? (-> env :options :generate-syms))))
+                   f (cond (and (= "query" (:type adi))
+                                (not (false? (-> adi :options :generate-syms))))
                            (wrap-gen-sym f)
 
-                           (and (= "datoms" (:type env))
-                                (not (false? (-> env :options :generate-ids))))
+                           (and (= "datoms" (:type adi))
+                                (not (false? (-> adi :options :generate-ids))))
                            (wrap-gen-id f)
 
                            :else f)]
                f)}]
-    ((:characterise fns) pdata fns env)))
+    ((:characterise fns) pdata fns adi)))
+
+(defn characterise [adi]
+  (let [data (-> adi :process :reviewed)
+        ndata (characterise-raw data adi)]
+    (assoc-in adi [:process :characterised] ndata)))

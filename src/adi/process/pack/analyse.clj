@@ -103,15 +103,14 @@
    (error "ANALYSE-ATTR-SINGLE: Type data of " attr " missing")))
 
 (defn analyse-attr [v [attr] tsch fns]
- (if (set? v)
-   (set (map #((:analyse-single fns) % [attr] tsch fns) v))
-   ((:analyse-single fns) v [attr] tsch fns)))
+  (if (set? v)
+    (set (map #((:analyse-single fns) % [attr] tsch fns) v))
+    ((:analyse-single fns) v [attr] tsch fns)))
 
 (defn analyse-loop
- ([tdata psch nsv tsch fns]
-    (analyse-loop tdata psch nsv tsch fns {}))
- ([tdata psch nsv tsch fns output]
-    ;;(println "ANALYSE_LOOP:" fns)
+  ([tdata psch nsv tsch fns]
+     (analyse-loop tdata psch nsv tsch fns {}))
+  ([tdata psch nsv tsch fns output]
      (if-let [[k v] (first tdata)]
        (let [subsch (get-in psch (conj nsv k))]
          (cond (hash-map? subsch)
@@ -131,8 +130,8 @@
 
                :else
                (do (if-not (:schema-ignore fns)
-                       (raise [:adi :analyse :invalid-schema {:nsv (conj nsv k) :data v}]
-                              (str "ANALYSE_LOOP: " (conj nsv k) " has invalid schema: " subsch)))
+                     (raise [:adi :analyse :invalid-schema {:nsv (conj nsv k) :data v}]
+                            (str "ANALYSE_LOOP: " (conj nsv k) " has invalid schema: " subsch)))
                    (recur (next tdata) psch nsv tsch fns output))))
        output)))
 
@@ -157,7 +156,6 @@
                   (raise [:adi :normalise :top-id-banned
                           {:id id :data tdata}]
                          (str "WRAP_ID: Top level ids are banned.")))))
-          ;;_     (println "FNS: " fns (assoc-nil fns :in-body true :id id))
           output (f (dissoc tdata :db) sch nsv tsch (assoc-nil fns :in-body true :id id))]
      (cond (:in-body fns)
            (cond (or (nil? id) (= id '_)) output
@@ -183,7 +181,6 @@
 
 (defn wrap-plus [f]
   (fn [tdata psch nsv tsch fns]
-    ;;(println "WRAP_PLUS:" fns)
    (let [tdata* (dissoc tdata :+)
          output (f tdata* psch nsv tsch fns)]
      (if-let [xdata (:+ tdata)]
@@ -203,7 +200,7 @@
      (if (empty? nsv) output
          (update-in output [:# :nss] #(set/union % (set nsv)))))))
 
-(defn analyse
+(defn analyse-raw
   "turns a nested-tree map into reference maps
   (analyse {:account {:name \"Chris\"}}
            {:schema (schema/schema examples/account-name-age-sex)
@@ -217,36 +214,42 @@
   => {:account/name \"Chris\", :account/age 10}
   "
   {:added "0.3"}
-  [tdata env]
- (let [tsch (-> env :schema :tree)
-       fns  {:analyse
-             (let [f (-> analyse-loop
-                         wrap-plus)
-                   f (if (and (not= "query" (:type env))
-                              (or (-> env :options :schema-defaults)
-                                  (-> env :options :schema-required)))
-                       (wrap-nss f) f)
-                   f (wrap-id f)]
-               f)
+  [tdata adi]
+  (let [tsch (-> adi :schema :tree)
+        fns  {:analyse
+              (let [f (-> analyse-loop
+                          wrap-plus)
+                    f (if (and (not= "query" (:type adi))
+                               (or (-> adi :options :schema-defaults)
+                                   (-> adi :options :schema-required)))
+                        (wrap-nss f) f)
+                    f (wrap-id f)]
+                f)
 
-             :analyse-attr
-             (let [f analyse-attr
-                   f (if (-> env :options :schema-restrict) (wrap-attr-restrict f) f)]
-               f)
+              :analyse-attr
+              (let [f analyse-attr
+                    f (if (-> adi :options :schema-restrict) (wrap-attr-restrict f) f)]
+                f)
 
-             :analyse-single
-             (let [f analyse-attr-single
-                   f (wrap-single-expressions f)
-                   f (if (-> env :options :skip-typecheck)
-                       f (wrap-attr-type-check f))]
-               f)
+              :analyse-single
+              (let [f analyse-attr-single
+                    f (wrap-single-expressions f)
+                    f (if (-> adi :options :skip-typecheck)
+                        f (wrap-attr-type-check f))]
+                f)
 
-             :type            (-> env :type)
-             :schema-ignore   (-> env :options :schema-ignore)
-             :auto-ids        (-> env :options :auto-ids)
-             :ban-ids         (-> env :options :ban-ids)
-             :ban-top-id      (-> env :options :ban-top-id)
-             :ban-body-ids    (-> env :options :ban-body-ids)
-             :ban-expressions (-> env :options :ban-expressions)
-             :ban-underscores (-> env :options :ban-underscores)}]
-   ((:analyse fns) tdata tsch [] tsch fns)))
+              :type            (-> adi :type)
+              :schema-ignore   (-> adi :options :schema-ignore)
+              :auto-ids        (-> adi :options :auto-ids)
+              :ban-ids         (-> adi :options :ban-ids)
+              :ban-top-id      (-> adi :options :ban-top-id)
+              :ban-body-ids    (-> adi :options :ban-body-ids)
+              :ban-expressions (-> adi :options :ban-expressions)
+              :ban-underscores (-> adi :options :ban-underscores)}]
+    ((:analyse fns) tdata tsch [] tsch fns)))
+
+
+(defn analyse [adi]
+  (let [data (-> adi :process :normalised)
+        ndata (analyse-raw data adi)]
+    (assoc-in adi [:process :analysed] ndata)))

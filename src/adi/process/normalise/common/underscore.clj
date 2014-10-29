@@ -36,11 +36,11 @@
   => {:account {:user '#{_}}}"
   {:added "0.3"}
   [f]
-  (fn [subdata subsch nsv interim fns env]
+  (fn [subdata subsch nsv interim fns adi]
     (cond (not (= subdata '_))
-          (f subdata subsch nsv interim fns env)
+          (f subdata subsch nsv interim fns adi)
 
-          (= (:type env) "query")
+          (= (:type adi) "query")
           (assoc-in {} (rep-key subsch) '#{_})
 
           :else

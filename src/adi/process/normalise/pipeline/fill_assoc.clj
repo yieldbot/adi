@@ -4,13 +4,13 @@
             [hara.function.args :refer [op]]
             [ribol.core :refer [raise]]))
 
-(defn process-fill-assoc [sfill tdata nsv interim tsch env]
+(defn process-fill-assoc [sfill tdata nsv interim tsch adi]
   (if-let [[k v] (first sfill)]
     (cond (not (get tdata k))
           (cond (fn? v)
                 (recur (next sfill)
-                       (assoc tdata k (op v (:ref-path interim) env))
-                       nsv interim tsch env)
+                       (assoc tdata k (op v (:ref-path interim) adi))
+                       nsv interim tsch adi)
 
                 (hash-map? v)
                 (recur (next sfill)
@@ -19,17 +19,17 @@
                                                     (conj nsv k)
                                                     interim
                                                     (get tsch k)
-                                                    env))
-                       nsv interim tsch env)
+                                                    adi))
+                       nsv interim tsch adi)
 
                 :else
                 (recur (next sfill)
-                       (assoc tdata k v) nsv interim tsch env))
+                       (assoc tdata k v) nsv interim tsch adi))
 
           (and (hash-map? v)
                (-> tsch (get k) vector?)
                (-> tsch (get k) first :type (= :ref)))
-          (recur (next sfill) tdata nsv interim tsch env)
+          (recur (next sfill) tdata nsv interim tsch adi)
 
           :else
           (let [subdata (get tdata k)]
@@ -40,17 +40,17 @@
                                                       (conj nsv k)
                                                       interim
                                                       (get tsch k)
-                                                      env))
-                         nsv interim tsch env)
+                                                      adi))
+                         nsv interim tsch adi)
 
                   (fn? v)
                   (recur (next sfill)
-                         (complex/assocs tdata k (op v (:ref-path interim) env))
-                         nsv interim tsch env)
+                         (complex/assocs tdata k (op v (:ref-path interim) adi))
+                         nsv interim tsch adi)
 
                   :else
                   (recur (next sfill)
-                         (complex/assocs tdata k v) nsv interim tsch env))))
+                         (complex/assocs tdata k v) nsv interim tsch adi))))
     tdata))
 
 (defn wrap-model-fill-assoc
@@ -63,21 +63,21 @@
 
   (normalise/normalise {:account/name \"Chris\"}
             {:schema (schema/schema examples/account-name-age-sex)
-             :model {:fill-assoc {:account {:age (fn [_ env]
-                                                   (:age env))}}}
+             :model {:fill-assoc {:account {:age (fn [_ adi]
+                                                   (:age adi))}}}
              :age 10}
             *wrappers*)
   => {:account {:name \"Chris\", :age 10}}
   "
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
+  (fn [tdata tsch nsv interim fns adi]
     (let [sfill (:fill-assoc interim)]
       (if (hash-map? sfill)
-        (let [output (process-fill-assoc sfill tdata nsv interim tsch env)]
+        (let [output (process-fill-assoc sfill tdata nsv interim tsch adi)]
           (f output tsch nsv (update-in interim [:ref-path]
                                         #(-> %
                                              (pop)
                                              (conj output)))
-             fns env))
-        (f tdata tsch nsv interim fns env)))))
+             fns adi))
+        (f tdata tsch nsv interim fns adi)))))

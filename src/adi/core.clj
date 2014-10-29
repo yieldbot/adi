@@ -6,6 +6,7 @@
              [helpers :as helpers]
              [prepare :as prepare]
              [nested :as nested]
+             [query :as query]
              [retract :as retract]
              [select :as select]
              [transaction :as transaction]]))
@@ -69,6 +70,7 @@
    transaction/delete!
    transaction/delete-all!
    retract/retract!
+   query/query
    nested/update-in!
    nested/delete-in!
    nested/retract-in!])
@@ -77,10 +79,10 @@
   #{#'transact! #'insert! #'update! #'delete! #'retract!
     #'retract-in! #'update-in! #'delete-in! #'delete-all!})
 
-(defn create-data-form [form env]
+(defn create-data-form [form adi]
   (let [[f & args] form]
     (if (transaction-ops (resolve f))
-      (concat (list f env) args (list :raw))
+      (concat (list f adi) args (list :raw))
       (throw (AssertionError. (str "Only " transaction-ops " allowed."))))))
 
 (defmacro sync-> [adi args? & trns]

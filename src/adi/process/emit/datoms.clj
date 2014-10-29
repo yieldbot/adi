@@ -66,9 +66,14 @@
       (error "WRAP_CHECK_EMPTY: Cannot allow an empty ref for: " chdata)
       (f chdata))))
 
-(defn datoms
+(defn datoms-raw
   [chdata]
   (concat
    ((wrap-check-empty datom-tree) chdata)
    (datom-ids chdata)
    (datom-funcs chdata)))
+
+(defn datoms [adi]
+  (let [chdata (-> adi :process :characterised)
+        ndata (datoms-raw chdata)]
+    (assoc-in adi [:process :emitted] ndata)))

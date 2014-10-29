@@ -4,12 +4,12 @@
             [hara.function.args :refer [op]]))
 
 (defn wrap-hash-set [f]
-  (fn [val env]
+  (fn [val adi]
     (cond (set? val)
-          (set (map #(op f % env) val))
+          (set (map #(op f % adi) val))
 
           :else
-          (op f val env))))
+          (op f val adi))))
 
 (defn process-transform
   "Used by both wrap-model-pre-transform and wrap-model-post-transform
@@ -24,7 +24,7 @@
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
                         :name \"Bob\"
-                        :model {:pre-transform {:account {:name (fn [_ env] (:name env))}}}}
+                        :model {:pre-transform {:account {:name (fn [_ adi] (:name adi))}}}}
                        *wrappers*)
   => {:account {:name \"Bob\"}}
 
@@ -35,28 +35,28 @@
                        *wrappers*)
   => {:account {:name \"Christian\"}}"
   {:added "0.3"}
-  [strans tdata nsv interim tsch env]
+  [strans tdata nsv interim tsch adi]
   (if-let [[k v] (first strans)]
     (cond (and (hash-map? v)
                (-> tsch (get k) vector?)
                (-> tsch (get k) first :type (= :ref)))
-          (recur (next strans) tdata nsv interim tsch env)
+          (recur (next strans) tdata nsv interim tsch adi)
 
           :else
           (let [subdata (get tdata k)
                 ntdata  (cond (nil? subdata) tdata
 
                               (fn? v)
-                              (assoc tdata k ((wrap-hash-set v) subdata env))
+                              (assoc tdata k ((wrap-hash-set v) subdata adi))
 
                               (hash-map? subdata)
                               (assoc tdata k (process-transform
                                               v subdata (conj nsv k)
-                                              interim (get tsch k) env))
+                                              interim (get tsch k) adi))
 
                               :else
                               (assoc tdata k (if (set? subdata) #{v} v)))]
-            (recur (next strans) ntdata nsv interim tsch env)))
+            (recur (next strans) ntdata nsv interim tsch adi)))
     tdata))
 
 (defn wrap-model-pre-transform
@@ -71,17 +71,17 @@
                           {:items {:name \"thing\"}, :number 3}}}}"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns env]
+  (fn [tdata tsch nsv interim fns adi]
     (let [strans (:pre-transform interim)
-          output (process-transform strans tdata nsv interim tsch env)]
+          output (process-transform strans tdata nsv interim tsch adi)]
       (f output tsch nsv (update-in interim [:ref-path]
                                     #(-> %
                                          (pop)
                                          (conj output)))
-         fns env))))
+         fns adi))))
 
 (defn wrap-model-post-transform [f]
- (fn [tdata tsch nsv interim fns env]
+ (fn [tdata tsch nsv interim fns adi]
    (let [strans (:post-transform interim)
-         output (f tdata tsch nsv interim fns env)]
-     (process-transform strans output nsv interim tsch env))))
+         output (f tdata tsch nsv interim fns adi)]
+     (process-transform strans output nsv interim tsch adi))))

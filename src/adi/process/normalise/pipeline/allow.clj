@@ -24,26 +24,26 @@
   "
   {:added "0.3"}
   [f]
-  (fn [subdata subsch nsv interim fns env]
+  (fn [subdata subsch nsv interim fns adi]
     (let [suballow (:allow interim)
           nsubdata  (if (nil? suballow)
                         (raise [:adi :normalise :not-allowed
                                   {:data subdata :nsv nsv :key-path (:key-path interim)}]
                                (str "WRAP_BRANCH_MODEL_ALLOW: key " nsv " is not accessible."))
                         subdata)]
-      (f nsubdata subsch nsv interim fns env))))
+      (f nsubdata subsch nsv interim fns adi))))
 
 (defn wrap-attr-model-allow [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (let [suballow (:allow interim)]
       (cond (= (:type attr) :ref)
             (cond (= suballow :yield)
                   (let [ynsv   (path/split (-> attr :ref :ns))
-                        tmodel (get-in env (concat [:model :allow] ynsv))]
-                    (f subdata [attr] ynsv (assoc interim :allow tmodel) fns env))
+                        tmodel (get-in adi (concat [:model :allow] ynsv))]
+                    (f subdata [attr] ynsv (assoc interim :allow tmodel) fns adi))
 
                   (or (= suballow :id) (hash-map? suballow))
-                  (f subdata [attr] nsv interim fns env)
+                  (f subdata [attr] nsv interim fns adi)
 
                   :else 
                   (raise [:adi :normalise :not-allowed
@@ -55,7 +55,7 @@
                   (raise [:adi :normalise :not-allowed
                             {:data subdata :nsv nsv :key-path (:key-path interim)}]
                          (str "WRAP_ATTR_MODEL_ALLOW: " nsv " is not accessible"))]
-               (f nsubdata [attr] nsv interim fns env))
+               (f nsubdata [attr] nsv interim fns adi))
 
             :else
-            (f subdata [attr] nsv interim fns env)))))
+            (f subdata [attr] nsv interim fns adi)))))

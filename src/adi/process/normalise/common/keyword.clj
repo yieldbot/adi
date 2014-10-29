@@ -11,11 +11,12 @@
   => {:account {:type :vip}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (cond (= :keyword (:type attr))
-          (let [v (if (path/path-ns? subdata (-> attr :keyword :ns))
-                    (path/path-stem subdata)
-                    subdata)]
+          (let [kns (-> attr :keyword :ns)
+                v   (if (and kns (path/path-ns? subdata kns))
+                      (path/path-stem subdata)
+                      subdata)]
             v)
           :else
-          (f subdata [attr] nsv interim fns env))))
+          (f subdata [attr] nsv interim fns adi))))

@@ -3,9 +3,8 @@
                               [datoms :as datoms]
                               [query :as query]]))
 
-(defn emit [pdata env]
-  (let [chdata (characterise/characterise pdata env)]
-    ;;(println chdata)
-    (condp = (:type env)
-      "query"  (query/query chdata env)
-      "datoms" (datoms/datoms chdata))))
+(defn emit [adi]
+  (let [nadi (characterise/characterise adi)]
+    (condp = (:type nadi)
+      "query"  (query/query nadi)
+      "datoms" (datoms/datoms nadi))))

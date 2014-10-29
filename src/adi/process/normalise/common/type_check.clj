@@ -19,14 +19,14 @@
   => {:account {:age 10}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (let [t (:type attr)
           chk (meta/type-checks t)]
       (cond
-       (chk subdata) (f subdata [attr] nsv interim fns env)
+       (chk subdata) (f subdata [attr] nsv interim fns adi)
 
-       (-> env :options :use-coerce)
-       (f (coerce subdata t) [attr] nsv interim fns env)
+       (-> adi :options :use-coerce)
+       (f (coerce subdata t) [attr] nsv interim fns adi)
 
        :else
        (raise [:adi :normalise :wrong-type

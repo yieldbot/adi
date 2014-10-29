@@ -61,17 +61,19 @@
       (f adi data))))
 
 (defn gen-query [adi data]
-  (let [adi (-> adi
-                (update-in [:options]
-                           dissoc
-                           :schema-required
-                           :schema-restrict
-                           :schema-defaults)
-                (assoc :type "query"))]
-    (-> data
-        (normalise/normalise adi)
-        (pack/pack adi)
-        (emit/emit adi))))
+  (let [nadi (-> adi
+                 (assoc-in [:process :input] data)
+                 (update-in [:options]
+                            dissoc
+                            :schema-required
+                            :schema-restrict
+                            :schema-defaults)
+                 (assoc :type "query")
+                 (normalise/normalise)
+                 (pack/pack)
+                 (emit/emit))]
+    ;;(println (-> nadi :process))
+    (get-in nadi [:process :emitted])))
 
 (defn select [adi data opts]
   (let [adi (prepare/prepare adi opts)

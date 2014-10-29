@@ -1,11 +1,11 @@
 (ns adi.process.normalise.common.set
   (:require [ribol.core :refer [raise]]))
 
-(defn is-query [env]
-  (= (:type env) "query"))
+(defn is-query [adi]
+  (= (:type adi) "query"))
 
-(defn is-set [attr env]
-  (or (is-query env)
+(defn is-set [attr adi]
+  (or (is-query adi)
       (= (:cardinality attr) :many)))
 
 (defn wrap-attr-set
@@ -22,19 +22,19 @@
   => {:account {:user #{\"bob\" \"andy\"}}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns env]
+  (fn [subdata [attr] nsv interim fns adi]
     (let [subdata
-          (cond (and (is-set attr env)
+          (cond (and (is-set attr adi)
                      (not (set? subdata)))
                 #{subdata}
 
-                (and (not (is-set attr env))
+                (and (not (is-set attr adi))
                      (set? subdata))
                 (raise [:adi :normalise :wrong-input {:data subdata :nsv nsv :key-path (:key-path interim)}]
                        (str "WRAP_ATTR_SETS: " subdata " should not be a set"))
 
-                (is-set attr env)
+                (is-set attr adi)
                 (set subdata)
 
                 :else subdata)]
-      (f subdata [attr] nsv interim fns env))))
+      (f subdata [attr] nsv interim fns adi))))

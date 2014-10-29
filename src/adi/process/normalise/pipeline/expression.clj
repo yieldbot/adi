@@ -48,10 +48,10 @@
    "
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim env]
+  (fn [subdata [attr] nsv interim adi]
     (let [subexpression (:expression interim)]
       (cond (hash-map? subexpression)
-            (f subdata [attr] nsv interim env)
+            (f subdata [attr] nsv interim adi)
 
             (and (not (nil? subexpression))
                  (check-expr subexpression subdata)) subdata
