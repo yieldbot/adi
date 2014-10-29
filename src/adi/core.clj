@@ -59,7 +59,7 @@
        (vec)))
 
 (ns/import adi.core.connection [connect! disconnect!]
-           adi.core.helpers    [transactions])
+           adi.core.helpers    [transactions transaction-time])
 
 (define-database-functions
   [select/select

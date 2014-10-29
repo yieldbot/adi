@@ -26,17 +26,20 @@ So what exactly is `adi`?
 - It uses the `schema` and an application `pipeline` to process incoming data, similar to that of what a `type system`.
 - It is `simple` and `expressive`, a pure `joy` to use.
 
-The concept is simple. `adi` is a document-database syntax grafted on `datomic`. It makes use of a map/object notation to generate datastructure for the `datomic` query engine. This provides for an even more declarative syntax for relational search. Fundamentally, there should be no difference in the data-structure between what the programmer uses to ask and what the programmer is getting back. We shouldn't have to play around turning objects into records, objects into queries... etc...
-
-*Not Anymore.*
-
-`adi` converts flat, record-like arrays to tree-like objects and back again. The key to understanding adi lies in understanding the power of a schema. The schema dictates what you can do with the data. Instead of limiting the programmer, the schema should exhance him/her, much like what a type-system does for programmers - without being suffocatingly restrictive. Once a schema for an application has been defined, the data can be inserted in ANY shape or form, as long as it follows the conventions specified within that schema.
+The key to understanding `adi` lies in understanding the power of a `schema`. The `schema` dictates what you can do with the data. Instead of limiting the programmer, the `schema` should exhance him/her, much like what a `type system` does for programmers but without being as restrictive. Once we have a `schema`, there should be no difference in the `shape` of the `query` and the `shape` of the `data` that we get back from the `query`. We shouldn't have to play around turning objects into records, objects into queries, etc. Furthermore, data can be queried and inserted in **ANY** shape or form, as long as it follows the conventions specified within that schema.
 "
 
 [[:chapter {:title "Tutorial"}]]
 
+"So open up a repl in a project with `adi` installed and require load up the library:"
+
+(comment
+  (require '[adi.core :as adi]))
+
+"We are off and away!"
+
 [[:file {:src "test/adi/examples/step_1.clj"}]]
 [[:file {:src "test/adi/examples/step_2.clj"}]]
 [[:file {:src "test/adi/examples/step_3.clj"}]]
-
 [[:file {:src "test/adi/examples/step_4.clj"}]]
+

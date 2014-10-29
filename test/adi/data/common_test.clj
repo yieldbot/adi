@@ -18,3 +18,13 @@
 
   (isym "v") => symbol? ;=> ?v1250
   )
+
+^{:refer adi.data.common/vexpr->expr :added "0.3"}
+(fact "checks whether an input is a vector expression"
+  (vexpr->expr [["_"]]) => '_
+
+  (vexpr->expr [["?hello"]]) => '?hello
+
+  (vexpr->expr [["(< ? 1)"]]) => '(< ? 1)
+
+  (vexpr->expr [[":hello"]]) => #db/id[:db.part/user -245025397])

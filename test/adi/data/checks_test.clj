@@ -39,3 +39,7 @@
 
   (ref? 100000234343) => true
   (ref? (datomic/tempid :db.user)))
+
+^{:refer adi.data.checks/vexpr? :added "0.3"}
+(fact "checks whether an input is a vector expression"
+  (vexpr? [[":hello"]]) => true)

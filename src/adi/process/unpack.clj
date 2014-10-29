@@ -21,8 +21,12 @@
     (cond (nil? rf) nil
 
           (= v :id)
-          (let [k (:ident attr)]
-            (-> ent k :db/id))
+          (let [k (:ident attr)
+                entv (get ent k)]
+            (cond (set? entv)
+                  (set (map :db/id entv))
+                  :else
+                  (:db/id entv)))
 
           (hash-map? v)
           (strip-ns (unpack rf v env) ns)
@@ -48,7 +52,12 @@
   (fn [ent attr v env]
     (let [rf (get ent (-> attr :ref :key))]
       (cond (set? rf)
-            (set (filter identity (map #(f ent % attr v env) rf)))
+            (let [res (set (filter identity (map #(f ent % attr v env) rf)))]
+              (if (and (= 1 (count res))
+                       (set? (first res)))
+                (first res)
+                res))
+
             :else (f ent rf attr v env)))))
 
 (defn unpack-loop

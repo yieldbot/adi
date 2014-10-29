@@ -93,7 +93,14 @@
       (recur npdata fsch (next ks) merge-fn env))
     pdata))
 
-(defn review [pdata env]
+(defn review
+  "
+  (review {:# {:nss #{:account} :account/name \"Chris\"}}
+          {:schema (schema/schema {:account {:name [{:required true}]
+                                             :age  [{:required true}]}})
+           :options {:schema-required true}})
+  => (throws)"
+  {:added "0.3"} [pdata env]
   (if (and (not= "query" (:type env))
            (or (-> env :options :schema-defaults)
                (-> env :options :schema-required)))

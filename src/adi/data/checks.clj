@@ -40,7 +40,7 @@
   
 (defn vexpr?
   "checks whether an input is a vector expression
-  (vecxpr? [[\":hello\"]]) => true"
+  (vexpr? [[\":hello\"]]) => true"
   {:added "0.3"}
   [v]
   (and (vector? v)

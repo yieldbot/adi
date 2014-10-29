@@ -22,6 +22,14 @@
           (map #(first %))
           (map datomic/tx->t)
           (sort))))
+          
+(defn transaction-time [adi t]
+  (->> (datomic/q '[:find ?t
+                    :in $ ?tx
+                    :where [?tx :db/txInstant ?t]]
+                  (datomic/db (:connection adi))
+                  (datomic/t->tx t))
+        (ffirst)))
 
 (defn schema-properties [adi]
   (let [data (datomic/q '[:find ?ident ?type ?cardinality ?e :where

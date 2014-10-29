@@ -30,15 +30,15 @@
  ([prefix] (symbol (str "?" (name (gensym prefix))))))
 
 (defn vexpr->expr
- "checks whether an input is a vector expression
- (vecxpr->xpr [[\"_\"]]) => '_
+  "checks whether an input is a vector expression
+  (vexpr->expr [[\"_\"]]) => '_
 
- (vecxpr->xpr [[\"?hello\"]]) => '?hello
+  (vexpr->expr [[\"?hello\"]]) => '?hello
 
- (vecxpr->xpr [[\"(< ? 1)\"]]) => '(< ? 1)
+  (vexpr->expr [[\"(< ? 1)\"]]) => '(< ? 1)
 
- (vecxpr->xpr [[\":hello\"]]) => #db/id[:db.part/user -245025397]"
- {:added "0.3"}
+  (vexpr->expr [[\":hello\"]]) => #db/id[:db.part/user -245025397]"
+  {:added "0.3"}
  [v]
  (let [[[s]] v]
    (let [xpr (if (string? s) (edn/read-string s) s)]
