@@ -1,6 +1,7 @@
 (ns adi.core.transaction
   (:require [hara.common.checks :refer [hash-map? long?]]
             [hara.data.nested :refer [merge-nil-nested]]
+            [adi.data.common :refer [iid-seed]]
             [adi.core
              [prepare :as prepare]
              [select :as select]
@@ -21,7 +22,8 @@
                  (normalise/normalise)
                  (pack/pack)
                  (emit/emit))]
-    ;;(println (-> nadi :process))
+    (clojure.pprint/pprint (-> nadi :process :analysed))
+    (println (-> nadi :process :emitted))
     (get-in nadi [:process :emitted])))
 
 (defn wrap-transaction-return [f & [ids]]
@@ -36,7 +38,18 @@
 
             :else
             (condp = trs
-              nil      @(datomic/transact (:connection adi) dtms)
+              ;; @(datomic/transact (:connection adi) dtms)
+              nil      (let [res @(datomic/transact (:connection adi) dtms)]
+                         (println (map #(vector (iid-seed %)
+                                                (datomic/resolve-tempid (datomic/db (:connection adi))
+                                                                        (:tempids res)
+                                                                        %))
+                                       (->> dtms
+                                            (filter hash-map?)
+                                            (map :db/id)
+                                            (set))))
+                         res)
+
               :promise (datomic/transact (:connection adi) dtms)
               :async   (datomic/transact-async (:connection adi) dtms)
               :full    (let [res @(datomic/transact (:connection adi) dtms)

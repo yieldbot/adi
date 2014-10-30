@@ -1,8 +1,13 @@
 (ns adi.data.common
-  (:require [datomic.api :as d]
+  (:require [datomic.api :as datomic]
             [clojure.edn :as edn]
             [hara.common.checks :refer [long?]]
             [ribol.core :refer [raise]]))
+
+(defn iid-value
+  [obj]
+  (let [v (if (number? obj) (long obj) (hash obj))]
+    (if (< 0 v) (- v) v)))
 
 (defn iid
   "Constructs a new datomic db/id
@@ -10,11 +15,23 @@
 
   (iid :hello) => #db/id[:db.part/user -245025397]"
   {:added "0.3"}
-  ([] (d/tempid :db.part/user))
+  ([] (datomic/tempid :db.part/user))
   ([obj]
-     (let [v (if (number? obj) (long obj) (hash obj))
-           v (if (< 0 v) (- v) v)]
-       (d/tempid :db.part/user v ))))
+     (let [v (iid-value obj)]
+       (with-meta (datomic/tempid :db.part/user v)
+         {:seed obj}))))
+
+(defn iid-reader [[v]]
+  (iid v))
+
+(defn iid-seed [id]
+  (-> id meta :seed))
+
+(defmethod print-method datomic.db.DbId
+  [v w]
+  (if-let [{:keys [seed]} (meta v)]
+    (.write w (format "#adi[%s]" seed))
+    (.write w (str v))))
 
 (defn isym
   "Returns a new datomic symbol with a unique name. If a prefix string
@@ -27,7 +44,7 @@
   "
   {:added "0.3"}
   ([] (isym 'e_))
- ([prefix] (symbol (str "?" (name (gensym prefix))))))
+  ([prefix] (symbol (str "?" (name (gensym prefix))))))
 
 (defn vexpr->expr
   "checks whether an input is a vector expression
