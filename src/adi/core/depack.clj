@@ -58,6 +58,10 @@
 
 (defn depack
   [data adi]
-  (if (vector? data)
-    (mapv #(depack % adi) data)
-    (depack-loop data adi)))
+  (cond (vector? data)
+        (mapv #(depack % adi) data)
+
+        (hash-map? data)
+        (depack-loop data adi)
+
+        :else data))

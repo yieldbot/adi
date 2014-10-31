@@ -5,9 +5,9 @@
              [connection :as connection]
              [helpers :as helpers]
              [prepare :as prepare]
-             [nested :as nested]
-             [query :as query]
-             [retract :as retract]
+             ;;[nested :as nested]
+             ;;[query :as query]
+             ;;[retract :as retract]
              [select :as select]
              [transaction :as transaction]]))
 
@@ -25,10 +25,10 @@
     :skip-typecheck
     :first
     :ids
+    :simulate
     :generate-ids
     :generate-syms
-    :raw
-    :simulate})
+    :raw})
 
 (defn args->opts
   ([args] (args->opts {} args))
@@ -64,18 +64,27 @@
   [select/select
    transaction/insert!
    transaction/transact!
-   transaction/update!
    transaction/delete!
-   transaction/delete-all!
-   retract/retract!
-   query/query
-   nested/update-in!
-   nested/delete-in!
-   nested/retract-in!])
+   transaction/update!
+   ;;transaction/delete-all!
+   ;;retract/retract!
+   ;;query/query
+   ;;nested/update-in!
+   ;;nested/delete-in!
+   ;;nested/retract-in!
+   ])
 
 (def transaction-ops
-  #{#'transact! #'insert! #'update! #'delete! #'retract!
-    #'retract-in! #'update-in! #'delete-in! #'delete-all!})
+  #{#'transact!
+    #'insert!
+    #'delete!
+    #'update!
+    ;;#'retract!
+    ;;#'retract-in!
+    ;;#'update-in!
+    ;;#'delete-in!
+    ;;#'delete-all!
+    })
 
 (defn create-data-form [form adi]
   (let [[f & args] form]

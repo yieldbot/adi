@@ -2,6 +2,7 @@
   (:require [hara.common
              [checks :refer [hash-map? long?]]
              [error :refer [error]]]
+            [hara.data.map :refer [assoc-nil]]
             [adi.core
              [prepare :as prepare]
              [types :as types]]
