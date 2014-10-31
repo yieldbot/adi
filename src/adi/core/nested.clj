@@ -55,7 +55,7 @@
 
 (defn update-in! [adi data path update opts]
   (assert (even? (count path)) "The path must have a even number of items.")
-  (let [adi (prepare/prepare adi opts)
+  (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:raw false :return-ids true}} )
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
@@ -68,13 +68,13 @@
                                                   :ban-body-ids false
                                                   :ban-ids false
                                                   :ban-top-id false}}) ids)
-        f (-> (fn [adi data] data)
-              (transaction/wrap-transaction-return ids))]
-    (f adi output)))
+        f (-> identity
+              (transaction/wrap-transaction-return))]
+    (f (assoc-in adi [:process :emitted] output))))
 
 (defn delete-in! [adi data path opts]
   (assert (even? (count path)) "The path must have a even number of items.")
-  (let [adi (prepare/prepare adi opts)
+  (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:raw false :return-ids true}} )
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
@@ -96,7 +96,7 @@
 
 (defn retract-in! [adi data path retracts opts]
   (assert (even? (count path)) "The path must have a even number of items.")
-  (let [adi (prepare/prepare adi opts)
+  (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:raw false :return-ids true}} )
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))

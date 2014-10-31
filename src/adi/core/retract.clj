@@ -77,7 +77,7 @@
     (mapcat #(make-entry-recs-single % path retract) ets)))
 
 (defn retract! [adi data retracts opts]
-  (let [adi (prepare/prepare adi opts)
+  (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:raw false :return-ids true}})
         ets (map #(datomic/entity (:db adi) %) ids)
         data (mapcat #(make-entry-recs ets % adi) retracts)

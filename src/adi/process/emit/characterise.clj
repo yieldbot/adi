@@ -15,6 +15,7 @@
                     (symbol? id) (iid id)
 
                     :else id)]
+      (swap! (:tempids adi) conj nid)
       (f (assoc-in pdata [:# :id] nid) fns adi))))
 
 (defn wrap-gen-sym [f]

@@ -100,7 +100,8 @@ model. This is actually much like the Bookstore example with a couple more field
                                                      :accelerated false
                                                      :students #{{:name  "Anna"  ;; There's also Anna in the class
                                                                   :siblings 1
-                                                                  :classes #{[[:ART]]}}
+                                                                  :classes #{[[:ART]]
+                                                                             [[:SPORTS]]}}
                                                                  {:name    "Charlie"
                                                                   :siblings 3
                                                                   :classes  #{[[:ART]]}}
@@ -220,22 +221,23 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "So very complex queries can be built up"
 
-  (adi/select ds {:student {:classes/teacher {:name '(?fulltext "Anderson")}
-                            :siblings '(> 1)}})
-  => #{{:student {:name "Bobby", :siblings 2}}
+  (adi/select ds {:student {:classes/teacher {:name '(?fulltext "Blair")}
+                            :siblings '(> 2)}})
+  => #{{:student {:name "Charlie", :siblings 3}}
        {:student {:name "David", :siblings 5}}}
+
 
   "Lets check out what the generated datalog query is:"
 
   (comment
-    (adi/select ds {:student {:classes/teacher {:name '(?fulltext "Anderson")}
+    (adi/select ds {:student {:classes/teacher {:name '(?fulltext "Blair")}
                               :siblings '(> 1)}} :raw)
     => #{[:find ?self :where
           [?self :student/siblings ?e_28962]
-          [(> ?e_28962 1)]
+          [(> ?e_28962 2)]
           [?self :student/classes ?e28960]
           [?e28960 :class/teacher ?e28961]
-          [(fulltext $ :teacher/name "Anderson")
+          [(fulltext $ :teacher/name "Blair")
            [[?e28961 ?e_28963]]]]})
 
   "As can be seen by this example, the `adi` query is much much more succinct. We can
@@ -243,18 +245,25 @@ model. This is actually much like the Bookstore example with a couple more field
 
   (adi/query ds '[:find ?self :where
                   [?self :student/siblings ?e_28962]
-                  [(> ?e_28962 1)]
+                  [(> ?e_28962 2)]
                   [?self :student/classes ?e28960]
                   [?e28960 :class/teacher ?e28961]
-                  [(fulltext $ :teacher/name "Anderson")
+                  [(fulltext $ :teacher/name "Blair")
                    [[?e28961 ?e_28963]]]]
              [])
-  => #{{:student {:name "Bobby", :siblings 2}}
+  => #{{:student {:name "Charlie", :siblings 3}}
        {:student {:name "David", :siblings 5}}}
 
   "So which one will you prefer to be using?"
 
   [[:section {:title "Expressivity"}]]
+
+  "Find all classes that are taught by Mr Anderson:"
+  (adi/select ds {:class/teacher {:name "Mr. Anderson"}})
+  => #{{:class {:type :english, :name "English A", :accelerated true}}
+       {:class {:type :english, :name "English B", :accelerated false}}
+       {:class {:type :maths, :name "Maths", :accelerated true}}}
+
 
   "Find the teacher that teaches a student called `Harry` with a pet bird"
   (->> (adi/select ds {:teacher {:teaches {:students/name "Harry"}
@@ -262,11 +271,11 @@ model. This is actually much like the Bookstore example with a couple more field
        (mapv #(-> % :teacher :name)))
   => ["Mr. Blair"]
 
-  "Find all students taught by `Mr. Anderson`:"
+  "Find all students taught by `Mr. Blair`:"
   (->>
-   (adi/select ds {:student/classes {:teacher/name "Mr. Anderson"}})
+   (adi/select ds {:student/classes {:teacher/name "Mr. Blair"}})
    (mapv #(-> % :student :name)))
-  => ["Bobby" "Francis" "David" "Erin" "Kelly"]
+  => ["Charlie" "Anna" "David" "Harry" "Erin" "Kelly"]
 
   "Find all the students that have class with teachers with a pet fish"
   (->>
@@ -281,12 +290,6 @@ model. This is actually much like the Bookstore example with a couple more field
                    {:teaches/students
                     {:classes/teacher {:name "Mr. Carpenter"}}}})
    (mapv #(-> % :class :name)))
-  => ["Sports"]
+  => ["Science" "English B" "English A" "Art" "Sports" "Maths"]
 
   "Note that the search path `:class/teacher/teaches/students/classes/teacher/name` will also work.")
-  
-(future-fact
-  (adi/select ds {:class/teacher {:name "Mr. Anderson"}})
-  => #{{:class {:type :english, :name "English A", :accelerated true}}
-       {:class {:type :english, :name "English B", :accelerated false}}
-       {:class {:type :maths, :name "Maths", :accelerated true}}})

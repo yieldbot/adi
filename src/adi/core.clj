@@ -25,8 +25,6 @@
     :skip-typecheck
     :first
     :ids
-    :return-ids
-    :return-entities
     :generate-ids
     :generate-syms
     :raw

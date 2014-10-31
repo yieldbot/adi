@@ -20,7 +20,7 @@
              (set (map ret-fn res)))))))
 
 (defn query [adi data qargs opts]
-  (let [adi (prepare/prepare adi opts)
+  (let [adi (prepare/prepare adi opts data)
        return  (cond (-> adi :options :return-datomic) identity
                      (-> adi :options :return-ids) first
                      (-> adi :options :return-entities)

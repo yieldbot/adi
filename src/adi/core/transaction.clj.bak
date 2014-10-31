@@ -1,0 +1,182 @@
+(ns adi.core.transaction
+  (:require [hara.common.checks :refer [hash-map? long?]]
+            [hara.data.nested :refer [merge-nil-nested]]
+            [adi.data
+             [common :refer [iid-seed]]
+             [checks :refer [db-id?]]]
+            [adi.core
+             [prepare :as prepare]
+             [select :as select]
+             [model :as model]
+             [link :as link]
+             [depack :as depack]]
+            [adi.process
+             [normalise :as normalise]
+             [pack :as pack]
+             [unpack :as unpack]
+             [emit :as emit]]
+            [ribol.core :refer [raise]]
+            [datomic.api :as datomic]
+            [clojure.walk :as walk]))
+
+(defn gen-datoms [adi]
+  (let [data (-> adi :process :input)]
+    (-> adi
+        (assoc :type "datoms")
+        (normalise/normalise)
+        (pack/pack)
+        (emit/emit))))
+
+(defn has-hash? [m]
+  (and (hash-map? m)
+       (:# m)))
+
+(defn replace-hash [m ids]
+  (let [id (-> m :# :id)
+        id-num (cond (symbol? id) (get ids id)
+                     (db-id? id) (get ids (iid-seed id))
+                     :else id)]
+    (-> m
+        (dissoc :#)
+        (assoc-in [:db :id] id-num))))
+
+(defn replace-ids [form ids]
+  (walk/prewalk
+   (fn [form]
+     (cond (has-hash? form) (replace-hash form ids)
+           (db-id? form) (get ids (iid-seed form))
+           :else form))
+   form))
+
+(defn wrap-transaction-return [f & [ids]]
+  (fn [adi]
+    (let [trs  (:transact adi)
+          adi  (f adi)
+          dtms (-> adi :process :emitted)]
+      (cond (-> adi :options :raw)
+            dtms
+
+            (-> adi :options :simulate)
+            (assoc adi :db (:db-after (datomic/with (:db adi) dtms)))
+
+            :else
+            (condp = trs
+              nil      (let [res @(datomic/transact (:connection adi) dtms)
+                             ids (->> (-> adi :tempids deref)
+                                      (map #(vector (iid-seed %)
+                                                    (datomic/resolve-tempid (datomic/db (:connection adi))
+                                                                            (:tempids res)
+                                                                            %)))
+                                      (into {}))]
+
+                         #_(println "\nTEMPIDS" ids
+                                    "\nREVIEWED" (-> adi :process :reviewed)
+                                    "\nREPLACED" (replace-ids (-> adi :process :reviewed) ids))
+                        (depack/depack (replace-ids (-> adi :process :reviewed) ids)
+                                       adi))
+
+              :promise (datomic/transact (:connection adi) dtms)
+              :async   (datomic/transact-async (:connection adi) dtms)
+              :full    (let [res @(datomic/transact (:connection adi) dtms)
+                             ndb (:db-after res)]
+                         (if ids
+                           (select/select adi ids {:db ndb
+                                                   :options {:return-ids false
+                                                             :return-entities false}})
+                           res))
+              :compare (let [res @(datomic/transact (:connection adi) dtms)
+                             ndb (:db-after res)]
+                         (if ids
+                           [(select/select adi ids {:options {:return-ids false
+                                                              :return-entities false}})
+                            (select/select adi ids {:db ndb
+                                                    :options {:return-ids false
+                                                              :return-entities false}})]
+                           res)))))))
+
+(defn wrap-vector-inserts [f]
+  (fn [adi]
+    (let [data (-> adi :process :input)]
+      (if (vector? data)
+        (let [vfn (fn [adi]
+                    (let [processes (->> data
+                                         (map #(f (assoc-in adi [:process :input] %)))
+                                         (map :process))
+                          inputs   (->> processes
+                                        (map #(dissoc % :emitted))
+                                        (apply merge-with
+                                               conj
+                                               {:input []
+                                                :normalised []
+                                                :analysed []
+                                                :reviewed []
+                                                :characterised []}))
+                          emitted  (mapcat :emitted processes)]
+                      (assoc adi :process (assoc inputs :emitted emitted))))]
+          (vfn adi))
+        (f adi)))))
+
+(defn insert! [adi data opts]
+  (let [opts (merge-nil-nested opts {:options {:schema-restrict true
+                                               :schema-required true
+                                               :schema-defaults true}})
+        adi (-> adi
+                (prepare/prepare opts data)
+                (assoc :op :insert))
+        f   (-> gen-datoms
+                (wrap-vector-inserts)
+                (wrap-transaction-return))]
+    (f adi)))
+
+(defn transact! [adi datoms opts]
+  (let [adi (-> adi
+                (prepare/prepare opts datoms)
+                (assoc :op :transact))
+        f (-> identity
+              (wrap-transaction-return))]
+    (f adi)))
+
+(defn delete! [adi data opts]
+  (let [adi (-> adi
+                (prepare/prepare opts data)
+                (assoc :op :delete))
+        ids (select/select adi data {:options {:raw false
+                                               :return-ids true}})
+        f (-> (fn [adi]
+                (map (fn [x] [:db.fn/retractEntity x]) ids))
+              (wrap-transaction-return ids))]
+    (f adi)))
+
+(defn update! [adi data update opts]
+  (let [adi (prepare/prepare adi opts data)
+        ids (select/select adi data {:options {:raw false :return-ids true}})
+        updates (mapv (fn [id] (assoc update :db/id id)) ids)
+        adi (if (-> adi :options :ban-ids)
+              (-> adi
+                  (assoc-in [:options :ban-ids] false)
+                  (assoc-in [:options :ban-body-ids] true))
+              adi)
+        adi (-> adi
+                (assoc :op :modify)
+                (assoc-in [:process :input] updates))
+        f  (-> gen-datoms
+               (wrap-vector-inserts)
+               (wrap-transaction-return ids))]
+    (f adi)))
+
+(defn delete-all! [adi data opts]
+  (let [adi (prepare/prepare adi opts data)
+        ids (select/select adi data {:options {:raw false :return-ids true}})
+        rmodel (if-let [imodel (-> adi :model :allow)]
+                 (model/model-unpack imodel (-> adi :schema :tree))
+                 (raise :missing-allow-model))
+        ents    (map #(datomic/entity (:db adi) %) ids)
+        all-ids (mapcat (fn [ent]
+                          (link/linked-ids ent rmodel (-> adi :schema :flat)))
+                        ents)
+        output  (delete! adi (set all-ids) {:options {:raw true
+                                                      :ban-ids false
+                                                      :ban-top-id false}})
+        f (-> (fn [adi data] output)
+              (wrap-transaction-return ids))]
+    (f adi output)))

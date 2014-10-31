@@ -47,14 +47,13 @@ through an `Inventory`, which keeps how many books there are in a store:"
 
   (def ds (adi/connect! "datomic:mem://adi-example-step-4" schema-4 true true))
 
-
   (adi/insert! ds [{:address {:country "USA"
                               :stores #{{:name "Canyon Books"}
                                         {:name "Capital Books"}}}}
                    {:db/id [[:AUS]]
                     :address {:country "Australia"}}
                    {:store {:address [[:AUS]]
-                            :name "Koala Books"}}])
+           :name "Koala Books"}}])
 
   "We can see our stores from Australia:"
 

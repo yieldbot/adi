@@ -11,8 +11,8 @@
             [ribol.core :refer [raise]]))
 
 (defn wrap-mutual-ref [f]
-  (fn [v [attr] tsch fns]
-    (let [v (f v [attr] tsch fns)
+  (fn [v [attr] nsv tsch fns]
+    (let [v (f v [attr] nsv tsch fns)
           id (:id fns)]
       (if (and (-> attr :ref :mutual)
                (= "datoms" (:type fns)))
@@ -24,48 +24,48 @@
               :else {:# {:id v} (:ident attr) (:id fns)})
         v))))
 
-(defn analyse-attr-single-ref [v [attr] tsch fns]
- (cond (hash-map? v)
-       (if-let [ns (-> attr :ref :ns)]
-         ((:analyse fns) v tsch [ns] tsch fns)
-         ((:analyse fns) v tsch [] tsch fns))
+(defn analyse-attr-single-ref [v [attr] nsv tsch fns]
+  (cond (hash-map? v)
+        (if-let [ns (-> attr :ref :ns)]
+          ((:analyse fns) v tsch [ns] tsch fns)
+          ((:analyse fns) v tsch [] tsch fns))
 
-       (long? v)
-       (cond (:ban-ids fns)
-             (raise [:adi :analyse :id-banned
-                     {:id v :attr attr}]
-                    (str "ANALYSE_ATTR_SINGLE_REF: id " v " is not allowed for refs" ))
+        (long? v)
+        (cond (:ban-ids fns)
+              (raise [:adi :analyse :id-banned
+                      {:id v :attr attr}]
+                     (str "ANALYSE_ATTR_SINGLE_REF: id " v " is not allowed for refs" ))
 
-             (:ban-body-ids fns)
-             (raise [:adi :analyse :body-id-banned
-                     {:id v :attr attr}]
-                    (str "ANALYSE_ATTR_SINGLE_REF: id " v " is not allowed for refs" ))
+              (:ban-body-ids fns)
+              (raise [:adi :analyse :body-id-banned
+                      {:id v :attr attr}]
+                     (str "ANALYSE_ATTR_SINGLE_REF: id " v " is not allowed for refs" ))
 
-             :else v)
+              :else v)
 
-       (db-id? v) v
+        (db-id? v) v
 
-       (= v '_) v
+        (= v '_) v
 
-       (symbol? v)
-       (if (= (:type fns) "datoms")
-         (iid v) v)
+        (symbol? v)
+        (if (= (:type fns) "datoms")
+          (iid v) v)
 
-       :else
-       (raise [:adi :analyse :invalid-input
-               {:data v}]
-              (str "ANALYSE_ATTR_SINGLE_REF: " v " is invalid for refs" ))))
+        :else
+        (raise [:adi :analyse :invalid-input
+                {:data v}]
+               (str "ANALYSE_ATTR_SINGLE_REF: " v " is invalid for refs" ))))
 
 (defn wrap-single-expressions [f]
-  (fn [v [attr] tsch fns]
+  (fn [v [attr] nsv tsch fns]
     (if (and (list? v) (:ban-expressions fns))
       (raise [:adi :analyse :expression-banned
               {:data v :attr attr}]
              (str "WRAP_SINGLE_EXPRESSIONS: " v " is banned because it is an expression.")))
-    (f v [attr] tsch fns)))
+    (f v [attr] nsv tsch fns)))
 
 (defn wrap-attr-restrict [f]
-  (fn [v [attr] tsch fns]
+  (fn [v [attr] nsv tsch fns]
     (if-let [chk (:restrict attr)]
       (let [[msg chk] (if (vector? chk) chk
                           ["" chk])]
@@ -73,11 +73,11 @@
           (raise [:adi :analyse :failed-restriction
                   {:data v :attr attr :message msg}]
                  (str "WRAP_ATTR_RESTRICT: " v " fails restriction: " msg))
-          (f v [attr] tsch fns)))
-      (f v [attr] tsch fns))))
+          (f v [attr] nsv tsch fns)))
+      (f v [attr] nsv tsch fns))))
 
 (defn wrap-attr-type-check [f]
-  (fn [v [attr] tsch fns]
+  (fn [v [attr] nsv tsch fns]
     (let [t (:type attr)
           chk (meta/type-checks t)
           nv  (cond (or (= v '_)
@@ -87,12 +87,12 @@
                     v
                     :else
                     (coerce/coerce v t))]
-      (f nv [attr] tsch fns))))
+      (f nv [attr] nsv tsch fns))))
 
-(defn analyse-attr-single [v [attr] tsch fns]
+(defn analyse-attr-single [v [attr] nsv tsch fns]
  (if-let [t (:type attr)]
    (cond (= t :ref)
-         ((wrap-mutual-ref analyse-attr-single-ref) v [attr] tsch fns)
+         ((wrap-mutual-ref analyse-attr-single-ref) v [attr] nsv tsch fns)
 
          (= t :enum)
          (if-let [ens (-> attr :enum :ns)]
@@ -102,10 +102,10 @@
          :else v)
    (error "ANALYSE-ATTR-SINGLE: Type data of " attr " missing")))
 
-(defn analyse-attr [v [attr] tsch fns]
+(defn analyse-attr [v [attr] nsv tsch fns]
   (if (set? v)
-    (set (map #((:analyse-single fns) % [attr] tsch fns) v))
-    ((:analyse-single fns) v [attr] tsch fns)))
+    (set (map #((:analyse-single fns) % [attr] nsv tsch fns) v))
+    ((:analyse-single fns) v [attr] nsv tsch fns)))
 
 (defn analyse-loop
   ([tdata psch nsv tsch fns]
@@ -120,7 +120,7 @@
                (vector? subsch)
                (recur (next tdata) psch nsv tsch fns
                       (assoc-if output (path/join (conj nsv k))
-                                ((:analyse-attr fns) v subsch tsch fns)))
+                                ((:analyse-attr fns) v subsch nsv tsch fns)))
 
                (nil? subsch)
                (do (if-not (:schema-ignore fns)
@@ -137,12 +137,12 @@
 
 (defn wrap-id [f]
   (fn [tdata sch nsv tsch fns]
-    ;;(println "WRAP_ID:" fns)
-    (let [id (get-in tdata [:db :id])
+    (let [id (or (get-in tdata [:db :id])
+                 (get-in tdata [:+ :db :id]))
           id (if (and (not id) (-> fns :auto-ids false? not))
                (gensym "?e")
                id)
-         _  (when (long? id)
+          _  (when (long? id)
               (if (:ban-ids fns)
                 (raise [:adi :normalise :id-banned
                         {:id id :data tdata :nsv nsv}]
@@ -181,11 +181,12 @@
 
 (defn wrap-plus [f]
   (fn [tdata psch nsv tsch fns]
-   (let [tdata* (dissoc tdata :+)
-         output (f tdata* psch nsv tsch fns)]
-     (if-let [xdata (:+ tdata)]
-       (merge ((:analyse fns) xdata tsch [] tsch fns) output)
-       output))))
+    (let [tdata* (dissoc tdata :+)
+          output (f tdata* psch nsv tsch fns)]
+      (if-let [xdata (:+ tdata)]
+        (let [res (merge ((:analyse fns) xdata tsch [] tsch fns) output)]
+          res)
+        output))))
 
 (defn analyse-nss [output]
  (let [pnss (or (get-in output [:# :nss]) #{})

@@ -40,8 +40,10 @@
                  model)]
     (assoc adi :model model)))
 
-(defn prepare [adi opts]
+(defn prepare [adi opts input]
   (-> adi
       (merge-nested opts)
       (prepare-db)
-      (prepare-model)))
+      (prepare-model)
+      (assoc-in [:process :input] input)
+      (assoc-in [:tempids] (atom #{}))))
