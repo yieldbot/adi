@@ -193,3 +193,18 @@
         (insert! updates (merge-nil-nested
                           opts {:options {:schema-required false
                                           :schema-defaults false}})))))
+
+
+(defn delete-all! [adi data opts]
+  (let [entities (select/select adi data
+                                (merge-nested opts {:options {:raw false}
+                                                    :get :entities}))
+        rmodel (if-let [imodel (-> adi :model :allow)]
+                 (model/model-unpack imodel (-> adi :schema :tree))
+                 (raise :missing-allow-model))
+        all-ids (mapcat (fn [enty]
+                          (link/linked-ids enty rmodel (-> adi :schema :flat)))
+                        entities)]
+    (delete! adi (set all-ids)
+             (merge-nested opts {:options {:ban-ids false
+                                           :ban-top-id false}}))))

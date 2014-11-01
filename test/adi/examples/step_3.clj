@@ -160,13 +160,13 @@ namespace:"
   using copying these `:db/id` keys around. Instead of returning data, we can use the :return-ids option to
   return a set of entity ids associated with the search:"
 
-  (adi/select ds :account :return-ids)
+  (adi/select ds :account :get :ids)
   => #{17592186045421 17592186045423}
 
   "Having this is super nice because we can just use these like pointers. We can add `The Book and the Sword`
   to our datastore and link them to both our user accounts straight away:"
 
-  (let [account-ids (adi/select ds :account :return-ids)]
+  (let [account-ids (adi/select ds :account :get :ids)]
     (adi/insert! ds [{:book {:name "The Book and the Sword"
                              :author "Louis Cha"
                              :accounts account-ids}}]))

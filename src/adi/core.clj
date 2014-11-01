@@ -6,7 +6,6 @@
              [helpers :as helpers]
              [prepare :as prepare]
              ;;[nested :as nested]
-             ;;[query :as query]
              ;;[retract :as retract]
              [select :as select]
              [transaction :as transaction]]))
@@ -62,13 +61,13 @@
 
 (define-database-functions
   [select/select
+   select/query
    transaction/insert!
    transaction/transact!
    transaction/delete!
    transaction/update!
-   ;;transaction/delete-all!
+   transaction/delete-all!
    ;;retract/retract!
-   ;;query/query
    ;;nested/update-in!
    ;;nested/delete-in!
    ;;nested/retract-in!
@@ -83,7 +82,7 @@
     ;;#'retract-in!
     ;;#'update-in!
     ;;#'delete-in!
-    ;;#'delete-all!
+    #'delete-all!
     })
 
 (defn create-data-form [form adi]

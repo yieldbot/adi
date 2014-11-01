@@ -163,3 +163,18 @@
         (assoc-nil :op :select)
         query-fn
         return-fn)))
+
+(defn query [adi data qargs opts]
+  (let [return-fn  (-> (fn [adi]
+                         (assoc-in adi [:result :ids]
+                                   (map first (apply datomic/q data (:db adi) qargs))))
+                       (wrap-return-ids)
+                       (wrap-return-entities)
+                       (wrap-return-data)
+                       (wrap-return-adi)
+                       (wrap-return-first)
+                       (wrap-return-raw))]
+    (-> adi
+        (prepare/prepare opts data)
+        (assoc :op :query)
+        return-fn)))

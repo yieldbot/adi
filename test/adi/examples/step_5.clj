@@ -153,7 +153,7 @@ model. This is actually much like the Bookstore example with a couple more field
   are gettin back:"
 
   (comment
-    (adi/select ds {:student/name "Harry"} :first :return-ids)
+    (adi/select ds {:student/name "Harry"} :first :get :ids)
     => 17592186045426)
 
   "Lets now do a raw datomic query."
@@ -177,7 +177,7 @@ model. This is actually much like the Bookstore example with a couple more field
   (comment
     (adi/query ds '[:find ?x :where
                     [?x :student/name "Harry"]]
-               []  :first :return-ids)
+               []  :first :get :ids)
     => 17592186045426)
 
   "And again, the same query with `Harry` passed in as a parameter:"
@@ -187,7 +187,7 @@ model. This is actually much like the Bookstore example with a couple more field
                     :in $ ?name
                     :where
                     [?x :student/name ?name]]
-               ["Harry"] :first :return-ids)
+               ["Harry"] :first :get :ids)
     => 17592186045426)
 
   "Lets do a `query` for all the students in maths:"
