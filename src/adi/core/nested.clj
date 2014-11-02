@@ -131,7 +131,7 @@
         last-ns (:ns (last svec))
         nretracts (set (map #(add-ns-entry last-ns %) retracts))
 
-        output  #spy/p (mapcat
+        output  (mapcat
                  (fn [id] (retract/retract! (dissoc adi :model)
                                            (ndata-fn id)
                                            nretracts
@@ -140,7 +140,7 @@
                                                       :ban-ids false
                                                       :ban-top-id false}})) ids)
         sids (map second output)
-        transact #spy/p (-> adi
+        transact (-> adi
                      (assoc :transact :datomic)
                      (assoc-in [:process :emitted] output)
                      (transaction/transact-fn))]
