@@ -35,5 +35,5 @@
                                              :account/credits 10}])))
         update-res (adi/update! ds :account/credits {:account/password "pass2"})
         select-res (adi/select ds :account/credits :ids
-                               :return {:account {:credits :unchecked}})]
+                               :pull {:account {:credits :unchecked}})]
     select-res => (set update-res)))

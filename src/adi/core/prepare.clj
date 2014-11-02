@@ -12,20 +12,20 @@
     (assoc adi :db db)))
 
 (defn model-access [model access tsch]
-  (cond (and (:allow model) (:return model))
+  (cond (and (:allow model) (:pull model))
         model
 
-        (and (not (:allow model)) (:return model))
+        (and (not (:allow model)) (:pull model))
         (assoc model :allow (model/model-input access tsch))
 
         :else
         (let [imodel (model/model-input access tsch)
               rmodel (model/model-unpack imodel tsch)]
-          (assoc-nil model :allow imodel :return rmodel))))
+          (assoc-nil model :allow imodel :pull rmodel))))
 
-(defn model-return [model return tsch]
-  (assoc model :return
-         (-> return
+(defn model-pull [model pull tsch]
+  (assoc model :pull
+         (-> pull
              (model/model-input tsch)
              (model/model-unpack tsch))))
 
@@ -35,8 +35,8 @@
         model  (if-let [access (:access adi)]
                  (model-access model access (-> adi :schema :tree))
                  model)
-        model  (if-let [return (:return adi)]
-                 (model-return model return (-> adi :schema :tree))
+        model  (if-let [pull (:pull adi)]
+                 (model-pull model pull (-> adi :schema :tree))
                  model)]
     (assoc adi :model model)))
 

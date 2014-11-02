@@ -39,20 +39,20 @@
       (f (assoc env :db db) data))))
 
 (defn- add-model-access [model access tsch]
-  (cond (and (:allow model) (:return model))
+  (cond (and (:allow model) (:pull model))
         model
 
-        (and (not (:allow model)) (:return model))
+        (and (not (:allow model)) (:pull model))
         (assoc model :allow (am/model-input access tsch))
 
         :else
         (let [imodel (am/model-input access tsch)
               rmodel (am/model-unpack imodel tsch)]
-          (assoc-nil model :allow imodel :return rmodel))))
+          (assoc-nil model :allow imodel :pull rmodel))))
 
-(defn- add-model-return [model return tsch]
-  (assoc model :return
-    (-> return
+(defn- add-model-pull [model pull tsch]
+  (assoc model :pull
+    (-> pull
         (am/model-input tsch)
         (am/model-unpack tsch))))
 
@@ -64,8 +64,8 @@
           model  (if-let [access (:access env)]
                    (add-model-access model access (-> env :schema :tree))
                    model)
-          model  (if-let [return (:return env)]
-                   (add-model-return model return (-> env :schema :tree))
+          model  (if-let [pull (:pull env)]
+                   (add-model-pull model pull (-> env :schema :tree))
                    model)]
       (f (assoc env :model model) data))))
 
@@ -106,7 +106,7 @@
                   (if (get res id) #{id} #{})
                   res)))))))
 
-(defn- wrap-select-return [f ret-fn]
+(defn- wrap-select-pull [f ret-fn]
   (fn [env data]
     (let [res (f env data)]
       (cond (-> env :options :raw)
@@ -152,7 +152,7 @@
                    (wrap-select-data)
                    (wrap-select-keyword)
                    (wrap-select-set)
-                   (wrap-select-return ret-fn))]
+                   (wrap-select-pull ret-fn))]
     (sel-fn (assoc env :op op) data)))
 
 (defn select-ids [env data & args]
@@ -177,7 +177,7 @@
         (characterise* env)
         (datoms* env))))
 
-(defn- wrap-transaction-return [f & [ids]]
+(defn- wrap-transaction-pull [f & [ids]]
   (fn [env data]
     (let [trs  (:transact env)
           dtms (f env data)]
@@ -219,13 +219,13 @@
   (let [env (setup-env env args)
         in-fn (-> gen-datoms
                   (wrap-vector-inserts)
-                  (wrap-transaction-return))]
+                  (wrap-transaction-pull))]
     (in-fn (assoc env :op :insert) data)))
 
 (defn transact! [env data & args]
   (let [env (setup-env env args)
         in-fn (-> (fn [env data] data)
-                  (wrap-transaction-return))]
+                  (wrap-transaction-pull))]
     (in-fn (assoc env :op :transact) data)))
 
 (defn delete! [env data & args]
@@ -234,7 +234,7 @@
                        data :delete identity)
         del-fn (-> (fn [env data]
                      (map (fn [x] [:db.fn/retractEntity x]) ids))
-                   (wrap-transaction-return ids))]
+                   (wrap-transaction-pull ids))]
     (del-fn env data)))
 
 (defn update! [env data update & args]
@@ -249,7 +249,7 @@
               env)
         in-fn (-> gen-datoms
                   (wrap-vector-inserts)
-                  (wrap-transaction-return ids))]
+                  (wrap-transaction-pull ids))]
     (in-fn (assoc env :op :modify) updates)))
 
 
@@ -330,7 +330,7 @@
         ets (map #(d/entity (:db env) %) ids)
         data (mapcat #(make-entry-recs ets % env) retracts)
         rtr-fn (-> (fn [env data] data)
-                   (wrap-transaction-return ids))]
+                   (wrap-transaction-pull ids))]
     (rtr-fn env data)))
 
 ;; - Model Walking
@@ -390,7 +390,7 @@
         _ (println all-ids)
         output  (delete! env (set all-ids) :raw :ban-ids false :ban-top-id false)
         rtr-fn (-> (fn [env data] output)
-                   (wrap-transaction-return ids))]
+                   (wrap-transaction-pull ids))]
     (rtr-fn env output)))
 
 
@@ -454,7 +454,7 @@
                  #(update! (dissoc env :model) (ndata-fn %) update
                            :raw :ban-body-ids false :ban-ids false :ban-top-id false) ids)
         rtr-fn (-> (fn [env data] data)
-                   (wrap-transaction-return ids))]
+                   (wrap-transaction-pull ids))]
     (rtr-fn env output)))
 
 (defn delete-in! [env data path & args]
@@ -469,7 +469,7 @@
                  #(delete! (dissoc env :model) (ndata-fn %)
                            :raw :ban-body-ids false :ban-ids false :ban-top-id false) ids)
         rtr-fn (-> (fn [env data] data)
-                   (wrap-transaction-return ids))]
+                   (wrap-transaction-pull ids))]
     (rtr-fn env output)))
 
 ;; - retract-in!
@@ -495,7 +495,7 @@
                                nretracts
                                :raw :ban-body-ids false :ban-ids false :ban-top-id false)) ids)
         rtr-fn (-> (fn [env data] data)
-                   (wrap-transaction-return ids))]
+                   (wrap-transaction-pull ids))]
     (rtr-fn env output)))
 
 ;; - q and selectq
@@ -505,7 +505,7 @@
     [opt args]
     [[] (cons opt args)]))
 
-(defn- wrap-q-return [f ret-fn]
+(defn- wrap-q-pull [f ret-fn]
   (fn [env data]
     (cond (-> env :options :raw)
           data
@@ -522,7 +522,7 @@
 
 (defn- q-fn [env data params? args ret-fn]
   (let [f (fn [env data] (apply d/q data (:db env) args))]
-    ((wrap-q-return f ret-fn) env data)))
+    ((wrap-q-pull f ret-fn) env data)))
 
 (defn q [env data & [params? & args]]
   (let [[params? args] (optional-vector-arg params? args)

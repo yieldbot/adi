@@ -184,7 +184,7 @@
                      (assoc-in {} nskv x-map))))))
 
 (defn unnest-keys
-  "The reverse of `nest-keys`. Takes `m` and returns a map
+  "The reverse of `nest-keys`. Takes `m` and pulls a map
    with all keys with a `keyword-nsvec` of `nskv` being 'unnested'
 
     (unnest-keys {:hello/a 1

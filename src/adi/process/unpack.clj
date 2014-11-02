@@ -99,7 +99,7 @@
 
 (defn unpack
   ([ent adi]
-     (if-let [fmodel (-> adi :model :return)]
+     (if-let [fmodel (-> adi :model :pull)]
        (unpack ent fmodel (assoc adi :seen-ids (atom #{})))
        (let [ent (d/touch ent)
              ks  (filter (fn [k] (not (#{:enum :alias :ref} (-> adi :schema :flat k first :type))))

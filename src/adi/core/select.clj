@@ -81,14 +81,14 @@
       (pack/pack)
       (emit/emit)))
 
-(defn wrap-return-raw [f]
+(defn wrap-pull-raw [f]
   (fn [adi]
     (if (and (not (-> adi :options :adi))
              (-> adi :options :raw))
       (-> adi :process :emitted)
       (f adi))))
 
-(defn wrap-return-first [f]
+(defn wrap-pull-first [f]
   (fn [adi]
     (let [result (f adi)]
       (if (instance? Adi result)
@@ -97,41 +97,41 @@
           (first result)
           (set result))))))
 
-(defn wrap-return-entities [f]
+(defn wrap-pull-entities [f]
   (fn [adi]
     (let [adi (f adi)]
-      (if (-> adi :get (= :ids))
+      (if (-> adi :return (= :ids))
         adi
         (let [ids (-> adi :result :ids)
               ents (map #(datomic/entity (:db adi) %) ids)]
           (assoc-in adi [:result :entities] ents))))))
 
-(defn wrap-return-data [f]
+(defn wrap-pull-data [f]
   (fn [adi]
     (let [adi (f adi)]
-      (if (-> adi :get (#{:ids :entities}))
+      (if (-> adi :return (#{:ids :entities}))
         adi
         (let [entities (-> adi :result :entities)
               data  (-> (map #(unpack/unpack % adi) entities))]
           (assoc-in adi [:result :data] data))))))
 
-(defn wrap-return-adi [f]
+(defn wrap-pull-adi [f]
   (fn [adi]
     (let [adi (f adi)]
       (if (-> adi :options :adi)
         adi
-        (let [ret (or (:get adi) :data)]
+        (let [ret (or (:return adi) :data)]
           (get-in adi [:result ret]))))))
 
 (defn select-base [adi]
   (let [qry (-> adi :process :emitted)
-        return-fn (fn [qry]
+        pull-fn (fn [qry]
                     (if (list? qry) qry
                         (->> (datomic/q qry (:db adi))
                              (map first))))
         results (if (set? qry)
-                  (mapcat return-fn qry)
-                  (return-fn qry))]
+                  (mapcat pull-fn qry)
+                  (pull-fn qry))]
     (assoc-in adi [:result :ids] results)))
 
 (defn select [adi data opts]
@@ -139,28 +139,28 @@
                       (wrap-query-data)
                       (wrap-query-keyword)
                       (wrap-query-set))
-        return-fn (-> select-base
-                      (wrap-return-entities)
-                      (wrap-return-data)
-                      (wrap-return-adi)
-                      (wrap-return-first)
-                      (wrap-return-raw))]
+        pull-fn (-> select-base
+                      (wrap-pull-entities)
+                      (wrap-pull-data)
+                      (wrap-pull-adi)
+                      (wrap-pull-first)
+                      (wrap-pull-raw))]
     (-> adi
         (prepare/prepare opts data)
         (assoc-nil :op :select)
         query-fn
-        return-fn)))
+        pull-fn)))
 
 (defn query [adi data qargs opts]
-  (let [return-fn  (-> (fn [adi]
+  (let [pull-fn  (-> (fn [adi]
                          (assoc-in adi [:result :ids]
                                    (map first (apply datomic/q data (:db adi) qargs))))
-                       (wrap-return-entities)
-                       (wrap-return-data)
-                       (wrap-return-adi)
-                       (wrap-return-first)
-                       (wrap-return-raw))]
+                       (wrap-pull-entities)
+                       (wrap-pull-data)
+                       (wrap-pull-adi)
+                       (wrap-pull-first)
+                       (wrap-pull-raw))]
     (-> adi
         (prepare/prepare opts data)
         (assoc :op :query)
-        return-fn)))
+        pull-fn)))

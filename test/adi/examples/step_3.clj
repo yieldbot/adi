@@ -63,6 +63,7 @@ namespace:"
                                       {:name "Les Miserables"
                                        :author "Victor Hugo"}}}})
 
+
   [[:subsection {:title "Walking"}]]
 
   "We start off by listing all the accounts:"
@@ -71,30 +72,30 @@ namespace:"
   => #{{:account {:user "adi1" :password "hello1" :credits 0 :type :free}}
        {:account {:user "adi2" :password "hello2" :credits 0 :type :free}}}
 
-  "We can use `:return` to specify a model to return."
+  "We can use `:pull` to specify a model to pull."
 
   (adi/select ds :account
-              :return {:account {:books :checked}})
+              :pull {:account {:books :checked}})
   => #{{:account {:credits 0 :type :free :password "hello1" :user "adi1"}}
        {:account {:books #{{:author "Mark Twain" :name "Tom Sawyer"}
                            {:author "Victor Hugo" :name "Les Miserables"}
                            {:author "Alexander Dumas" :name "The Count of Monte Cristo"}}
                   :credits 0 :type :free :password "hello2" :user "adi2"}}}
 
-  "Using :id instead of :checked will return book ids. This is very useful for copying references"
+  "Using :id instead of :checked will pull book ids. This is very useful for copying references"
 
   (adi/select ds :account
-              :return {:account {:books :id}})
+              :pull {:account {:books :id}})
   => #{{:account {:credits 0, :type :free, :password "hello1", :user "adi1"}}
        {:account {:credits 0, :type :free, :password "hello2", :user "adi2"
                   :books #{17592186045425 17592186045426 17592186045424}}}}
 
   [[:subsection {:title "Data Access"}]]
 
-  "We will now use the `:access` option instead of `:return`. Essentially, they do the same thing
-  except tha `:access` limits the data model on the way in and on the way out, whilst `:return` limits
+  "We will now use the `:access` option instead of `:pull`. Essentially, they do the same thing
+  except tha `:access` limits the data model on the way in and on the way out, whilst `:pull` limits
   the data model on the way out only. We can look at a case where both are the same. In the case below, using
-  :access or :return does not matter and will yield the same result:"
+  :access or :pull does not matter and will yield the same result:"
 
   (adi/select ds :account
               :access {:account {:books {:author :unchecked}
@@ -108,11 +109,11 @@ namespace:"
 
   "### Return
 
-   In the case where they differ, this is the result of using the `:return` option:"
+   In the case where they differ, this is the result of using the `:pull` option:"
 
   (adi/select ds {:account {:books/author "Victor Hugo"}}
               :first
-              :return {:account {:books {:author :unchecked}
+              :pull {:account {:books {:author :unchecked}
                                  :credits :unchecked
                                  :type :unchecked}})
   => {:account {:books #{{:name "Tom Sawyer"}
@@ -141,11 +142,11 @@ namespace:"
   "### Combination
 
   To fix this problem limiting searches to the `:account/books` path we can use both `:access`
-  and `:return` models for fine-tuning control over how our data is accessed:"
+  and `:pull` models for fine-tuning control over how our data is accessed:"
   (adi/select ds {:account {:books/author "Victor Hugo"}}
               :first
               :access {:account {:books :checked}}
-              :return {:account {:books {:author :unchecked}
+              :pull {:account {:books {:author :unchecked}
                                  :credits :unchecked
                                  :type :unchecked}})
   => {:account {:books #{{:name "Tom Sawyer"}
@@ -157,16 +158,16 @@ namespace:"
   [[:subsection {:title "Pointers"}]]
 
   "Entity `:db/id` keys are essentially pointers to data. We can add references to other enities just by
-  using copying these `:db/id` keys around. Instead of returning data, we can use the :return-ids option to
-  return a set of entity ids associated with the search:"
+  using copying these `:db/id` keys around. Instead of pulling data, we can use the :pull-ids option to
+  pull a set of entity ids associated with the search:"
 
-  (adi/select ds :account :get :ids)
+  (adi/select ds :account :return :ids)
   => #{17592186045421 17592186045423}
 
   "Having this is super nice because we can just use these like pointers. We can add `The Book and the Sword`
   to our datastore and link them to both our user accounts straight away:"
 
-  (let [account-ids (adi/select ds :account :get :ids)]
+  (let [account-ids (adi/select ds :account :return :ids)]
     (adi/insert! ds [{:book {:name "The Book and the Sword"
                              :author "Louis Cha"
                              :accounts account-ids}}]))
@@ -192,7 +193,7 @@ namespace:"
                                       {:user "adi5" :password "hello5" :credits 500}}}})
 
   (adi/select ds {:account {:books/author "Roald Dahl"}}
-              :return {:account {:password :unchecked
+              :pull {:account {:password :unchecked
                                  :credits :unchecked
                                  :type :unchecked}})
   => #{{:account {:user "adi3"}}
@@ -205,7 +206,7 @@ namespace:"
   Fulltext searches are avaliable on schema attributes defined with :fulltext true:"
 
   (adi/select ds {:book/author '(?fulltext "Louis")}
-              :return {:book {:accounts :checked}} :first)
+              :pull {:book {:accounts :checked}} :first)
   => {:book {:author "Louis Cha" :name "The Book and the Sword"
              :accounts #{{:credits 0 :type :free :password "hello2" :user "adi2"}
                          {:credits 0 :type :free :password "hello1" :user "adi1"}}}}

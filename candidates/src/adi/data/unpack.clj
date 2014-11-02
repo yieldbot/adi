@@ -70,7 +70,7 @@
 
 (defn unpack
   ([ent env]
-     (if-let [fmodel (-> env :model :return)]
+     (if-let [fmodel (-> env :model :pull)]
        (unpack ent fmodel (assoc env :seen-ids (atom #{})))
        (let [ent (d/touch ent)
              ks  (filter (fn [k] (not= :ref (-> env :schema :flat k first :type)))

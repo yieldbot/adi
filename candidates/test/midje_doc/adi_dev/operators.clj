@@ -150,11 +150,11 @@
 
 [[:section {:title ":access"}]]
 
-"This is a model that can be used to specify input and return conditions"
+"This is a model that can be used to specify input and pull conditions"
 
 [[:section {:title ":transact"}]]
 
-"This conveys how results should be returned. The default is :async"
+"This conveys how results should be pulled. The default is :async"
 
 [[:chapter {:title "Models"}]]
 
@@ -228,8 +228,8 @@
 
 
 [[:section {:title "Unpack"}]]
-[[:subsection {:title ":return"}]]
-"This specifies which data is to be returned on the output model."
+[[:subsection {:title ":pull"}]]
+"This specifies which data is to be pulled on the output model."
 
 [[:subsection {:title ":censor"}]]
 "NOT IMPLEMENTED"

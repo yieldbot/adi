@@ -80,10 +80,10 @@ advantage of this correspondence to give allow users more semantic freedom of ho
   (adi/select ds {:account/credits 1000} :first)
   => {:account {:user "adi3", :password "hello3", :credits 1000, :type :free}}
 
-  "Adding a `:return` model will filter out selection options:"
+  "Adding a `:pull` model will filter out selection options:"
 
   (adi/select ds {:account/type :free} :first
-              :return {:account {:credits :unchecked
+              :pull {:account {:credits :unchecked
                                  :type :unchecked}})
   => {:account {:user "adi3", :password "hello3"}}
 

@@ -140,7 +140,7 @@
   (-> transact-base
       (wrap-transact-options)
       (wrap-transact-results)
-      (select/wrap-return-raw)))
+      (select/wrap-pull-raw)))
 
 (defn transact! [adi datoms opts]
   (-> adi
@@ -184,11 +184,11 @@
   (let [ids (select/select adi data
                            (merge-nested opts {:options {:first false
                                                          :raw false}
-                                               :get :ids}))
+                                               :return :ids}))
         transact-fn   (-> transact-base
                           (wrap-transact-options)
                           (wrap-delete-results)
-                          (select/wrap-return-raw))
+                          (select/wrap-pull-raw))
         datoms (map (fn [x] [:db.fn/retractEntity x]) ids)]
     (-> adi
         (prepare/prepare opts datoms)
@@ -201,7 +201,7 @@
   (let [ids (select/select adi data
                            (merge-nested opts {:options {:first false
                                                          :raw false}
-                                               :get :ids}))
+                                               :return :ids}))
         updates (mapv (fn [id] (assoc-in update [:db :id] id)) ids)
         adi (if (-> adi :options :ban-ids)
               (-> adi
@@ -220,8 +220,8 @@
                                 (merge-nested {:options {:first false
                                                          :raw false
                                                          :adi true}
-                                               :get :entities})
-                                (update-in [:model] dissoc :return)))
+                                               :return :entities})
+                                (update-in [:model] dissoc :pull)))
         entities (-> sadi :result :entities)
         ret-model (if-let [imodel (-> sadi :model :allow)]
                  (model/model-unpack imodel (-> sadi :schema :tree))
@@ -233,7 +233,7 @@
         transact-fn   (-> transact-base
                           (wrap-transact-options)
                           (wrap-delete-results)
-                          (select/wrap-return-raw))
+                          (select/wrap-pull-raw))
         datoms (map (fn [x] [:db.fn/retractEntity x]) all-ids)
         result (-> adi
                    (prepare/prepare (merge opts {:transact :datomic}) datoms)

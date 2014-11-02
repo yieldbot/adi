@@ -81,7 +81,7 @@
   => (raises-issue {:adi true :normalise true :not-allowed true})
 
   (select env1 {:account/user '(= "Chris")}
-          :model {:return {:account/user :checked}})
+          :model {:pull {:account/user :checked}})
 
   (select env1 {:account {:user [["(= \"Chris\")"]]}}
           :access {:account {:orders :checked}})

@@ -54,6 +54,7 @@
   (adi/insert! ds [{:account {:user "billy"    :password "pass1"}}
                    {:account {:user "carl"     :password "pass1"}}])
 
+
   [[:subsection {:title "Reading"}]]
 
   "Now that there is data, we can then do a search for the record using `select`."
@@ -62,7 +63,7 @@
   => #{{:account {:user "billy", :password "pass1", :credits 0}}
        {:account {:user "carl", :password "pass1", :credits 0}}}
 
-  "We can use the `:first` option to return the first entry of the set. This is useful when you know
+  "We can use the `:first` option to pull the first entry of the set. This is useful when you know
   that there is only one result from the query. We can also use the `:ids` option to add the entity `:db/id`
   field onto the data:"
 

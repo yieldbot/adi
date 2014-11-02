@@ -57,7 +57,7 @@
   (assert (even? (count path)) "The path must have a even number of items.")
   (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:raw false}
-                                     :get :ids})
+                                     :return :ids})
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)
@@ -88,7 +88,7 @@
   (assert (even? (count path)) "The path must have a even number of items.")
   (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:raw false}
-                                     :get :ids} )
+                                     :return :ids} )
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)
@@ -124,7 +124,7 @@
   (let [adi (prepare/prepare adi opts data)
         ids (select/select adi data {:options {:first false
                                                :raw false}
-                                     :get :ids})
+                                     :return :ids})
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)

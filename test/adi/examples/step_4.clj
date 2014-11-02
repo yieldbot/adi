@@ -84,7 +84,7 @@ through an `Inventory`, which keeps how many books there are in a store:"
                                              :author "Victor Hugo"}}}})
 
   "Query for the inventory containing a book in our network starting with `\"Les\"`. Notice the
-  use of the `:first` keyword, this will return a single result as opposed to a set of results:"
+  use of the `:first` keyword, this will pull a single result as opposed to a set of results:"
 
   (adi/select ds {:inventory {:book/name '(?fulltext "Les")}} :first)
   => {:inventory {:count 3, :cover :soft}}
@@ -102,9 +102,9 @@ through an `Inventory`, which keeps how many books there are in a store:"
                               :store/name "Koala Books"}} :first)
   => {:inventory {:count 4, :cover :hard}}
 
-  "We can also return all the books in the network, along with their inventories and stores.
+  "We can also pull all the books in the network, along with their inventories and stores.
   This is done by providing an `:access <MODEL>` pair of args. In this case, we specify that
-  linked refs in `:inventories` and `:stores` are also returned:"
+  linked refs in `:inventories` and `:stores` are also pulled:"
 
   (adi/select ds :book :access {:book {:inventories {:store :checked}}})
   => #{{:book {:author "Mark Twain" :name "Tom Sawyer"

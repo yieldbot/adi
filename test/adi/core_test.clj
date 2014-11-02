@@ -26,9 +26,9 @@
   => #{{:db {:id 17592186045418}, :account {:name "Chris"}}
           {:db {:id 17592186045419}, :account {:name "Bob"}}}
 
-  (select adi :account {:options {:return-ids true}})
+  (select adi :account {:options {:pull-ids true}})
   => #{17592186045418 17592186045419}
 
   (delete! adi #{:account} nil)
-  (select adi :account {:options {:return-ids true}})
+  (select adi :account {:options {:pull-ids true}})
   => #{})
