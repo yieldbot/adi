@@ -21,8 +21,10 @@
 
   :profiles {:dev {:plugins [[lein-midje "3.1.1"]
                              [lein-midje-doc "0.0.24"]]
+                   ;;:injections [(require 'spyscope.core)]
                    :dependencies [[com.datomic/datomic-free "0.9.5052" :exclusions [joda-time]]
                                   [midje "1.6.3"]
+                                  ;;[spyscope "0.1.4"]
                                   [clj-time "0.6.0"]
                                   [me.raynes/fs "1.4.5"]
                                   [cheshire "5.2.0"]]}})

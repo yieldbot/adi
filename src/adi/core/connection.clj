@@ -29,7 +29,7 @@
                      schema
                      (schema/schema schema))
             _      (if install-schema?
-                     (let [dschema #spy/p (-> schema :flat datomic)]
+                     (let [dschema (-> schema :flat datomic)]
                        (datomic/transact conn dschema)))]
         (types/map->Adi {:meta {:uri uri :reset? reset? :install-schema? install-schema?}
                    :connection conn
