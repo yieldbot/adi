@@ -78,8 +78,17 @@
 
 (defn retract! [adi data retracts opts]
   (let [adi (prepare/prepare adi opts data)
-        ids (select/select adi data {:options {:raw false}
+        ids (select/select adi data {:options {:raw false
+                                               :first false}
                                      :get :ids})
         ets (map #(datomic/entity (:db adi) %) ids)
-        data (mapcat #(make-entry-recs ets % adi) retracts)]
-    (println data)))
+        datoms (mapcat #(make-entry-recs ets % adi) retracts)
+        transact-fn   (-> transaction/transact-base
+                          (transaction/wrap-transact-options)
+                          (transaction/wrap-delete-results :db-after)
+                          (select/wrap-return-raw))]
+    (-> adi
+        (prepare/prepare opts datoms)
+        (transaction/prepare-tempids)
+        (assoc :op :retract)
+        transact-fn)))

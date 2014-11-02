@@ -208,4 +208,17 @@ namespace:"
               :return {:book {:accounts :checked}} :first)
   => {:book {:author "Louis Cha" :name "The Book and the Sword"
              :accounts #{{:credits 0 :type :free :password "hello2" :user "adi2"}
-                         {:credits 0 :type :free :password "hello1" :user "adi1"}}}})
+                         {:credits 0 :type :free :password "hello1" :user "adi1"}}}}
+
+
+
+  "###Deletion controlled by models:"
+  (adi/delete-all! ds {:book/author "Roald Dahl"}
+                   :access {:book {:accounts :checked}})
+  (adi/select ds :account)
+  => #{{:account {:user "adi2", :password "hello2", :credits 0, :type :free}}
+       {:account {:user "adi1", :password "hello1", :credits 0, :type :free}}}
+
+
+  ;;(adi/update-in)
+  )

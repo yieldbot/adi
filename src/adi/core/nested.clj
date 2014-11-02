@@ -4,7 +4,7 @@
             [clojure.walk :as walk]
             [adi.core
              [prepare :as prepare]
-             ;;[retract :as retract]
+             [retract :as retract]
              [select :as select]
              [transaction :as transaction]]
             [ribol.core :refer [raise]]))
@@ -56,7 +56,8 @@
 (defn update-in! [adi data path update opts]
   (assert (even? (count path)) "The path must have a even number of items.")
   (let [adi (prepare/prepare adi opts data)
-        ids (select/select adi data {:options {:raw false :return-ids true}} )
+        ids (select/select adi data {:options {:raw false}
+                                     :get :ids})
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)
@@ -68,14 +69,26 @@
                                                   :ban-body-ids false
                                                   :ban-ids false
                                                   :ban-top-id false}}) ids)
-        f (-> identity
-              (transaction/wrap-transaction-return))]
-    (f (assoc-in adi [:process :emitted] output))))
+        sids (map :db/id output)
+        transact (-> adi
+                     (assoc :transact :datomic)
+                     (assoc-in [:process :emitted] output)
+                     (transaction/transact-fn))]
+    (if (or (-> adi :transact (= :datomic))
+            (-> adi :options :raw))
+      transact
+      (select/select (assoc adi :db (:db-after transact))
+                     (set sids)
+                     (merge opts {:options {:adi false
+                                            :ban-ids false
+                                            :ban-top-id false
+                                            :ids true}})))))
 
 (defn delete-in! [adi data path opts]
   (assert (even? (count path)) "The path must have a even number of items.")
   (let [adi (prepare/prepare adi opts data)
-        ids (select/select adi data {:options {:raw false :return-ids true}} )
+        ids (select/select adi data {:options {:raw false}
+                                     :get :ids} )
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)
@@ -85,32 +98,58 @@
                                                   :ban-body-ids false
                                                   :ban-ids false
                                                   :ban-top-id false}}) ids)
-        f     (-> (fn [adi data] data)
-                  (transaction/wrap-transaction-return ids))]
-    (f adi output)))
+        sids (map second output)
+        transact (-> adi
+                     (assoc :transact :datomic)
+                     (assoc-in [:process :emitted] output)
+                     (transaction/transact-fn))]
+    (if (or (-> adi :transact (= :datomic))
+            (-> adi :options :raw))
+      transact
+      (select/select (assoc adi :db (:db-before transact))
+                     (set sids)
+                     (merge opts {:options {:adi false
+                                            :ban-ids false
+                                            :ban-top-id false
+                                            :ids true}})))))
+
 
 (defn add-ns-entry [ns entry]
   (cond (vector? entry)
         [(path/join [ns (first entry)]) (second entry)]
         (keyword? entry) (path/join [ns entry])))
 
-#_(defn retract-in! [adi data path retracts opts]
+(defn retract-in! [adi data path retracts opts]
   (assert (even? (count path)) "The path must have a even number of items.")
   (let [adi (prepare/prepare adi opts data)
-        ids (select/select adi data {:options {:raw false :return-ids true}} )
+        ids (select/select adi data {:options {:first false
+                                               :raw false}
+                                     :get :ids})
         spath (partition 2 path)
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)
         last-ns (:ns (last svec))
         nretracts (set (map #(add-ns-entry last-ns %) retracts))
-        output  (mapcat
+
+        output  #spy/p (mapcat
                  (fn [id] (retract/retract! (dissoc adi :model)
                                            (ndata-fn id)
                                            nretracts
                                            {:options {:raw true
-                                                  :ban-body-ids false
-                                                  :ban-ids false
-                                                  :ban-top-id false}})) ids)
-        f (-> (fn [adi data] data)
-              (transaction/wrap-transaction-return ids))]
-    (f adi output)))
+                                                      :ban-body-ids false
+                                                      :ban-ids false
+                                                      :ban-top-id false}})) ids)
+        sids (map second output)
+        transact #spy/p (-> adi
+                     (assoc :transact :datomic)
+                     (assoc-in [:process :emitted] output)
+                     (transaction/transact-fn))]
+    (if (or (-> adi :options :raw)
+            (-> adi :transact (= :datomic)))
+      transact
+      (select/select (assoc adi :db (:db-after transact))
+                     (set sids)
+                     (merge opts {:options {:adi false
+                                            :ban-ids false
+                                            :ban-top-id false
+                                            :ids true}})))))

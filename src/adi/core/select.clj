@@ -83,7 +83,8 @@
 
 (defn wrap-return-raw [f]
   (fn [adi]
-    (if (-> adi :options :raw)
+    (if (and (not (-> adi :options :adi))
+             (-> adi :options :raw))
       (-> adi :process :emitted)
       (f adi))))
 
@@ -96,44 +97,31 @@
           (first result)
           (set result))))))
 
-(defn wrap-return-ids [f]
+(defn wrap-return-entities [f]
   (fn [adi]
     (let [adi (f adi)]
       (if (-> adi :get (= :ids))
-        (-> adi :result :ids)
-        adi))))
-
-(defn wrap-return-entities [f]
-  (fn [adi]
-    (let [result (f adi)]
-      (if (instance? Adi result)
-        (let [ids (-> result :result :ids)
+        adi
+        (let [ids (-> adi :result :ids)
               ents (map #(datomic/entity (:db adi) %) ids)]
-          (if (-> result :get (= :entities))
-            ents
-            (assoc-in result [:result :entities] ents)))
-        result))))
+          (assoc-in adi [:result :entities] ents))))))
 
 (defn wrap-return-data [f]
   (fn [adi]
-    (let [result (f adi)]
-      (if (instance? Adi result)
-        (let [entities (-> result :result :entities)
+    (let [adi (f adi)]
+      (if (-> adi :get (#{:ids :entities}))
+        adi
+        (let [entities (-> adi :result :entities)
               data  (-> (map #(unpack/unpack % adi) entities))]
-          (if (-> result :get (#(or (nil? %)
-                                    (= :data %))))
-            data
-            (assoc-in result [:result :data] data)))
-        result))))
+          (assoc-in adi [:result :data] data))))))
 
 (defn wrap-return-adi [f]
   (fn [adi]
-    (let [result (f adi)]
-      (if (instance? Adi result)
-        (if (-> result :get (= :all))
-          result
-          (error "Options for get are #{:data(default), :ids, :entities, :all}, not " (:get result)))
-        result))))
+    (let [adi (f adi)]
+      (if (-> adi :options :adi)
+        adi
+        (let [ret (or (:get adi) :data)]
+          (get-in adi [:result ret]))))))
 
 (defn select-base [adi]
   (let [qry (-> adi :process :emitted)
@@ -152,7 +140,6 @@
                       (wrap-query-keyword)
                       (wrap-query-set))
         return-fn (-> select-base
-                      (wrap-return-ids)
                       (wrap-return-entities)
                       (wrap-return-data)
                       (wrap-return-adi)
@@ -168,7 +155,6 @@
   (let [return-fn  (-> (fn [adi]
                          (assoc-in adi [:result :ids]
                                    (map first (apply datomic/q data (:db adi) qargs))))
-                       (wrap-return-ids)
                        (wrap-return-entities)
                        (wrap-return-data)
                        (wrap-return-adi)

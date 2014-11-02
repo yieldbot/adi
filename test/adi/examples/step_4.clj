@@ -121,102 +121,31 @@ through an `Inventory`, which keeps how many books there are in a store:"
 
   "Lets test out some other functions, starting with `retract!`. Retract takes a set of
    keys to remove from an entity:"
+
   (adi/retract! ds {:inventory {:book/name "Tom Sawyer"
                                 :store/name "Koala Books"}}
                 #{:inventory/cover})
+  (comment
+    (adi/retract! ds {:inventory/book '_}
+                  #{:inventory/book/name} :raw)
+
+    (adi/retract-in! ds :book
+                     [:book/inventories '_]
+                     #{:count})
+
+    (adi/update-in! ds :book
+                    [:book/inventories '_]
+                    {:count 4})
+
+    (adi/delete-in! ds :book
+                    [:book/inventories '_]
+                    )
+
+    )
+
 
   "The result of the retract is that the cover information is missing when we do a search:"
   (adi/select ds {:inventory {:book/name "Tom Sawyer"
                               :store/name "Koala Books"}} :first)
   => {:inventory {:count 4}}
-
-  "We can update the cover information using `update-in!`:"
-  (adi/update-in! ds {:book/name "Tom Sawyer"}
-                  [:book/inventories {:store/name "Koala Books"}]
-                  {:cover :soft})
-  (adi/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
-  => {:inventory {:count 4, :cover :soft}}
-
-  "Oops. we made a mistake. The cover can also be changed using `update!`
-  using slightly different semantics:"
-  (adi/update! ds {:inventory {:book/name "Tom Sawyer"
-                               :store/name "Koala Books"}}
-               {:inventory/cover :hard})
-  (adi/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
-  => {:inventory {:count 4, :cover :hard}}
-
-  "The choice of using `update!` and  `update-in!` is purely in its communication:
-
-  - `update!`: Find an inventory entity that has `:book/name` of `\"Tom Sawyer\"` and `:store/name` of `\"Koala Books\"` and change the value of `:inventory/cover` to `:soft`.
-  - `update-in!`: Start off by finding a book with `:book/name` of `\"Tom Sawyer\"`. Then follow the entity accessible through `:book/inventories` which must be linked to a store with the name `\"Koala Books\"`. Then make the update of `:cover` to `:hard`."
-
-  "Another way to reach the inventory entity is to start by finding the store, then following the `:store/stock` link. This time, we are changing the `:inventory/count` value to `3`:"
-  (adi/update-in! ds {:store/name "Koala Books"}
-                  [:store/inventories {:book/name "Tom Sawyer"}]
-                  {:count 3})
-  (adi/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
-  => {:inventory {:count 3, :cover :hard}}
-
-  [[:section {:title "Expanding the Business"}]]
-
-  "Lets replicate the stock at `Koala Books` to `Capital Books`. So basically, we are creating inventory
-  records that have a link to the already existing books. It is very simple to do using adi:"
-
-  (let [koala-inventories (adi/select ds {:inventory {:store/name "Koala Books"}}
-                                      :return {:inventory {:book :id}})]
-    (adi/update! ds {:store/name "Capital Books"}
-                 {:store/inventories (set (map :inventory koala-inventories))}))
-
-  "Now, lets look at where we can find `Tom Sawyer` in our stores:"
-
-  (adi/select ds {:book/name "Tom Sawyer"} :return {:book {:inventories {:store :checked}}} :first)
-  => {:book {:author "Mark Twain", :name "Tom Sawyer",
-             :inventories #{{:cover :hard, :count 3, :store {:name "Koala Books"}}
-                            {:cover :hard, :count 3, :store {:name "Capital Books"}}}}}
-
-  "A fire burnt all the copies of the `Count of Monte Cristo` from `Koala Books`. Instead of
-  setting the count to `0`, we can use `delete!` to get rid of the inventory entity entirely"
-
-  (adi/delete! ds {:inventory {:store/name "Koala Books"
-                               :book/name '(?fulltext "Count")}})
-
-  "We see that now there is only one inventory record:"
-
-  (adi/select ds {:book/name '(?fulltext "Count")}
-              :return {:book {:inventories {:store :checked}}} :first)
-  => {:book {:author "Alexander Dumas", :name "The Count of Monte Cristo",
-             :inventories #{{:cover :hard, :count 10, :store {:name "Capital Books"}}}}}
-
-  "The copies of `Tom Sawyer` exceeded expectations and sold out. We will delete the
-  inventory record but this time using `delete-in!`:"
-
-  (adi/delete-in! ds {:store/name "Capital Books"}
-                  [:store/inventories {:book/name "Tom Sawyer"}])
-  (adi/select ds {:book/name "Tom Sawyer"}
-              :return {:book {:inventories {:store :checked}}} :first)
-  => {:book {:author "Mark Twain", :name "Tom Sawyer",
-             :inventories #{{:cover :hard, :count 3, :store {:name "Koala Books"}}}}}
-
-  [[:section {:title "Moving Stock"}]]
-
-  "`Capital Books` ran into financial problems and had to close down. All the stock was
-  transfered to `Canyon Books`. In order to perform the whole lot in one transaction, the
-  macro `sync->` is used:"
-
-  (let [inventory-ids (adi/select ds {:inventory {:store/name "Capital Books"}}
-                                  :return-ids)]
-    (adi/sync-> ds
-     (adi/update! {:store/name "Canyon Books"}
-                  {:store/inventories inventory-ids})
-     (adi/delete! {:store/name "Capital Books"})))
-
-  "Now we can see that `Capital Books` is no more:"
-
-  (adi/select ds :store :return {:store {:inventories {:cover :unchecked
-                                                       :book {:author :unchecked}}}})
-  => #{{:store {:name "Koala Books"
-                :inventories #{{:book {:name "Les Miserables"} :count 3}
-                               {:book {:name "Tom Sawyer"} :count 3}}}}
-       {:store {:name "Canyon Books"
-                :inventories #{{:book {:name "The Count of Monte Cristo"} :count 10}
-                               {:book {:name "Les Miserables"} :count 3}}}}})
+)

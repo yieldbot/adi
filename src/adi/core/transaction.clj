@@ -1,5 +1,7 @@
 (ns adi.core.transaction
-  (:require [hara.common.checks :refer [hash-map? long?]]
+  (:require [hara.common
+             [checks :refer [hash-map? long?]]
+             [error :refer [error]]]
             [hara.data
              [map :refer [assoc-nil]]
              [nested :refer [merge-nil-nested
@@ -75,19 +77,32 @@
                        (-> adi :result :promise)
 
                        :else
-                       (let [result (or (-> adi :result :simulation)
-                                        @(-> adi :result :promise))]
-                         (cond (= :datomic opt-trans) result
+                       (let [transact (or (-> adi :result :simulation)
+                                          @(-> adi :result :promise))]
+                         (cond (= :datomic opt-trans) transact
 
                                (or (nil? opt-trans)
                                    (= :resolve opt-trans))
-                               (resolve-tempids adi result))))]
+                               (resolve-tempids adi transact)
+
+                               :else
+                               (error "WRAP_TRANSACT_OPTIONS: " opt-trans))))]
       (assoc-in adi [:result :transact] result))))
 
 (defn wrap-transact-results [f]
   (fn [adi]
-    (let [adi (f adi)]
-      (-> adi :result :transact))))
+    (let [adi (f adi)
+          opt-trans (-> adi :transact)]
+
+      (cond (-> adi :options :adi)
+            adi
+
+            (or (nil? opt-trans)
+                (= opt-trans :datomic))
+            (get-in adi [:result :transact])
+
+            :else
+            (error "WRAP_TRANSACT_RESULTS: " opt-trans)))))
 
 (defn transact-base [adi]
   (let [opt-trans  (-> adi :transact)
@@ -146,25 +161,29 @@
         datom-fn
         transact-fn)))
 
-(defn wrap-delete-results [f]
-  (fn [adi]
-    (let [adi (f adi)
-          opt-trans (-> adi :transact)
-          result  (-> adi :result :transact)]
-      (if (or (nil? opt-trans)
-              (= :resolve opt-trans))
-        (let [ids (set (map second result))
-              struct  (or (-> adi :result :simulation)
-                          @(-> adi :result :promise))]
-          (select/select (assoc adi :db (:db-before struct))
-                         ids {:options {:ban-ids false
-                                        :ban-top-id false
-                                        :ids true}}))
-        result))))
+(defn wrap-delete-results
+  ([f] (wrap-delete-results f :db-before))
+  ([f db-state]
+     (fn [adi]
+        (let [adi (f adi)
+              opt-trans (-> adi :transact)
+              result  (-> adi :result :transact)]
+          (if (or (nil? opt-trans)
+                  (= :resolve opt-trans))
+            (let [ids (set (map second result))
+                  struct  (or (-> adi :result :simulation)
+                              @(-> adi :result :promise))]
+              (select/select (assoc adi :db (db-state struct))
+                             ids {:options {:adi false
+                                            :ban-ids false
+                                            :ban-top-id false
+                                            :ids true}}))
+            result)))))
 
 (defn delete! [adi data opts]
   (let [ids (select/select adi data
-                           (merge-nested opts {:options {:raw false}
+                           (merge-nested opts {:options {:first false
+                                                         :raw false}
                                                :get :ids}))
         transact-fn   (-> transact-base
                           (wrap-transact-options)
@@ -180,7 +199,8 @@
 
 (defn update! [adi data update opts]
   (let [ids (select/select adi data
-                           (merge-nested opts {:options {:raw false}
+                           (merge-nested opts {:options {:first false
+                                                         :raw false}
                                                :get :ids}))
         updates (mapv (fn [id] (assoc-in update [:db :id] id)) ids)
         adi (if (-> adi :options :ban-ids)
@@ -194,17 +214,44 @@
                           opts {:options {:schema-required false
                                           :schema-defaults false}})))))
 
-
 (defn delete-all! [adi data opts]
-  (let [entities (select/select adi data
-                                (merge-nested opts {:options {:raw false}
-                                                    :get :entities}))
-        rmodel (if-let [imodel (-> adi :model :allow)]
-                 (model/model-unpack imodel (-> adi :schema :tree))
+  (let [sadi (select/select adi data
+                            (-> opts
+                                (merge-nested {:options {:first false
+                                                         :raw false
+                                                         :adi true}
+                                               :get :entities})
+                                (update-in [:model] dissoc :return)))
+        entities (-> sadi :result :entities)
+        ret-model (if-let [imodel (-> sadi :model :allow)]
+                 (model/model-unpack imodel (-> sadi :schema :tree))
                  (raise :missing-allow-model))
-        all-ids (mapcat (fn [enty]
-                          (link/linked-ids enty rmodel (-> adi :schema :flat)))
-                        entities)]
-    (delete! adi (set all-ids)
-             (merge-nested opts {:options {:ban-ids false
-                                           :ban-top-id false}}))))
+        all-ids (mapcat (fn [entity]
+                          (link/linked-ids entity ret-model
+                                           (-> sadi :schema :flat)))
+                        entities)
+        transact-fn   (-> transact-base
+                          (wrap-transact-options)
+                          (wrap-delete-results)
+                          (select/wrap-return-raw))
+        datoms (map (fn [x] [:db.fn/retractEntity x]) all-ids)
+        result (-> adi
+                   (prepare/prepare (merge opts {:transact :datomic}) datoms)
+                   (prepare-tempids)
+                   (assoc :op :delete)
+                   transact-fn)]
+    (let [opt-trans (-> adi :transact)]
+      (cond (or (nil? opt-trans)
+                (= :resolve opt-trans))
+            (select/select (assoc adi :db (:db-before result))
+                           (set (map :db/id entities))
+                           (merge opts {:options {:adi false
+                                                  :ban-ids false
+                                                  :ban-top-id false
+                                                  :ids true}}))
+
+            :else
+            (= :datomic opt-trans) result
+
+            :else ("DELETE-ALL!: Options for :transact are #{:resolve(default) :transact}")
+        result))))

@@ -5,8 +5,8 @@
              [connection :as connection]
              [helpers :as helpers]
              [prepare :as prepare]
-             ;;[nested :as nested]
-             ;;[retract :as retract]
+             [nested :as nested]
+             [retract :as retract]
              [select :as select]
              [transaction :as transaction]]))
 
@@ -65,25 +65,25 @@
    transaction/insert!
    transaction/transact!
    transaction/delete!
-   transaction/update!
    transaction/delete-all!
-   ;;retract/retract!
-   ;;nested/update-in!
-   ;;nested/delete-in!
-   ;;nested/retract-in!
-   ])
+   transaction/update!
+
+   retract/retract!
+   nested/update-in!
+   nested/delete-in!
+   nested/retract-in!])
 
 (def transaction-ops
   #{#'transact!
     #'insert!
     #'delete!
-    #'update!
-    ;;#'retract!
-    ;;#'retract-in!
-    ;;#'update-in!
-    ;;#'delete-in!
     #'delete-all!
-    })
+    #'update!
+
+    #'retract!
+    #'retract-in!
+    #'update-in!
+    #'delete-in!})
 
 (defn create-data-form [form adi]
   (let [[f & args] form]
