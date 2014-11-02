@@ -133,5 +133,5 @@
                            (map #(assoc-in % [0 :type] :ref))
                            (map datomic-attr))
            enum-data  (mapcat datomic-enum enums)]
-       (concat attrs enum-attrs enum-data)))
+       (vec (concat attrs enum-attrs enum-data))))
   ([fschm & more] (datomic (apply merge fschm more))))

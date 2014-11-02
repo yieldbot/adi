@@ -38,5 +38,5 @@
                           [?t :db/ident ?type]
                           [?e :db/cardinality ?c]
                           [?c :db/ident ?cardinality]]
-                        (datomic/db (adi :connection)))]
+                        (datomic/db (:connection adi)))]
     (zipmap (map first data) data)))

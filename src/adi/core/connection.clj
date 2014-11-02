@@ -25,11 +25,11 @@
                           (do (datomic/create-database uri)
                               (datomic/connect uri))
                           (throw e))))
-            schema (if (instance? adi.schema.Schema schema)
+            schema  (if (instance? adi.schema.Schema schema)
                      schema
                      (schema/schema schema))
             _      (if install-schema?
-                     (let [dschema (-> schema :flat datomic)]
+                     (let [dschema #spy/p (-> schema :flat datomic)]
                        (datomic/transact conn dschema)))]
         (types/map->Adi {:meta {:uri uri :reset? reset? :install-schema? install-schema?}
                    :connection conn

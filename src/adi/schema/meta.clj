@@ -34,7 +34,7 @@
                   :default false}
    :fulltext     {:check boolean?
                   :default false}
-   :isComponent  {:check keyword?}
+   :isComponent  {:check boolean?}
    :noHistory    {:check boolean?
                   :default false}})
 
