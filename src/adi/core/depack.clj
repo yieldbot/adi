@@ -14,7 +14,7 @@
 (defn depack-ref
   [data attr adi]
   (let [ns  (-> attr :ref :ns)]
-    (cond (nil? data) (error "CANNOT be NIL")
+    (cond (nil? data) (error "CANNOT be NIL:" attr)
 
           (hash-map? data)
           (unpack/strip-ns (depack data adi) ns)

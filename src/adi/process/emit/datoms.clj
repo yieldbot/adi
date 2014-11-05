@@ -2,6 +2,8 @@
   (:require [adi.data.checks :refer [db-id?]]
             [hara.common.error :refer [error]]))
 
+(def ^:dynamic *nested* nil)
+
 (defn datom-funcs [chd]
   (let [cid (get-in chd [:# :id])
         dbs (for [[k v] (:db-funcs chd)]
@@ -34,8 +36,8 @@
                       (keys (:refs-one chd))
                       (vals (:refs-one chd)))
         rev-link  (if-let [rid (get-in chd [:# :rid])]
-                   [{:db/id (get-in chd [:# :id]) (get-in chd [:# :rkey]) rid}]
-                   [])
+                    [{:db/id (get-in chd [:# :id]) (get-in chd [:# :rkey]) rid}]
+                    [])
         trunk (-> (into {}
                         (map (fn [k rfs]
                                [k (set (mapcat datom-tree rfs))])
@@ -49,12 +51,13 @@
                    (let [trunk    (if-let [id (get-in chd [:# :id])]
                                     (assoc trunk :db/id id) trunk)]
                      [trunk])
-                   [])]
+                   [])
+        revs     (mapcat datom-tree (apply concat (vals (:revs-many chd))))
+        _        (swap! *nested* concat revs)]
     (concat
      tarr
      rev-link
-     (mapcat (fn [[_ _ rest]] rest) ref-ones)
-     (mapcat datom-tree (apply concat (vals (:revs-many chd)))))))
+     (mapcat (fn [[_ _ rest]] rest) ref-ones))))
 
 (defn wrap-check-empty [f]
   (fn [chdata]
@@ -68,10 +71,12 @@
 
 (defn datoms-raw
   [chdata]
-  (concat
-   ((wrap-check-empty datom-tree) chdata)
-   (datom-ids chdata)
-   (datom-funcs chdata)))
+  (binding [*nested* (atom [])]
+    (vec (concat
+          ((wrap-check-empty datom-tree) chdata)
+          @*nested*
+          (datom-ids chdata)
+          (datom-funcs chdata)))))
 
 (defn datoms [adi]
   (let [chdata (-> adi :process :characterised)
