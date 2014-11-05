@@ -16,7 +16,7 @@ All the functionality can be loaded using:"
 
 "### Overview
 
-`adi` is not for the faint of heart. It has been built especially for the creative, crazy and super ambitious. `adi` is a modelling and data-access language for datomic, allowing one to create rich applications through schema driven expression. `adi` especially was designed for modelling complexity - little apps just don't cut it - the bigger, more intertwined the data model becomes, the more `adi` will have its chance to shine.
+`adi` makes creating complex applications easy. Built on top of datomic, `adi` was especially designed to model complexity, relationships and partial data. Having said that, `adi` is for the faint of heart. It has been built especially for the creative, crazy and super ambitious. Small apps with simple data models are very easy to define and explore. But why stop there? The bigger, more intertwined the data model becomes, the more `adi` will have its chance to shine.
 
 So what exactly is `adi`?
 

@@ -10,6 +10,20 @@
              [select :as select]
              [transaction :as transaction]]))
 
+(def reserved
+  #{:options
+    :pull
+    :access
+    :return
+    :transact
+    :at
+    :db
+    :op
+    :model
+    :schema
+    :connection
+    :profiles})
+
 (def options
   #{:ban-expressions
     :ban-ids
@@ -27,7 +41,8 @@
     :simulate
     :generate-ids
     :generate-syms
-    :raw})
+    :raw
+    :adi})
 
 (defn args->opts
   ([args] (args->opts {} args))
@@ -96,5 +111,5 @@
                       [(args->opts args?) trns] [{} (cons args? trns)])
         adisym (gensym)
         forms (filter identity (map #(create-data-form % adisym) trns))]
-    `(let [~adisym  (prepare/prepare ~adi ~opts)]
+    `(let [~adisym  (prepare/prepare ~adi (assoc ~opts :transact :datomic) nil)]
        (transact! ~adisym (concat ~@forms)))))
