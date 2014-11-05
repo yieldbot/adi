@@ -93,7 +93,7 @@
          output))))
 
 (defn normalise [adi]
-  (let [data #spy/p (-> adi :process :input)
+  (let [data (-> adi :process :input)
         ndata (if (-> adi :options :skip-normalise)
                 data
                 (normalise-raw data adi))]

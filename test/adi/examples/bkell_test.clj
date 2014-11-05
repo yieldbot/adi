@@ -10,7 +10,6 @@
   (read-string (slurp "test/data/bkell-schema.edn")))
 
 (def ds (adi/connect! "datomic:mem://adi-examples-bkell" schema-bkell true true))
-
 (adi/insert! ds data-bkell)
 
 
