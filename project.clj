@@ -4,11 +4,11 @@
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [im.chit/hara.common    "2.1.12"]
-                 [im.chit/hara.string    "2.1.12"]
-                 [im.chit/hara.data      "2.1.12"]
-                 [im.chit/hara.function  "2.1.12"]
-                 [im.chit/hara.component "2.1.12"]
+                 [im.chit/hara.common    "2.2.0-SNAPSHOT"]
+                 [im.chit/hara.string    "2.2.0-SNAPSHOT"]
+                 [im.chit/hara.data      "2.2.0-SNAPSHOT"]
+                 [im.chit/hara.function  "2.2.0-SNAPSHOT"]
+                 [im.chit/hara.component "2.2.0-SNAPSHOT"]
                  [im.chit/ribol "0.4.1"]
                  [inflections "0.9.14"]]
 
@@ -19,7 +19,7 @@
                         :author "Chris Zheng"
                         :email  "z@caudate.me"}}}
 
-  :profiles {:dev {:plugins [[lein-midje "3.1.1"]
+  :profiles {:dev {:plugins [[lein-midje "3.1.3"]
                              [lein-midje-doc "0.0.24"]]
                    ;;:injections [(require 'spyscope.core)]
                    :dependencies [[com.datomic/datomic-free "0.9.5173" :exclusions [joda-time]]

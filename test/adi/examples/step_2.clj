@@ -43,7 +43,7 @@ a correspondence between a nested hashmap and a flat hashmap having keys represe
 advantage of this correspondence to give allow users more semantic freedom of how to represent their data:"
 
   (def ds (adi/connect! "datomic:mem://adi-examples-step-2" schema-2 true true))
-
+  
   (adi/insert! ds {:account {:user "adi1"
                              :password "hello1"}
                    :account/type :paid})

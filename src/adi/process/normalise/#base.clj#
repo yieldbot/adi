@@ -118,6 +118,7 @@
   {:added "0.3"}
   ([data adi & [wrappers]]
    (let [tdata (data/treeify-keys-nested data)
+         _     (println "DATA:" tdata)
          tsch (-> adi :schema :tree)
          interim (:model adi)
          fns {:normalise normalise-loop
