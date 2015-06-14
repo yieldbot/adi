@@ -1,4 +1,4 @@
-(defproject im.chit/adi "0.3.1-SNAPSHOT"
+(defproject im.chit/adi "0.3.2-SNAPSHOT"
   :description "adi (a datomic interface)"
   :url "https://www.github.com/zcaudate/adi"
   :license {:name "The MIT License"
