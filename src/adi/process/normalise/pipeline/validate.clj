@@ -1,5 +1,5 @@
 (ns adi.process.normalise.pipeline.validate
-  (:require [ribol.core :refer [raise]]
+  (:require [hara.event :refer [raise]]
             [hara.function.args :refer [op]]))
 
 (defn wrap-single-model-validate

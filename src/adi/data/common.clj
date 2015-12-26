@@ -2,7 +2,7 @@
   (:require [datomic.api :as datomic]
             [clojure.edn :as edn]
             [hara.common.checks :refer [long?]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn iid-value
   [obj]

@@ -1,7 +1,7 @@
 (ns adi.process.normalise.pipeline.expression
   (:require [hara.common.error :refer [error suppress]]
             [hara.common.checks :refer [hash-map?]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn chk-expr-sym [chk-sym v-sym]
   (cond (= chk-sym '_) true

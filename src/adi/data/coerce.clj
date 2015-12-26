@@ -1,6 +1,6 @@
 (ns adi.data.coerce
   (:require [clojure.edn :as edn]
-            [ribol.core :refer [raise]]
+            [hara.event :refer [raise]]
             [hara.common :refer [error long? hash-map?]]
             [hara.data.nested :refer [merge-nested]]))
 

@@ -1,7 +1,7 @@
 (ns adi.process.normalise.pipeline.fill-empty
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.function.args :refer [op]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn process-fill-empty [sfill tdata nsv interim tsch adi]
   (if-let [[k v] (first sfill)]

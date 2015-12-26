@@ -1,5 +1,5 @@
 (ns adi.process.normalise.common.set
-  (:require [ribol.core :refer [raise]]))
+  (:require [hara.event :refer [raise]]))
 
 (defn is-query [adi]
   (= (:type adi) "query"))

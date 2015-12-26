@@ -1,5 +1,5 @@
 (ns adi.process.normalise.common.enum
-  (:require [ribol.core :refer [raise]]
+  (:require [hara.event :refer [raise]]
             [hara.common.error :as error]
             [hara.string.path :as path]))
 

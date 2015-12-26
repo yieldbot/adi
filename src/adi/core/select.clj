@@ -12,7 +12,7 @@
              [emit :as emit]
              [unpack :as unpack]]
             [datomic.api :as datomic]
-            [ribol.core :refer [raise]])
+            [hara.event :refer [raise]])
   (:import adi.core.types.Adi))
 
 (defn wrap-merge-results

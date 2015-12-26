@@ -2,7 +2,7 @@
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.string.path :as path]
             [hara.data.complex :as complex]
-            [ribol.core :refer [raise]]
+            [hara.event :refer [raise]]
             [clojure.walk :as walk]))
 
 (defn find-aliases

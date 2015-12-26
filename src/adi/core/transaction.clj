@@ -20,7 +20,7 @@
              [pack :as pack]
              [unpack :as unpack]
              [emit :as emit]]
-            [ribol.core :refer [raise]]
+            [hara.event :refer [raise]]
             [datomic.api :as datomic]
             [clojure.walk :as walk]))
 

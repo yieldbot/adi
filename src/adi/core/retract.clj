@@ -7,7 +7,7 @@
              [prepare :as prepare]
              [transaction :as transaction]]
             [datomic.api :as datomic]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 
 (defn- walk-path-gather [et attr]

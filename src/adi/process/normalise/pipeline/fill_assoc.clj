@@ -2,7 +2,7 @@
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.data.complex :as complex]
             [hara.function.args :refer [op]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn process-fill-assoc [sfill tdata nsv interim tsch adi]
   (if-let [[k v] (first sfill)]

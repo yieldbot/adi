@@ -1,6 +1,6 @@
 (ns adi.process.normalise.pipeline.require
   (:require [hara.common :refer [hash-map?]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn process-require
   "Used by both wrap-model-pre-require and wrap-model-post-require

@@ -1,7 +1,7 @@
 (ns adi.process.normalise.common.type-check
   (:require [adi.schema.meta :as meta]
             [adi.data.coerce :refer [coerce]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn wrap-single-type-check
   "wraps normalise to type check inputs as well as to coerce incorrect inputs

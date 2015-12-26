@@ -1,6 +1,6 @@
 (ns adi.process.normalise.common.underscore
   (:require [hara.common.checks :refer [hash-map?]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn rep-key
   "finds the :required or :representative key within a schema,

@@ -8,7 +8,7 @@
             [adi.data.common :refer [iid]]
             [adi.data.coerce :as coerce]
             [clojure.set :as set]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn wrap-mutual-ref [f]
   (fn [v [attr] nsv tsch fns]

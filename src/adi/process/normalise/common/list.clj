@@ -1,5 +1,5 @@
 (ns adi.process.normalise.common.list
-  (:require [ribol.core :refer [raise]]))
+  (:require [hara.event :refer [raise]]))
 
 (defn wrap-single-list
   "wraps normalise with support for more complex expressions through use of double vector

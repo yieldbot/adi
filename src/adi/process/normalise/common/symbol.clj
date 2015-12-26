@@ -1,5 +1,5 @@
 (ns adi.process.normalise.common.symbol
-  (:require [ribol.core :refer [raise]]))
+  (:require [hara.event :refer [raise]]))
   
 (defn wrap-single-symbol
   "wraps normalise to work with symbols for queries as well as :ref attributes of datoms

@@ -4,7 +4,7 @@
             [hara.string.path :as path]
             [hara.data.map :refer [assoc-if]]
             [adi.data.checks :refer [db-id?]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (def tree-directives
   #{:pre-require       ;;
@@ -118,6 +118,7 @@
   {:added "0.3"}
   ([data adi & [wrappers]]
    (let [tdata (data/treeify-keys-nested data)
+         _     (println "DATA:" tdata)
          tsch (-> adi :schema :tree)
          interim (:model adi)
          fns {:normalise normalise-loop

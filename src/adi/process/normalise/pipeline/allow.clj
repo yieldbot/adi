@@ -1,7 +1,7 @@
 (ns adi.process.normalise.pipeline.allow
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.string.path :as path]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn wrap-branch-model-allow
   "Works together with wrap-attr-model-allow to control access to data

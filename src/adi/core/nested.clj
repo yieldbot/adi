@@ -7,7 +7,7 @@
              [retract :as retract]
              [select :as select]
              [transaction :as transaction]]
-            [ribol.core :refer [raise]]))
+            [hara.event :refer [raise]]))
 
 (defn search-path-analysis
   ([spath tsch]

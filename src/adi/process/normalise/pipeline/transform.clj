@@ -1,6 +1,6 @@
 (ns adi.process.normalise.pipeline.transform
   (:require [hara.common :refer [hash-map?]]
-            [ribol.core :refer [raise]]
+            [hara.event :refer [raise]]
             [hara.function.args :refer [op]]))
 
 (defn wrap-hash-set [f]

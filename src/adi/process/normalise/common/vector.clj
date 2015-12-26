@@ -1,5 +1,5 @@
 (ns adi.process.normalise.common.vector
-  (:require [ribol.core :refer [raise]]
+  (:require [hara.event :refer [raise]]
             [hara.common.checks :refer [long?]]
             [clojure.edn :as edn]
             [adi.data.checks :refer [vexpr?]]
