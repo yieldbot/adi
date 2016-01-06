@@ -1,4 +1,4 @@
-(ns midje-doc.adi-guide)
+(ns documentation.adi-guide)
 
 [[:chapter {:title "Introduction"}]]
 
@@ -38,9 +38,8 @@ The key to understanding `adi` lies in understanding the power of a `schema`. Th
 
 "We are off and away!"
 
-[[:file {:src "test/adi/examples/step_1.clj"}]]
-[[:file {:src "test/adi/examples/step_2.clj"}]]
-[[:file {:src "test/adi/examples/step_3.clj"}]]
-[[:file {:src "test/adi/examples/step_4.clj"}]]
-[[:file {:src "test/adi/examples/step_5.clj"}]]
-
+;;[[:file {:src "test/adi/examples/step_1.clj"}]]
+;;[[:file {:src "test/adi/examples/step_2.clj"}]]
+;;[[:file {:src "test/adi/examples/step_3.clj"}]]
+;;[[:file {:src "test/adi/examples/step_4.clj"}]]
+;;[[:file {:src "test/adi/examples/step_5.clj"}]]

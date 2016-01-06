@@ -1,0 +1,177 @@
+
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <meta name="google" value="notranslate">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title><@=title></title>
+
+    <@=dependencies>
+
+  <script>
+    window.console = window.console || function(t) {};
+    window.open = function(){ console.log("window.open is disabled."); };
+    window.print   = function(){ console.log("window.print is disabled."); };
+  </script>
+
+  <script>
+  angular.module('app',['ui.bootstrap', 'ngCookies', 'hljs']);
+
+  function rdLoading(){var d={restrict:"AE",template:'<div class="loading"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>'};return d}angular.module("app").directive("rdLoading",rdLoading);
+  function rdWidgetBody(){var d={requires:"^rdWidget",scope:{loading:"@?",classes:"@?"},transclude:!0,template:'<div class="widget-body" ng-class="classes"><rd-loading ng-show="loading"></rd-loading><div ng-hide="loading" class="widget-content" ng-transclude></div></div>',restrict:"E"};return d}angular.module("app").directive("rdWidgetBody",rdWidgetBody);
+  function rdWidgetFooter(){var e={requires:"^rdWidget",transclude:!0,template:'<div class="widget-footer" ng-transclude></div>',restrict:"E"};return e}angular.module("app").directive("rdWidgetFooter",rdWidgetFooter);
+  function rdWidgetTitle(){var e={requires:"^rdWidget",scope:{title:"@",icon:"@"},transclude:!0,template:'<div class="widget-header"><i class="fa" ng-class="icon"></i> {{title}} <div class="pull-right" ng-transclude></div></div>',restrict:"E"};return e}angular.module("app").directive("rdWidgetHeader",rdWidgetTitle);
+  function rdWidget(){var d={transclude:!0,template:'<div class="widget" ng-transclude></div>',restrict:"EA"};return d}angular.module("app").directive("rdWidget",rdWidget);
+  function AlertsCtrl(e){e.alerts=[{type:"success",msg:"Thanks for visiting! Feel free to create pull requests to improve the dashboard!"},{type:"danger",msg:"Found a bug? Create an issue with as many details as you can."}],e.addAlert=function(){e.alerts.push({msg:"Another alert!"})},e.closeAlert=function(t){e.alerts.splice(t,1)}}angular.module("app").controller("AlertsCtrl",["$scope",AlertsCtrl]);
+  function MasterCtrl(t,e){var o=992;t.getWidth=function(){return window.innerWidth},t.$watch(t.getWidth,function(g){t.toggle=g>=o?angular.isDefined(e.get("toggle"))?e.get("toggle")?!0:!1:!0:!1}),t.toggleSidebar=function(){t.toggle=!t.toggle,e.put("toggle",t.toggle)},window.onresize=function(){t.$apply()}}angular.module("app").controller("MasterCtrl",["$scope","$cookieStore",MasterCtrl]);
+
+  </script>
+  </head>
+
+  <body ng-app="app" ng-controller="MasterCtrl" data-spy="scroll" data-target=".scrollspy">
+    <div id="page-wrapper" ng-class="{'open': toggle}" ng-cloak>
+      <!-- Sidebar -->
+      <@=sidebar>
+      <!-- End Sidebar -->
+
+      <div id="content-wrapper">
+        <div class="page-content">
+
+          <div class="container">
+
+<div class="row">
+   <div class="col-xs-10">
+		<rd-widget>
+			<rd-widget-body>
+				<div class="title" style="margin: 0 auto">
+          <img src="img/logo.png" class="img-responsive center-block" style="padding-bottom:20px;height:100px"></div>
+          <div class="text-center"><i><@=description></i></div>
+			</rd-widget-body>
+		</rd-widget>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-xs-10 col-md-5">
+		<rd-widget>
+      <rd-widget-body>
+				<div class="title">Installation</div>
+        <div class="comment">&nbsp;</div>
+				<div class="comment">In your <code>project.clj</code> add the following to include the entire <code>hara</code> library:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs language="clojure">
+[im.chit/hara "<@=version>"]</div>
+        <div class="comment">&nbsp;</div>
+				<div class="comment">Include selected functionality by including the specific package. For example, if the <code>hara.io.watch</code> namespace is required, use the following instead:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs language="clojure">
+[im.chit/hara.io.watch "<@=version>"]</div>
+    <div class="comment">&nbsp;</div>
+			</rd-widget-body>
+		</rd-widget>
+	</div>
+
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Usage</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment">Depending on the functionality that you wish to use, import the require namespace and start coding:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs  no-escape language="clojure">
+(use 'hara.io.watch)
+(-> (watcher ["."] println
+            {:types #{:create :modify}
+             :recursive true
+             :filter  [".clj"]
+             :async true})
+    (start-watcher))</div>
+    <div class="comment">&nbsp;</div>
+    <div class="comment">More information about packages can be found in the api section and the guides.</div>
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+</div>
+
+<div class="row">
+
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Guides</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">Tutorials and comprehensive guides on specific modules with a focus on how the functionality is used within a larger system:</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="hara-component.html">component</a> - constructing composable systems</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="hara-component-ova.html">concurrent.ova</a> - shared mutable state for multi-threaded applications</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="hara-event.html">event</a> - event signalling and conditional restart</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="hara-io-scheduler.html">io.scheduler</a> - easy and intuitive task scheduling</div>
+        <!--div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="#/io-watch">io.watch</a> - file watcher</div-->
+        <!--div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="#/namespace">namespace</a> - utilities for manipulating namespaces</div-->
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="hara-reflect.html">reflect</a> - java reflection made easy</div>
+        <div class="comment">&nbsp;</div>
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Articles</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">Blog posts in relation to the philosophy and ideas behind the library:</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://z.caudate.me/verbs-nouns-and-file-watch-semantics/" target="_blank">30/Oct/2014</a> - Verbs, nouns and file watch semantics</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://z.caudate.me/hara-component-just-a-bit-more-structure/" target="_blank">02/Sep/2014</a> - hara.component - just a bit more structure</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://z.caudate.me/rethinking-clojure-contrib-2/" target="_blank">28/Aug/2014</a> - Rethinking clojure.contrib</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://z.caudate.me/the-abstract-container-pattern/" target="_blank">14/Jun/2014</a> - The abstract container pattern</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://z.caudate.me/you-took-3-months-to-write-a-mutable-array/" target="_blank">12/Nov/2013</a> - You took 3 months to write a mutable array?</div>
+        <div class="comment">&nbsp;</div>
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Resources</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="https://docs.caudate.me/adi" target="_blank">Reference</a> - api reference documentation</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="https://github.com/zcaudate/adi" target="_blank">Source</a> - code is hosted on github</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://www.gitter.im/zcaudate/adi" target="_blank">Support</a> - any questions and feedback</div>
+        <div class="comment">&nbsp;</div>
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</body>
+</html>
