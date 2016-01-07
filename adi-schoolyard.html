@@ -1,0 +1,277 @@
+
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <meta name="google" value="notranslate">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title>the schoolyard</title>
+
+    
+  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/clojure.min.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/magula.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.2/angular.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-cookies.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.min.js"></script>
+  <script type="text/javascript" src="js/angular-highlightjs.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/rdash.min.css">
+  <link rel="stylesheet" type="text/css" href="css/scrollspy.css">
+
+
+  <script>
+    window.console = window.console || function(t) {};
+    window.open = function(){ console.log("window.open is disabled."); };
+    window.print   = function(){ console.log("window.print is disabled."); };
+  </script>
+
+  <script>
+    var app = angular.module('app', ['hljs']);
+  </script>
+  </head>
+
+  <body ng-app="app" data-spy="scroll" data-target=".scrollspy">
+  <!-- Fixed navbar -->
+    <nav class="navbar navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html"><img src="img/small-white.png"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Guides <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="adi-walkthrough.html">walkthrough</a></li>
+                <li><a href="adi-bookstore.html">example - bookstore</a></li>
+                <li><a href="adi-schoolyard.html">example - schoolyard</a></li>
+            </ul>
+            </li>
+            <li>
+              <a href="https://github.com/zcaudate/adi" target="_blank">Github</a></li>
+            <li>
+              <a href="http://gitter.im/zcaudate/adi" target="_blank">Gitter</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+  <div class="container row">
+    <div class="col-md-4 scrollspy pull-right">
+      <ul id="nav" class="nav hidden-xs hidden-sm" data-spy="affix">
+        <li><a href="#data-setup">1  &nbsp;&nbsp; Data Setup</a><ul class="nav"><li><a href="#the-schema">1.1  &nbsp;&nbsp; The Schema</a></li><li><a href="#initial-setup">1.2  &nbsp;&nbsp; Initial Setup</a></li></ul></li><li><a href="#datomic">2  &nbsp;&nbsp; Datomic</a></li><li><a href="#querying">3  &nbsp;&nbsp; Querying</a></li><li><a href="#datalog-generation">4  &nbsp;&nbsp; Datalog Generation</a></li><li><a href="#expressivity">5  &nbsp;&nbsp; Expressivity</a></li>
+      </ul>
+    </div>
+    <div class="col-md-8" id="content">
+      <div class="jumbotron">
+        <div class="container">
+          <h1>the schoolyard</h1>
+          <h4>an example for relational modelling</h4>
+        </div>
+      </div>
+      <section class="chapter" id="data-setup"><h2 class="chapter">1  &nbsp;&nbsp; Data Setup</h2><div class="group"><div class="paragraph"><p>We want to model a simple school, and we have the standard information like classes, teachers students. The schema for our bookstore model can be seen in <code>Figure </code>. It is a rather simplistic model. This is actually much like the Bookstore example with a couple more fields.</p></div></div><section class="section" id="the-schema"><h3 class="section">1.1  &nbsp;&nbsp; The Schema</h3><div class="figure"><a name="schema-5"></a><div class="img"><img src="example5.png" /></div><h4><i>fig.1  &nbsp;-&nbsp; Schema Diagram</i></h4></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-5
+  {:class   {:type    [{:type :keyword}]
+             :name    [{:type :string}]
+             :accelerated [{:type :boolean}]
+             :teacher [{:type :ref                  ;; &lt;- Note that refs allow a reverse
+                        :ref  {:ns   :teacher       ;; look-up to be defined to allow for more
+                               :rval :teaches}}]}   ;; natural expression. In this case,
+   :teacher {:name     [{:type :string              ;; we say that every `class` has a `teacher`
+                         :fulltext true}]
+             :canTeach [{:type :keyword             ;; so the reverse will be defined as a
+                         :cardinality :many}]       ;; a `teacher` `teaches` a class
+             :pets     [{:type :keyword
+                         :cardinality :many}]}
+   :student {:name     [{:type :string}]
+             :siblings [{:type :long}]
+             :classes    [{:type :ref
+                         :ref   {:ns   :class
+                                 :rval :students}   ;; Same with students
+                           :cardinality :many}]}})</div></div></section><section class="section" id="initial-setup"><h3 class="section">1.2  &nbsp;&nbsp; Initial Setup</h3><div class="paragraph"><p>Once again, the adi datastore is created:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-example-step-5&quot; schema-5 true true))</div></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(println ds)
+;; #adi{:connection #connection{1001 #inst &quot;2014-10-29T19:05:09.697-00:00&quot;}
+;;      :schema #schema{:teacher {:pets :keyword&lt;*&gt;
+;;                                :canTeach :keyword&lt;*&gt;
+;;                                :teaches :&amp;class&lt;*&gt;
+;;                                :name :string}
+;;                      :class   {:type :keyword
+;;                                :name :string
+;;                                :teacher :&amp;teacher
+;;                                :students :&amp;student&lt;*&gt;
+;;                                :accelerated :boolean}
+;;                      :student {:classes :&amp;class&lt;*&gt;
+;;                                :name :string
+;;                                :siblings :long}}}</div></div><div class="paragraph"><p>Now here is the fun part. Lets fill in the data. This is one way of filling out the data.   There are many other ways. Note that it is object-like in nature, with links defined through ids.   If it doesn't contain an id, the record is automatically created. The example is slightly contrived mainly   to show-off some different features of <code>adi</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def class-data                      ;;; Lets See....
+  [{:db/id [[:MATHS]]
+    :class {:type :maths             ;;; There's Math. The most important subject
+            :name &quot;Maths&quot;            ;;; We will be giving all the classes ids
+            :accelerated true}}      ;;; for easier reference
+
+   {:db/id [[:SCIENCE]]              ;;; Lets add Science and Art
+    :class {:type :science
+            :name &quot;Science&quot;
+            :accelerated false}}
+
+   {:db/id [[:ART]]
+    :class {:type :art
+            :name &quot;Art&quot;
+            :accelerated false}}
+
+   {:teacher {:name &quot;Mr. Blair&quot;                       ;; Here's Mr Blair
+              :teaches #{[[:ART]]
+                         [[:SCIENCE]]}                ;; He also teaches Science
+              :canTeach #{:maths :science}
+              :pets    #{:fish :bird}}}
+
+   {:teacher {:name &quot;Mr. Carpenter&quot;                   ;; This is Mr Carpenter
+              :canTeach #{:sports :maths}
+              :pets    #{:dog :fish :bird}
+              :teaches #{{:+ {:db/id [[:SPORTS]]}      ;; He teaches sports
+                          :type :sports
+                          :name &quot;Sports&quot;
+                          :accelerated false
+                          :students #{{:name &quot;Jack&quot;   ;; There's Jack
+                                       :siblings 4    ;; Who is also in EnglishB and Maths
+                                       :classes #{{:+ {:db/id [[:ENGLISHB]]}
+                                                   :type :english
+                                                   :name &quot;English B&quot;
+                                                   :accelerated false
+                                                   :students #{{:name  &quot;Anna&quot;  ;; There's also Anna in the class
+                                                                :siblings 1
+                                                                :classes #{[[:ART]]
+                                                                           [[:SPORTS]]}}
+                                                               {:name    &quot;Charlie&quot;
+                                                                :siblings 3
+                                                                :classes  #{[[:ART]]}}
+                                                               {:name    &quot;Francis&quot;
+                                                                :siblings 0
+                                                                :classes #{[[:MATHS]]}}
+                                                               {:name    &quot;Harry&quot;
+                                                                :siblings 2
+                                                                :classes #{[[:SCIENCE]]}}}}}}}}}}}
+   {:db/id [[:ENGLISHA]]       ;; What about English A ?
+    :class {:type :english
+            :name &quot;English A&quot;
+            :accelerated true
+            :teacher {:name &quot;Mr. Anderson&quot;   ;; Mr Anderson is the teacher
+                      :teaches  #{[[:MATHS]]
+                                  [[:ENGLISHB]]}   ;; He also takes Maths
+                      :canTeach :maths
+                      :pets     :dog}
+            :students #{{:name &quot;Bobby&quot;   ;; And the students are listed
+                         :siblings 2
+                         :classes  #{[[:MATHS]]}}
+                        {:name &quot;David&quot;
+                         :siblings 5
+                         :classes #{[[:SCIENCE]]
+                                    [[:MATHS]]}}
+                        {:name &quot;Erin&quot;
+                         :siblings 1
+                         :classes #{[[:ART]]}}
+                        {:name &quot;Kelly&quot;
+                         :siblings 0
+                         :classes #{[[:SCIENCE]]
+                                    [[:MATHS]]}}}}}])</div></div><div class="paragraph"><p>Okay... our data is defined... and...</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds class-data)</div></div><div class="paragraph"><p><strong>BAM!!</strong> We are now ready to do some Analysis</p></div></section></section><section class="chapter" id="datomic"><h2 class="chapter">2  &nbsp;&nbsp; Datomic</h2><div class="group"><div class="paragraph"><p>By now, you should be familiar with this query:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student/name &quot;Harry&quot;})
+=&gt; #{{:student {:name &quot;Harry&quot;, :siblings 2}}}</div></div><div class="paragraph"><p>What we want to explore is how this query relates to the Datomic API. So lets   go under the hood a little bit and check out the :db/id of the entity that we   are gettin back:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student/name &quot;Harry&quot;} :first :return :ids)
+=&gt; 17592186045426</div></div><div class="paragraph"><p>Lets now do a raw datomic query.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(datomic/q '[:find ?x :where
+             [?x :student/name &quot;Harry&quot;]]
+           (datomic/db (:connection ds)))
+
+=&gt; #{[17592186045426]}</div></div><div class="paragraph"><p>As can be seen, the <code>select</code> function is just a more succinct version of <code>q</code> with many added   features.</p></div></div></section><section class="chapter" id="querying"><h2 class="chapter">3  &nbsp;&nbsp; Querying</h2><div class="group"><div class="paragraph"><p>There is a <code>query</code> method that is halfway between <code>select</code> and <code>q</code> in terms and   is convenient for dropping back into datalog queries. We see more examples of the   query for Harry's id:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query ds '[:find ?x :where
+                [?x :student/name &quot;Harry&quot;]]
+           []  :first :return :ids)
+=&gt; 17592186045426</div></div><div class="paragraph"><p>And again, the same query with <code>Harry</code> passed in as a parameter:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query ds '[:find ?x
+                :in $ ?name
+                :where
+                [?x :student/name ?name]]
+           [&quot;Harry&quot;] :first :return :ids)
+=&gt; 17592186045426</div></div><div class="paragraph"><p>Lets do a <code>query</code> for all the students in maths:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt; (adi/query ds
+                '[:find ?x :in $ ?class :where
+                  [?x :student/classes ?c]
+                  [?c :class/type ?class]]
+                [:maths])
+     (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Bobby&quot; &quot;Francis&quot; &quot;David&quot; &quot;Kelly&quot;]</div></div><div class="paragraph"><p>Here is the equivalent result using <code>select</code></p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt; (adi/select ds {:student {:classes/type :maths}})
+     (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Bobby&quot; &quot;Francis&quot; &quot;David&quot; &quot;Kelly&quot;]</div></div></div></section><section class="chapter" id="datalog-generation"><h2 class="chapter">4  &nbsp;&nbsp; Datalog Generation</h2><div class="group"><div class="paragraph"><p>Now the cool thing is that <code>select</code> actually generates a datalog query first and then runs it against datomic. We can access the datalog query via the <code>:raw</code> option:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select  ds {:student {:classes/type :maths}} :raw)
+
+=&gt; #{[:find ?self :where
+      [?self :student/classes ?e25242]
+      [?e25242 :class/type :maths]]}</div></div><div class="paragraph"><p>So very complex queries can be built up</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student {:classes/teacher {:name '(?fulltext &quot;Blair&quot;)}
+                          :siblings '(&gt; 2)}})
+=&gt; #{{:student {:name &quot;Charlie&quot;, :siblings 3}}
+     {:student {:name &quot;David&quot;, :siblings 5}}}</div></div><div class="paragraph"><p>Lets check out what the generated datalog query is:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student {:classes/teacher {:name '(?fulltext &quot;Blair&quot;)}
+                          :siblings '(&gt; 1)}} :raw)
+=&gt; #{[:find ?self :where
+      [?self :student/siblings ?e_28962]
+      [(&gt; ?e_28962 2)]
+      [?self :student/classes ?e28960]
+      [?e28960 :class/teacher ?e28961]
+      [(fulltext $ :teacher/name &quot;Blair&quot;)
+       [[?e28961 ?e_28963]]]]}</div></div><div class="paragraph"><p>As can be seen by this example, the <code>adi</code> query is much much more succinct. We can now take the output and stick it into <code>query</code> to get the same result as before:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query ds '[:find ?self :where
+                [?self :student/siblings ?e_28962]
+                [(&gt; ?e_28962 2)]
+                [?self :student/classes ?e28960]
+                [?e28960 :class/teacher ?e28961]
+                [(fulltext $ :teacher/name &quot;Blair&quot;)
+                 [[?e28961 ?e_28963]]]]
+           [])
+=&gt; #{{:student {:name &quot;Charlie&quot;, :siblings 3}}
+     {:student {:name &quot;David&quot;, :siblings 5}}}</div></div><div class="paragraph"><p>So which one will you prefer to be using?</p></div></div></section><section class="chapter" id="expressivity"><h2 class="chapter">5  &nbsp;&nbsp; Expressivity</h2><div class="group"><div class="paragraph"><p>Find all classes that are taught by Mr Anderson:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:class/teacher {:name &quot;Mr. Anderson&quot;}})
+=&gt; #{{:class {:type :english, :name &quot;English A&quot;, :accelerated true}}
+     {:class {:type :english, :name &quot;English B&quot;, :accelerated false}}
+     {:class {:type :maths, :name &quot;Maths&quot;, :accelerated true}}}</div></div><div class="paragraph"><p>Find the teacher that teaches a student called <code>Harry</code> with a pet bird</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt; (adi/select ds {:teacher {:teaches {:students/name &quot;Harry&quot;}
+                               :pets :bird}})
+     (mapv #(-&gt; % :teacher :name)))
+=&gt; [&quot;Mr. Blair&quot;]</div></div><div class="paragraph"><p>Find all students taught by <code>Mr. Blair</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt;
+ (adi/select ds {:student/classes {:teacher/name &quot;Mr. Blair&quot;}})
+ (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Charlie&quot; &quot;Anna&quot; &quot;David&quot; &quot;Harry&quot; &quot;Erin&quot; &quot;Kelly&quot;]</div></div><div class="paragraph"><p>Find all the students that have class with teachers with a pet fish</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt;
+ (adi/select ds {:student/classes {:teacher/pets :fish}})
+ (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Charlie&quot; &quot;Jack&quot; &quot;Anna&quot; &quot;David&quot; &quot;Harry&quot; &quot;Erin&quot; &quot;Kelly&quot;]</div></div><div class="paragraph"><p>Not that you'd ever want to write a query like this but you can. Find the class with the teacher that teaches a student that takes the class taken by <code>Mr. Carpenter</code>.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt;
+ (adi/select ds {:class/teacher
+                 {:teaches/students
+                  {:classes/teacher {:name &quot;Mr. Carpenter&quot;}}}})
+ (mapv #(-&gt; % :class :name)))
+=&gt; [&quot;Science&quot; &quot;English B&quot; &quot;English A&quot; &quot;Art&quot; &quot;Sports&quot; &quot;Maths&quot;]</div></div><div class="paragraph"><p>Note that the search path <code>:class/teacher/teaches/students/classes/teacher/name</code> will also work.</p></div></div></section>
+    </div>
+</div><!--end of .container-->
+
+  <section class="application">
+    
+  </section>
+</body>
+
+<script>
+  $('#nav').affix({
+    offset: {
+        top: $('#nav').offset().top,
+        bottom: $('footer').outerHeight(true) + $('.application').outerHeight(true) + 40
+    }});
+</script>
+
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</body>
+</html>

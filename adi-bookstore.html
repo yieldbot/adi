@@ -1,0 +1,210 @@
+
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <meta name="google" value="notranslate">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title>the bookstore</title>
+
+    
+  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/clojure.min.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/magula.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.2/angular.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-cookies.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.min.js"></script>
+  <script type="text/javascript" src="js/angular-highlightjs.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/rdash.min.css">
+  <link rel="stylesheet" type="text/css" href="css/scrollspy.css">
+
+
+  <script>
+    window.console = window.console || function(t) {};
+    window.open = function(){ console.log("window.open is disabled."); };
+    window.print   = function(){ console.log("window.print is disabled."); };
+  </script>
+
+  <script>
+    var app = angular.module('app', ['hljs']);
+  </script>
+  </head>
+
+  <body ng-app="app" data-spy="scroll" data-target=".scrollspy">
+  <!-- Fixed navbar -->
+    <nav class="navbar navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html"><img src="img/small-white.png"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Guides <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="adi-walkthrough.html">walkthrough</a></li>
+                <li><a href="adi-bookstore.html">example - bookstore</a></li>
+                <li><a href="adi-schoolyard.html">example - schoolyard</a></li>
+            </ul>
+            </li>
+            <li>
+              <a href="https://github.com/zcaudate/adi" target="_blank">Github</a></li>
+            <li>
+              <a href="http://gitter.im/zcaudate/adi" target="_blank">Gitter</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+  <div class="container row">
+    <div class="col-md-4 scrollspy pull-right">
+      <ul id="nav" class="nav hidden-xs hidden-sm" data-spy="affix">
+        <li><a href="#definition-and-setup">1  &nbsp;&nbsp; Definition and Setup</a></li><li><a href="#updating-data">2  &nbsp;&nbsp; Updating Data</a></li><li><a href="#different-semantics-same-result">3  &nbsp;&nbsp; Different Semantics, Same Result</a></li><li><a href="#expanding-the-business">4  &nbsp;&nbsp; Expanding the Business</a></li><li><a href="#moving-stock">5  &nbsp;&nbsp; Moving Stock</a></li>
+      </ul>
+    </div>
+    <div class="col-md-8" id="content">
+      <div class="jumbotron">
+        <div class="container">
+          <h1>the bookstore</h1>
+          <h4>an example of basic data management</h4>
+        </div>
+      </div>
+      <div class="paragraph"><p>Lets go ahead and model a network of bookstores around the world. We apply the knowledge of <code>:ref</code> and <code>:enum</code> types from previous tutorial to good use:</p></div><section class="chapter" id="definition-and-setup"><h2 class="chapter">1  &nbsp;&nbsp; Definition and Setup</h2><div class="group"><div class="paragraph"><p>The schema for our bookstore model can be seen in <code>Figure 1</code>. It is a rather simplistic model. The two main concepts being a <code>Book</code> and a <code>Store</code>. They are connected together through an <code>Inventory</code>, which keeps how many books there are in a store:</p></div><div class="figure"><a name="schema-4"></a><div class="img"><img src="example4.png" /></div><h4><i>fig.1  &nbsp;-&nbsp; Schema Diagram</i></h4></div><div class="paragraph"><p>The actual schema code is defined as follows:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-4
+ {:book   {:name    [{:required true
+                      :fulltext true}]
+           :author  [{:fulltext true}]}
+
+  :inventory {:count [{:type :long}]
+              :cover [{:type :enum
+                       :enum {:ns :cover.type
+                              :values #{:hard :soft}}}]
+              :book    [{:type :ref
+                         :ref  {:ns :book}}]
+              :store   [{:type :ref
+                         :ref  {:ns :store}}]}
+  :store  {:name    [{:required true
+                      :fulltext true}]
+           :address [{:type :ref
+                      :ref  {:ns :address}}]}
+
+  :address {:country [{:required true}]}})</div></div><div class="paragraph"><p>Once again, the adi datastore is created and the seed stores created</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-example-step-4&quot; schema-4 true true))
+
+(adi/insert! ds [{:address {:country &quot;USA&quot;
+                            :stores #{{:name &quot;Canyon Books&quot;}
+                                      {:name &quot;Capital Books&quot;}}}}
+                 {:db/id [[:AUS]]
+                  :address {:country &quot;Australia&quot;}}
+                 {:store {:address [[:AUS]]
+         :name &quot;Koala Books&quot;}}])</div></div><div class="paragraph"><p>We can see our stores from Australia:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:store {:address/country &quot;Australia&quot;}})
+=&gt; #{{:store {:name &quot;Koala Books&quot;}}}</div></div><div class="paragraph"><p>As well as the USA:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:store {:address/country &quot;USA&quot;}})
+=&gt; #{{:store {:name &quot;Canyon Books&quot;}} {:store {:name &quot;Capital Books&quot;}}}</div></div></div></section><section class="chapter" id="updating-data"><h2 class="chapter">2  &nbsp;&nbsp; Updating Data</h2><div class="group"><div class="paragraph"><p>We can now start adding some books to our Australian store:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! ds {:store {:address/country &quot;Australia&quot;}}
+             {:store/inventories #{{:count 10
+                                    :cover :hard
+                                    :book {:name &quot;The Count of Monte Cristo&quot;
+                                           :author &quot;Alexander Dumas&quot;}}
+                                   {:count 5
+                                    :cover :hard
+                                    :book {:name &quot;Tom Sawyer&quot;
+                                           :author &quot;Mark Twain&quot;}}
+                                   {:count 3
+                                    :cover :soft
+                                    :book {:name &quot;Les Miserables&quot;
+                                           :author &quot;Victor Hugo&quot;}}}})</div></div><div class="paragraph"><p>Query for the inventory containing a book in our network starting with <code>&quot;Les&quot;</code>. Notice the   use of the <code>:first</code> keyword, this will return a single result as opposed to a set of results:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:inventory {:book/name '(?fulltext &quot;Les&quot;)}} :first)
+=&gt; {:inventory {:count 3, :cover :soft}}</div></div><div class="paragraph"><p><code>update-in!</code> is a very useful function as it can be used to set values across references.   In this case, we set the inventory count of <code>&quot;Tom Sawyer&quot;</code> in <code>&quot;Koala Books&quot;</code> to <code>4</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! ds {:store/name &quot;Koala Books&quot;}
+                [:store/inventories {:book/name &quot;Tom Sawyer&quot;}]
+                {:count 4})</div></div><div class="paragraph"><p>We can look at the inventory of a specific book and store by specifying more search keys:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                            :store/name &quot;Koala Books&quot;}} :first)
+=&gt; {:inventory {:count 4, :cover :hard}}</div></div><div class="paragraph"><p>We can also return all the books in the network, along with their inventories and stores.   This is done by providing an <code>:access &lt;MODEL&gt;</code> pair of args. In this case, we specify that   linked refs in <code>:inventories</code> and <code>:stores</code> are also returned:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :book :access {:book {:inventories {:store :checked}}})
+=&gt; #{{:book {:author &quot;Mark Twain&quot; :name &quot;Tom Sawyer&quot;
+             :inventories #{{:store {:name &quot;Koala Books&quot;}
+                             :count 4 :cover :hard}}}}
+     {:book {:author &quot;Victor Hugo&quot; :name &quot;Les Miserables&quot;
+             :inventories #{{:store {:name &quot;Koala Books&quot;}
+                             :count 3  :cover :soft}}}}
+     {:book {:author &quot;Alexander Dumas&quot; :name &quot;The Count of Monte Cristo&quot;
+             :inventories #{{:store {:name &quot;Koala Books&quot;}
+                             :count 10 :cover :hard}}}}}</div></div></div></section><section class="chapter" id="different-semantics-same-result"><h2 class="chapter">3  &nbsp;&nbsp; Different Semantics, Same Result</h2><div class="group"><div class="paragraph"><p>Lets test out some other functions, starting with <code>retract!</code>. Retract takes a set of    keys to remove from an entity:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/retract! ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                              :store/name &quot;Koala Books&quot;}}
+              #{:inventory/cover})</div></div><div class="paragraph"><p>The result of the retract is that the cover information is missing when we do a search:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                            :store/name &quot;Koala Books&quot;}} :first)
+=&gt; {:inventory {:count 4}}</div></div><div class="paragraph"><p>We can update the cover information using <code>update-in!</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! ds {:book/name &quot;Tom Sawyer&quot;}
+                [:book/inventories {:store/name &quot;Koala Books&quot;}]
+                {:cover :soft})
+(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;}} :first)
+=&gt; {:inventory {:count 4, :cover :soft}}</div></div><div class="paragraph"><p>Oops. we made a mistake. The cover can also be changed using <code>update!</code>   using slightly different semantics:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                             :store/name &quot;Koala Books&quot;}}
+             {:inventory/cover :hard})
+(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;}} :first)
+=&gt; {:inventory {:count 4, :cover :hard}}</div></div><div class="paragraph"><p>The choice of using <code>update!</code> and  <code>update-in!</code> is purely in its communication:</p><ul><li><code>update!</code>: Find an inventory entity that has <code>:book/name</code> of <code>&quot;Tom Sawyer&quot;</code> and <code>:store/name</code> of <code>&quot;Koala Books&quot;</code> and change the value of <code>:inventory/cover</code> to <code>:soft</code>.<ul><li><code>update-in!</code>: Start off by finding a book with <code>:book/name</code> of <code>&quot;Tom Sawyer&quot;</code>. Then follow the entity accessible through <code>:book/inventories</code> which must be linked to a store with the name <code>&quot;Koala Books&quot;</code>. Then make the update of <code>:cover</code> to <code>:hard</code>.</li></ul></li></ul></div><div class="paragraph"><p>Another way to reach the inventory entity is to start by finding the store, then following the <code>:store/stock</code> link. This time, we are changing the <code>:inventory/count</code> value to <code>3</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! ds {:store/name &quot;Koala Books&quot;}
+                [:store/inventories {:book/name &quot;Tom Sawyer&quot;}]
+                {:count 3})
+(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;}} :first)
+=&gt; {:inventory {:count 3, :cover :hard}}</div></div></div></section><section class="chapter" id="expanding-the-business"><h2 class="chapter">4  &nbsp;&nbsp; Expanding the Business</h2><div class="group"><div class="paragraph"><p>Lets replicate the stock at <code>Koala Books</code> to <code>Capital Books</code>. So basically, we are creating inventory   records that have a link to the already existing books. It is very simple to do using adi:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(let [koala-inventories (adi/select ds {:inventory {:store/name &quot;Koala Books&quot;}}
+                                    :pull {:inventory {:book :id}})]
+  (adi/update! ds {:store/name &quot;Capital Books&quot;}
+               {:store/inventories (set (map :inventory koala-inventories))}))</div></div><div class="paragraph"><p>Now, lets look at where we can find <code>Tom Sawyer</code> in our stores:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:book/name &quot;Tom Sawyer&quot;} :pull {:book {:inventories {:store :checked}}} :first)
+=&gt; {:book {:author &quot;Mark Twain&quot;, :name &quot;Tom Sawyer&quot;,
+           :inventories #{{:cover :hard, :count 3, :store {:name &quot;Koala Books&quot;}}
+                          {:cover :hard, :count 3, :store {:name &quot;Capital Books&quot;}}}}}</div></div><div class="paragraph"><p>A fire burnt all the copies of the <code>Count of Monte Cristo</code> from <code>Koala Books</code>. Instead of   setting the count to <code>0</code>, we can use <code>delete!</code> to get rid of the inventory entity entirely</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete! ds {:inventory {:store/name &quot;Koala Books&quot;
+                             :book/name '(?fulltext &quot;Count&quot;)}})</div></div><div class="paragraph"><p>We see that now there is only one inventory record:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:book/name '(?fulltext &quot;Count&quot;)}
+            :pull {:book {:inventories {:store :checked}}} :first)
+=&gt; {:book {:author &quot;Alexander Dumas&quot;, :name &quot;The Count of Monte Cristo&quot;,
+           :inventories #{{:cover :hard, :count 10, :store {:name &quot;Capital Books&quot;}}}}}</div></div><div class="paragraph"><p>The copies of <code>Tom Sawyer</code> exceeded expectations and sold out. We will delete the   inventory record but this time using <code>delete-in!</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete-in! ds {:store/name &quot;Capital Books&quot;}
+                [:store/inventories {:book/name &quot;Tom Sawyer&quot;}])
+(adi/select ds {:book/name &quot;Tom Sawyer&quot;}
+            :pull {:book {:inventories {:store :checked}}} :first)
+=&gt; {:book {:author &quot;Mark Twain&quot;, :name &quot;Tom Sawyer&quot;,
+           :inventories #{{:cover :hard, :count 3, :store {:name &quot;Koala Books&quot;}}}}}</div></div></div></section><section class="chapter" id="moving-stock"><h2 class="chapter">5  &nbsp;&nbsp; Moving Stock</h2><div class="group"><div class="paragraph"><p><code>Capital Books</code> ran into financial problems and had to close down. All the stock was   transfered to <code>Canyon Books</code>. In order to perform the whole lot in one transaction, the   macro <code>sync-&gt;</code> is used:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(let [inventory-ids (adi/select ds {:inventory {:store/name &quot;Capital Books&quot;}}
+                                :return :ids)]
+  (adi/sync-&gt; ds
+              (adi/update! {:store/name &quot;Canyon Books&quot;}
+                           {:store/inventories inventory-ids})
+              (adi/delete! {:store/name &quot;Capital Books&quot;})))</div></div><div class="paragraph"><p>Now we can see that <code>Capital Books</code> is no more:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :store :pull {:store {:inventories {:cover :unchecked
+                                                   :book {:author :unchecked}}}})
+=&gt; #{{:store {:name &quot;Koala Books&quot;
+              :inventories #{{:book {:name &quot;Les Miserables&quot;} :count 3}
+                             {:book {:name &quot;Tom Sawyer&quot;} :count 3}}}}
+{:store {:name &quot;Canyon Books&quot;
+         :inventories #{{:book {:name &quot;The Count of Monte Cristo&quot;} :count 10}
+                        {:book {:name &quot;Les Miserables&quot;} :count 3}}}}}</div></div></div></section>
+    </div>
+</div><!--end of .container-->
+
+  <section class="application">
+    
+  </section>
+</body>
+
+<script>
+  $('#nav').affix({
+    offset: {
+        top: $('#nav').offset().top,
+        bottom: $('footer').outerHeight(true) + $('.application').outerHeight(true) + 40
+    }});
+</script>
+
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</body>
+</html>

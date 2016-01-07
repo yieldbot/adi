@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <meta name="google" value="notranslate">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title>walkthrough</title>
+
+    
+  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/clojure.min.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/magula.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.2/angular.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-cookies.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.min.js"></script>
+  <script type="text/javascript" src="js/angular-highlightjs.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/rdash.min.css">
+  <link rel="stylesheet" type="text/css" href="css/scrollspy.css">
+
+
+  <script>
+    window.console = window.console || function(t) {};
+    window.open = function(){ console.log("window.open is disabled."); };
+    window.print   = function(){ console.log("window.print is disabled."); };
+  </script>
+
+  <script>
+    var app = angular.module('app', ['hljs']);
+  </script>
+  </head>
+
+  <body ng-app="app" data-spy="scroll" data-target=".scrollspy">
+  <!-- Fixed navbar -->
+    <nav class="navbar navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html"><img src="img/small-white.png"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Guides <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="adi-walkthrough.html">walkthrough</a></li>
+                <li><a href="adi-bookstore.html">example - bookstore</a></li>
+                <li><a href="adi-schoolyard.html">example - schoolyard</a></li>
+            </ul>
+            </li>
+            <li>
+              <a href="https://github.com/zcaudate/adi" target="_blank">Github</a></li>
+            <li>
+              <a href="http://gitter.im/zcaudate/adi" target="_blank">Gitter</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+  <div class="container row">
+    <div class="col-md-4 scrollspy pull-right">
+      <ul id="nav" class="nav hidden-xs hidden-sm" data-spy="affix">
+        <li><a href="#introduction">1  &nbsp;&nbsp; Introduction</a></li><li><a href="#step-one">2  &nbsp;&nbsp; Step One</a><ul class="nav"><li><a href="#schema">2.1  &nbsp;&nbsp; Schema</a></li><li><a href="#connection">2.2  &nbsp;&nbsp; Connection</a></li><li><a href="#writing">2.3  &nbsp;&nbsp; Writing</a></li><li><a href="#reading">2.4  &nbsp;&nbsp; Reading</a></li><li><a href="#restrictions">2.5  &nbsp;&nbsp; Restrictions</a></li><li><a href="#time-travel">2.6  &nbsp;&nbsp; Time Travel</a></li></ul></li><li><a href="#step-two">3  &nbsp;&nbsp; Step Two</a><ul class="nav"><li><a href="#enums">3.1  &nbsp;&nbsp; Enums</a></li><li><a href="#updating">3.2  &nbsp;&nbsp; Updating</a></li><li><a href="#selection">3.3  &nbsp;&nbsp; Selection</a></li><li><a href="#java">3.4  &nbsp;&nbsp; Java</a></li></ul></li><li><a href="#step-three">4  &nbsp;&nbsp; Step Three</a><ul class="nav"><li><a href="#refs">4.1  &nbsp;&nbsp; Refs</a></li><li><a href="#walking">4.2  &nbsp;&nbsp; Walking</a></li><li><a href="#data-access">4.3  &nbsp;&nbsp; Data Access</a></li><li><a href="#pointers">4.4  &nbsp;&nbsp; Pointers</a></li><li><a href="#playground">4.5  &nbsp;&nbsp; Playground</a></li></ul></li>
+      </ul>
+    </div>
+    <div class="col-md-8" id="content">
+      <div class="jumbotron">
+        <div class="container">
+          <h1>walkthrough</h1>
+          <h4>a whirlwind tour of the library</h4>
+        </div>
+      </div>
+      <section class="chapter" id="introduction"><h2 class="chapter">1  &nbsp;&nbsp; Introduction</h2><div class="group"><div class="paragraph"><p>So open up a repl in a project with <code>adi</code> installed and require load up the library:</p></div></div></section><section class="chapter" id="step-one"><h2 class="chapter">2  &nbsp;&nbsp; Step One</h2><section class="section" id="schema"><h3 class="section">2.1  &nbsp;&nbsp; Schema</h3><div class="paragraph"><p>A simple <code>adi</code> schema is constructed as follows:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-1
+  {:account/user     [{:type :string      ;; (1)
+                       :cardinality :one
+                       :unique :value     ;; (2)
+                       :required true}]   ;; (3)
+   :account/password [{:required true     ;; (1) (3)
+                       :restrict [&quot;password needs an integer to be in the string&quot;
+                                  #(re-find #&quot;&#92;d&quot; %)]}] ;; (4)
+   :account/credits  [{:type :long
+                       :default 0}]})</div></div><div class="paragraph"><p>There are a couple of things to note about this particular schema:</p><ol><li>We specified the <code>:type</code> for <code>:account/user</code> to be <code>:string</code> and <code>:cardinality</code> to be <code>:one</code>. However, because these are default options, we can optionally leave them out for <code>:account/password</code>.<ul><li>We want the value of <code>:account/user</code> to be unique.</li><li>We require that both <code>:account/user</code> and <code>:account/password</code> to be present on insertion.</li><li>We are checking that <code>:account/password</code> contains at least one number</li><li>We set the default amount of <code>:account/credits</code> to be <code>0</code></li></ul></li></ol></div></section><section class="section" id="connection"><h3 class="section">2.2  &nbsp;&nbsp; Connection</h3><div class="paragraph"><p>So having a basic schema, an adi datastore can be constructed. Note that we are connecting   to a standard datomic in memory store url. The philosophy of <code>adi</code> is that it should work   seamlessly with datomic. From experience, <code>adi</code> should provide enough expressiveness to do   about <strong>95%</strong> of all the <code>CRUD</code> in an application. The user can perform more complicated or optimised   queries by dropping back into the <code>datomic</code> api if needed:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-examples-step-1&quot; schema-1 true true))</div></div><div class="paragraph"><p>The last two arguments are flags for <code>reset?</code> and <code>install-schema?</code>. To blow away the old datastare   and construct a brand new one, set both flags as <code>true</code>. If connecting to an already existing datastore   set both flags as <code>false</code> (by default) otherwise all data will be lost.</p></div></section><section class="section" id="writing"><h3 class="section">2.3  &nbsp;&nbsp; Writing</h3><div class="paragraph"><p>Once a datastore has been established, lets add some records. Note that multiple records can   be added by using a vector of multiple records:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:account {:user &quot;angela&quot;   :password &quot;hello1&quot;}})
+
+(adi/insert! ds [{:account {:user &quot;billy&quot;    :password &quot;pass1&quot;}}
+                 {:account {:user &quot;carl&quot;     :password &quot;pass1&quot;}}])</div></div></section><section class="section" id="reading"><h3 class="section">2.4  &nbsp;&nbsp; Reading</h3><div class="paragraph"><p>Now that there is data, we can then do a search for the record using <code>select</code>.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account {:password &quot;pass1&quot;}})
+=&gt; #{{:account {:user &quot;billy&quot;, :password &quot;pass1&quot;, :credits 0}}
+     {:account {:user &quot;carl&quot;, :password &quot;pass1&quot;, :credits 0}}}</div></div><div class="paragraph"><p>We can use the <code>:first</code> option to pull the first entry of the set. This is useful when you know   that there is only one result from the query. We can also use the <code>:ids</code> option to add the entity <code>:db/id</code>   field onto the data:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account {:user &quot;angela&quot;}} :first true :ids true)
+=&gt; {:db {:id 17592186045418}, :account {:user &quot;angela&quot;, :password &quot;hello1&quot;, :credits 0}}</div></div><div class="paragraph"><p>For option keys such as <code>:first</code> and <code>:ids</code>, we can just use the keyword itself, so this invocation works as well</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account {:user &quot;angela&quot;}} :first :ids)
+=&gt; {:db {:id 17592186045418}, :account {:user &quot;angela&quot;, :password &quot;hello1&quot;, :credits 0}}</div></div></section><section class="section" id="restrictions"><h3 class="section">2.5  &nbsp;&nbsp; Restrictions</h3><div class="paragraph"><p>We now learn what we can't do and how the schema helps in keeping our data regular. Lets try to   add in some incomplete data:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:account {:credits 10}})
+=&gt; (throws Exception &quot;The following keys are required: #{:account/password :account/user}&quot;)
+
+(adi/insert! ds {:account {:user &quot;adi&quot;}})
+=&gt; (throws Exception &quot;The following keys are required: #{:account/password}&quot;)</div></div><div class="paragraph"><p>As can be seen by the examples above, because we have set the <code>:required</code> attribute to true,   both <code>:account/password</code> and <code>:account/user</code> are needed before the data is considered valid   input. There is also an additional <code>:restrict</code> attribute for the password field and this takes   care of additional validation on inputs. We see below that the insert fails because the password   has to contain at least one integer:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:account {:user &quot;adi&quot; :password &quot;hello&quot;}})
+=&gt; (raises-issue {:failed-restriction true})</div></div><div class="paragraph"><p>Any data that lies outside of the schema will also cause the insert to fail. This can be disabled   through using access models but for now, we will let the insert fail on insertion of an <code>:account/type</code> field</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:account {:user &quot;adi&quot; :password &quot;hello1&quot; :type :vip}})
+=&gt; (raises-issue {:nsv [:account :type] :no-schema true})</div></div><div class="paragraph"><p>Field uniqueness is something that datomic supports natively. We can trigger a failed   transaction by attempting to insert another user named <code>billy</code> into the system:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! {:account {:user &quot;billy&quot; :password &quot;pass2&quot;}})
+=&gt; throws</div></div></section><section class="section" id="time-travel"><h3 class="section">2.6  &nbsp;&nbsp; Time Travel</h3><div class="paragraph"><p>A native feature of datomic allows users to access the state of the database at any point in time.   This is also supported by <code>adi</code>. We can use <code>transactions</code> to list all the transactions involving   a particular attribute:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/transactions ds :account/user)
+=&gt; [1001 1003]</div></div><div class="paragraph"><p>So we can see that there are two transactions involving the :account/user attribute. Lets narrow in   and find the transaction number involving the user <code>angela</code>. Note that we inserted <code>angela</code> before <code>billy</code>   <code>carl</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/transactions ds :account/user &quot;angela&quot;)
+=&gt; [1001]</div></div><div class="paragraph"><p>We can also see when the transaction has occured. This of course will be different for everyone:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/transaction-time ds 1001)  ;; -&gt; #inst &quot;2014-10-29T00:17:09.961-00:00&quot;
+=&gt; #(instance? java.util.Date %)</div></div><div class="paragraph"><p>We can use the <code>:at</code> option to input either a transaction number or the time. It can be seen that   at 1001, only a single record is in the datastore, whilst at 1003, all three records have be added.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :account :at 1001)
+=&gt; #{{:account {:user &quot;angela&quot;, :password &quot;hello1&quot;, :credits 0}}}
+
+(adi/select ds :account :at 1003)
+=&gt; #{{:account {:user &quot;angela&quot;, :password &quot;hello1&quot;, :credits 0}}
+     {:account {:user &quot;billy&quot;, :password &quot;pass1&quot;, :credits 0}}
+     {:account {:user &quot;carl&quot;, :password &quot;pass1&quot;, :credits 0}}}</div></div><div class="paragraph"><p>There is nicer format for <code>adi</code> such that the schema as well as the connection object is   prettied up to display an abriged schema as well as the time and id of the last transaction.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(println ds)
+
+;; #adi{:connection #connection{1003 #inst &quot;2014-10-29T00:31:28.206-00:00&quot;},
+;;      :schema #schema{:account {:credits :long, :password :string, :user :string}}}</div></div></section></section><section class="chapter" id="step-two"><h2 class="chapter">3  &nbsp;&nbsp; Step Two</h2><section class="section" id="enums"><h3 class="section">3.1  &nbsp;&nbsp; Enums</h3><div class="paragraph"><p>There is an intrinsic concept of enums in datomic, seen in the website's <a href='http://docs.datomic.com/schema.html'>schema documentation</a>. <code>adi</code> just takes this explicitly and incorporates it into the schema. We see that there is a new entry for the schema - the <code>account/type</code> attribute which is of type :enum:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-2
+  {:account {:user     [{:required true
+                         :unique :value}]
+             :password [{:required true
+                         :restrict [&quot;password needs an integer to be in the string&quot;
+                                    #(re-find #&quot;&#92;d&quot; %)]}]
+             :credits  [{:type :long
+                         :default 0}]
+             :type     [{:type :enum        ;; (2)
+                         :default :free
+                         :enum {:ns :account.type
+                                :values #{:admin :free :paid}}}]}})</div></div><div class="paragraph"><p>Some comments regarding this particular definition compared to the one in Step One:</p><ol><li>Note that instead of using <code>:account/&lt;attr&gt;</code> to specify attributes in a flat hashmap, we can just nest theattributes under the <code>:account</code> namespace. This allows for much better readability and saves a couple of characters.<ul><li>The <code>:enum</code> type is a special <code>:ref</code> type that is defined <a href='http://docs.datomic.com/schema.html#sec-3'>here</a>. Thelibrary provides it easy to install and manage them. We put them under a common namespace (<code>:account.type</code>) and givethem allowed values <code>#{:admin :free :paid}</code></li></ul></li></ol></div></section><section class="section" id="updating"><h3 class="section">3.2  &nbsp;&nbsp; Updating</h3><div class="paragraph"><p>Lets connect to a brand new database and insert some data. Note the different ways of nesting data. There is a correspondence between a nested hashmap and a flat hashmap having keys representing data-paths. <code>adi</code> takes advantage of this correspondence to give allow users more semantic freedom of how to represent their data:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-examples-step-2&quot; schema-2 true true))
+
+(adi/insert! ds {:account {:user &quot;adi1&quot;
+                           :password &quot;hello1&quot;}
+                 :account/type :paid})
+(adi/insert! ds [{:account {:password &quot;hello2&quot;
+                            :type :account.type/admin}
+                  :account/user &quot;adi2&quot;}
+                 {:account {:user &quot;adi3&quot;
+                            :credits 1000}
+                  :account/password &quot;hello3&quot;}])</div></div><div class="paragraph"><p>Lets take a look at all the <code>:admin</code> accounts:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account/type :admin})
+=&gt; #{{:account {:user &quot;adi2&quot;, :password &quot;hello2&quot;, :credits 0, :type :admin}}}</div></div><div class="paragraph"><p>We can make <code>adi1</code> into an :admin and then do another listing:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! ds {:account/user &quot;adi1&quot;} {:account/type :admin})
+(adi/select ds {:account/type :admin})
+=&gt; #{{:account {:user &quot;adi1&quot;, :password &quot;hello1&quot;, :credits 0, :type :admin}}
+     {:account {:user &quot;adi2&quot;, :password &quot;hello2&quot;, :credits 0, :type :admin}}}</div></div><div class="paragraph"><p>If we attempt to add an value of <code>:account.type/&lt;value&gt;</code> that is not listed, an exception will be thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:account {:user &quot;adi4&quot;
+                           :password &quot;hello4&quot;
+                           :type :vip}})
+=&gt; throws</div></div></section><section class="section" id="selection"><h3 class="section">3.3  &nbsp;&nbsp; Selection</h3><div class="paragraph"><p>There are many ways of selecting data. We have already seen the basics:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account/credits 1000} :first)
+=&gt; {:account {:user &quot;adi3&quot;, :password &quot;hello3&quot;, :credits 1000, :type :free}}</div></div><div class="paragraph"><p>Adding a <code>:pull</code> model will filter out selection options:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account/type :free} :first
+            :pull {:account {:credits :unchecked
+                               :type :unchecked}})
+=&gt; {:account {:user &quot;adi3&quot;, :password &quot;hello3&quot;}}</div></div><div class="paragraph"><p>Another feature is that a list can be used to input an expression. In the examples below, the <code>'&#40;&gt; ? 10&#41;</code> predicate   acts as the <code>adi</code> equivalent of using an actual predicate <code>#&#40;&gt; % 10&#41;</code>. If there is no <code>?</code>, it is   assumed that the first argument is <code>?</code>.  Note that all the three queries below give the same results:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account/credits '(&gt; 10)} :first)
+=&gt; {:account {:user &quot;adi3&quot;, :password &quot;hello3&quot;, :credits 1000, :type :free}}
+
+(adi/select ds {:account/credits '(&gt; ? 10)} :first)
+=&gt; {:account {:user &quot;adi3&quot;, :password &quot;hello3&quot;, :credits 1000, :type :free}}
+
+(adi/select ds {:account/credits '(&lt; 10 ?)} :first)
+=&gt; {:account {:user &quot;adi3&quot;, :password &quot;hello3&quot;, :credits 1000, :type :free}}</div></div></section><section class="section" id="java"><h3 class="section">3.4  &nbsp;&nbsp; Java</h3><div class="paragraph"><p>Java expressions can also be used because these functions are executed at the transactor end:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account/user '(.contains &quot;2&quot;)} :first)
+=&gt; {:account {:user &quot;adi2&quot;, :password &quot;hello2&quot;, :credits 0, :type :admin}}
+
+(adi/select ds {:account/user '(.contains ? &quot;2&quot;)} :first)
+=&gt; {:account {:user &quot;adi2&quot;, :password &quot;hello2&quot;, :credits 0, :type :admin}}
+
+(adi/select ds {:account/user '(.contains &quot;adi222&quot; ?)} :first)
+=&gt; {:account {:user &quot;adi2&quot;, :password &quot;hello2&quot;, :credits 0, :type :admin}}</div></div></section></section><section class="chapter" id="step-three"><h2 class="chapter">4  &nbsp;&nbsp; Step Three</h2><section class="section" id="refs"><h3 class="section">4.1  &nbsp;&nbsp; Refs</h3><div class="paragraph"><p>The most significant feature that <code>adi</code> has implemented on top of datomic is the way that it deals with <code>:ref</code> types. We add more attributes to our schema, this time, we include a <code>:book</code> namespace:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-3
+ {:account {:user     [{:required true
+                        :unique :value}]
+            :password [{:required true
+                        :restrict [&quot;password needs an integer to be in the string&quot;
+                                   #(re-find #&quot;&#92;d&quot; %)]}]
+            :type     [{:type :enum
+                        :default :free
+                        :enum {:ns :account.type
+                               :values #{:admin :free :paid}}}]
+            :credits  [{:type :long
+                        :default 0}]
+            :books    [{:type :ref
+                        :cardinality :many
+                        :ref  {:ns :book}}]}
+  :book   {:name    [{:required true
+                      :fulltext true}]
+           :author  [{:fulltext true}]}})</div></div><div class="paragraph"><p>Lets connect and print out the datastore:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-example-step-3&quot; schema-3 true true))</div></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(println ds)
+;; #adi{:connection #connection{1000 #inst &quot;2014-10-29T03:28:33.478-00:00&quot;},
+;;        :schema #schema{:account {:books :&amp;book&lt;*&gt;,
+;;                                  :credits :long,
+;;                                  :type :enum,
+;;                                  :password :string,
+;;                                  :user :string},
+;;                        :book {:accounts :&amp;account&lt;*&gt;,
+;;                               :author :string,
+;;                               :name :string}}}</div></div><div class="paragraph"><p>Note that the schema shows a couple of strange symbols - <code>:&amp;book&lt;&#42;&gt;</code> and `:&account<*>. These are symbols   that say that <code>:account/book</code> is an attribute of type <code>:ref</code> that is pointing to the <code>:book</code> namespace.   The <*> means that there is multiple cardinality associated with the attribute. Having done that, lets   add some data to our datastore:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:account {:user &quot;adi1&quot; :password &quot;hello1&quot;}})
+(adi/insert! ds {:account {:user &quot;adi2&quot; :password &quot;hello2&quot;
+                           :books #{{:name &quot;The Count of Monte Cristo&quot;
+                                     :author &quot;Alexander Dumas&quot;}
+                                    {:name &quot;Tom Sawyer&quot;
+                                     :author &quot;Mark Twain&quot;}
+                                    {:name &quot;Les Miserables&quot;
+                                     :author &quot;Victor Hugo&quot;}}}})</div></div></section><section class="section" id="walking"><h3 class="section">4.2  &nbsp;&nbsp; Walking</h3><div class="paragraph"><p>We start off by listing all the accounts:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :account)
+=&gt; #{{:account {:user &quot;adi1&quot; :password &quot;hello1&quot; :credits 0 :type :free}}
+     {:account {:user &quot;adi2&quot; :password &quot;hello2&quot; :credits 0 :type :free}}}</div></div><div class="paragraph"><p>We can use <code>:pull</code> to specify a model to pull.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :account
+            :pull {:account {:books :checked}})
+=&gt; #{{:account {:credits 0 :type :free :password &quot;hello1&quot; :user &quot;adi1&quot;}}
+     {:account {:books #{{:author &quot;Mark Twain&quot; :name &quot;Tom Sawyer&quot;}
+                         {:author &quot;Victor Hugo&quot; :name &quot;Les Miserables&quot;}
+                         {:author &quot;Alexander Dumas&quot; :name &quot;The Count of Monte Cristo&quot;}}
+                :credits 0 :type :free :password &quot;hello2&quot; :user &quot;adi2&quot;}}}</div></div><div class="paragraph"><p>Using :id instead of :checked will pull book ids. This is very useful for copying references</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :account
+            :pull {:account {:books :id}})
+=&gt; #{{:account {:credits 0, :type :free, :password &quot;hello1&quot;, :user &quot;adi1&quot;}}
+     {:account {:credits 0, :type :free, :password &quot;hello2&quot;, :user &quot;adi2&quot;
+                :books #{17592186045425 17592186045426 17592186045424}}}}</div></div></section><section class="section" id="data-access"><h3 class="section">4.3  &nbsp;&nbsp; Data Access</h3><div class="paragraph"><p>We will now use the <code>:access</code> option instead of <code>:pull</code>. Essentially, they do the same thing   except tha <code>:access</code> limits the data model on the way in and on the way out, whilst <code>:pull</code> limits   the data model on the way out only. We can look at a case where both are the same. In the case below, using   :access or :pull does not matter and will yield the same result:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :account
+            :access {:account {:books {:author :unchecked}
+                               :credits :unchecked
+                               :type :unchecked}})
+=&gt; #{{:account {:user &quot;adi1&quot; :password &quot;hello1&quot;}}
+     {:account {:user &quot;adi2&quot; :password &quot;hello2&quot;
+                :books #{{:name &quot;Tom Sawyer&quot;}
+                         {:name &quot;The Count of Monte Cristo&quot;}
+                         {:name &quot;Les Miserables&quot;}}}}}</div></div><section class="subsection" id="return"><h4 class="subsection">4.3.1  &nbsp;&nbsp; Return</h4><div class="paragraph"><p>In the case where they differ, this is the result of using the <code>:pull</code> option:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account {:books/author &quot;Victor Hugo&quot;}}
+            :first
+            :pull {:account {:books {:author :unchecked}
+                               :credits :unchecked
+                               :type :unchecked}})
+=&gt; {:account {:books #{{:name &quot;Tom Sawyer&quot;}
+                       {:name &quot;The Count of Monte Cristo&quot;}
+                       {:name &quot;Les Miserables&quot;}}
+              :password &quot;hello2&quot; :user &quot;adi2&quot;}}</div></div></section><section class="subsection" id="access"><h4 class="subsection">4.3.2  &nbsp;&nbsp; Access</h4><div class="paragraph"><p>This is the result of using the <code>:access</code> option. The difference is that because   the <code>:account/book/author</code> path is <code>:unchecked</code>, the operation raises an exception to   say that a query like this is not allowed:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account {:books/author &quot;Victor Hugo&quot;}}
+            :first
+            :access {:account {:books {:author :unchecked}
+                               :credits :unchecked
+                               :type :unchecked}})
+
+=&gt; (raises-issue {:key-path [:account :books :author]
+                  :nsv [:book :author]
+                  :data &quot;Victor Hugo&quot;
+                  :not-allowed true})</div></div></section><section class="subsection" id="combination"><h4 class="subsection">4.3.3  &nbsp;&nbsp; Combination</h4><div class="paragraph"><p>To fix this problem limiting searches to the <code>:account/books</code> path we can use both <code>:access</code>   and <code>:pull</code> models for fine-tuning control over how our data is accessed:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:account {:books/author &quot;Victor Hugo&quot;}}
+            :first
+            :access {:account {:books :checked}}
+            :pull {:account {:books {:author :unchecked}
+                               :credits :unchecked
+                               :type :unchecked}})
+=&gt; {:account {:books #{{:name &quot;Tom Sawyer&quot;}
+                       {:name &quot;The Count of Monte Cristo&quot;}
+                       {:name &quot;Les Miserables&quot;}}
+              :password &quot;hello2&quot; :user &quot;adi2&quot;}}</div></div></section></section><section class="section" id="pointers"><h3 class="section">4.4  &nbsp;&nbsp; Pointers</h3><div class="paragraph"><p>Entity <code>:db/id</code> keys are essentially pointers to data. We can add references to other enities just by   using copying these <code>:db/id</code> keys around. Instead of pulling data, we can use the :pull-ids option to   pull a set of entity ids associated with the search:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :account :return :ids)
+=&gt; #{17592186045421 17592186045423}</div></div><div class="paragraph"><p>Having this is super nice because we can just use these like pointers. We can add <code>The Book and the Sword</code>   to our datastore and link them to both our user accounts straight away:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(let [account-ids (adi/select ds :account :return :ids)]
+  (adi/insert! ds [{:book {:name &quot;The Book and the Sword&quot;
+                           :author &quot;Louis Cha&quot;
+                           :accounts account-ids}}]))</div></div><div class="paragraph"><p>Now a search on all the books that <code>adi</code> has yields one result:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:book {:accounts/user &quot;adi1&quot;}})
+=&gt; #{{:book {:name &quot;The Book and the Sword&quot; :author &quot;Louis Cha&quot;}}}</div></div></section><section class="section" id="playground"><h3 class="section">4.5  &nbsp;&nbsp; Playground</h3><div class="paragraph"><p>Lets do a couple more inserts and selects just to show off some different features</p></div><section class="subsection" id="path-reversal"><h4 class="subsection">4.5.1  &nbsp;&nbsp; Path Reversal</h4><div class="paragraph"><p>Inserts can use both forward and backward references. In this case, we are adding a book with a bunch   of accounts:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds {:book {:name &quot;Charlie and the Chocolate Factory&quot;
+                        :author &quot;Roald Dahl&quot;
+                        :accounts #{{:user &quot;adi3&quot; :password &quot;hello3&quot; :credits 100}
+                                    {:user &quot;adi4&quot; :password &quot;hello4&quot; :credits 500}
+                                    {:user &quot;adi5&quot; :password &quot;hello5&quot; :credits 500}}}})
+
+(adi/select ds {:account {:books/author &quot;Roald Dahl&quot;}}
+            :pull {:account {:password :unchecked
+                               :credits :unchecked
+                               :type :unchecked}})
+=&gt; #{{:account {:user &quot;adi3&quot;}}
+     {:account {:user &quot;adi4&quot;}}
+     {:account {:user &quot;adi5&quot;}} }</div></div></section><section class="subsection" id="fulltext-searches"><h4 class="subsection">4.5.2  &nbsp;&nbsp; Fulltext Searches</h4><div class="paragraph"><p>Fulltext searches are avaliable on schema attributes defined with :fulltext true:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:book/author '(?fulltext &quot;Louis&quot;)}
+            :pull {:book {:accounts :checked}} :first)
+=&gt; {:book {:author &quot;Louis Cha&quot; :name &quot;The Book and the Sword&quot;
+           :accounts #{{:credits 0 :type :free :password &quot;hello2&quot; :user &quot;adi2&quot;}
+                       {:credits 0 :type :free :password &quot;hello1&quot; :user &quot;adi1&quot;}}}}</div></div></section><section class="subsection" id="model-controlled-deletion"><h4 class="subsection">4.5.3  &nbsp;&nbsp; Model Controlled Deletion</h4><div class="paragraph"><p>Deletes are controlled by models:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete-all! ds {:book/author &quot;Roald Dahl&quot;}
+                 :access {:book {:accounts :checked}})
+(adi/select ds :account)
+=&gt; #{{:account {:user &quot;adi2&quot;, :password &quot;hello2&quot;, :credits 0, :type :free}}
+     {:account {:user &quot;adi1&quot;, :password &quot;hello1&quot;, :credits 0, :type :free}}}
+
+
+;;(adi/update-in)</div></div></section></section></section>
+    </div>
+</div><!--end of .container-->
+
+  <section class="application">
+    
+  </section>
+</body>
+
+<script>
+  $('#nav').affix({
+    offset: {
+        top: $('#nav').offset().top,
+        bottom: $('footer').outerHeight(true) + $('.application').outerHeight(true) + 40
+    }});
+</script>
+
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</body>
+</html>

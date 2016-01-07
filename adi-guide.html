@@ -1,0 +1,112 @@
+
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <meta name="google" value="notranslate">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title>adi</title>
+
+    
+  <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/clojure.min.js"></script>
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/magula.min.css">
+
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.2/angular.min.js"></script>
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.2/angular-cookies.min.js"></script>
+  <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.0/ui-bootstrap-tpls.min.js"></script>
+  <script type="text/javascript" src="js/angular-highlightjs.min.js"></script>
+
+  <link rel="stylesheet" type="text/css" href="css/rdash.min.css">
+  <link rel="stylesheet" type="text/css" href="css/scrollspy.css">
+
+
+  <script>
+    window.console = window.console || function(t) {};
+    window.open = function(){ console.log("window.open is disabled."); };
+    window.print   = function(){ console.log("window.print is disabled."); };
+  </script>
+
+  <script>
+    var app = angular.module('app', ['hljs']);
+  </script>
+  </head>
+
+  <body ng-app="app" data-spy="scroll" data-target=".scrollspy">
+  <!-- Fixed navbar -->
+    <nav class="navbar navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html"><img src="img/small-white.png"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sections <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="hara-class.html">class</a></li>
+                <li><a href="hara-common.html">common</a></li>
+            </ul>
+            </li>
+            <li>
+              <a href="https://github.com/zcaudate/adi" target="_blank">Github</a></li>
+            <li>
+              <a href="http://gitter.im/zcaudate/adi" target="_blank">Gitter</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+  <div class="container row">
+    <div class="col-md-4 scrollspy pull-right">
+      <ul id="nav" class="nav hidden-xs hidden-sm" data-spy="affix">
+        <li><a href="#introduction">1  &nbsp;&nbsp; Introduction</a></li><li><a href="#tutorial">2  &nbsp;&nbsp; Tutorial</a></li>
+      </ul>
+    </div>
+    <div class="col-md-8" id="content">
+      <div class="jumbotron">
+        <div class="container">
+          <h1>adi</h1>
+          <h4>a datomic interface</h4>
+        </div>
+      </div>
+      <section class="chapter" id="introduction"><h2 class="chapter">1  &nbsp;&nbsp; Introduction</h2><div class="group"><div class="paragraph"><h3>Installation</h3><p>Add to <code>project.clj</code> dependencies</p><p><code>&#91;im.chit/adi </code>"<code>0.3.2</code>"<code>&#93;</code>.</p><p>All the functionality can be loaded using:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(require '[adi.core :as adi])</div></div><div class="paragraph"><h3>Overview</h3><p><code>adi</code> makes creating complex applications easy. Built on top of datomic, <code>adi</code> was especially designed to model complexity, relationships and partial data. Having said that, <code>adi</code> is for the faint of heart. It has been built especially for the creative, crazy and super ambitious. Small apps with simple data models are very easy to define and explore. But why stop there? The bigger, more intertwined the data model becomes, the more <code>adi</code> will have its chance to shine.</p><p>So what exactly is <code>adi</code>?</p><ul><li>It empowers <code>datomic</code> to something best described as a <code>&quot;document database on steroids&quot;</code>.</li><li>It functions as a <code>schema-driven</code>, <code>document</code> and <code>graph</code> database hybrid.</li><li>It simplifies <code>crud</code> operations to be <code>logical</code>, <code>declarative</code> and <code>data-centric</code>.</li><li>It uses the <code>schema</code> and an application <code>pipeline</code> to process incoming data, similar to that of what a <code>type system</code>.</li><li>It is <code>simple</code> and <code>expressive</code>, a pure <code>joy</code> to use.</li></ul><p>The key to understanding <code>adi</code> lies in understanding the power of a <code>schema</code>. The <code>schema</code> dictates what you can do with the data. Instead of limiting the programmer, the <code>schema</code> should exhance him/her, much like what a <code>type system</code> does for programmers but without being as restrictive. Once we have a <code>schema</code>, there should be no difference in the <code>shape</code> of the <code>query</code> and the <code>shape</code> of the <code>data</code> that we get back from the <code>query</code>. We shouldn't have to play around turning objects into records, objects into queries, etc. Furthermore, data can be queried and inserted in <strong>ANY</strong> shape or form, as long as it follows the conventions specified within that schema.</p></div></div></section><section class="chapter" id="tutorial"><h2 class="chapter">2  &nbsp;&nbsp; Tutorial</h2><div class="group"><div class="paragraph"><p>So open up a repl in a project with <code>adi</code> installed and require load up the library:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(require '[adi.core :as adi])</div></div><div class="paragraph"><p>We are off and away!</p></div></div></section>
+    </div>
+</div><!--end of .container-->
+
+  <section class="application">
+    
+  </section>
+</body>
+
+<script>
+  $('#nav').affix({
+    offset: {
+        top: $('#nav').offset().top,
+        bottom: $('footer').outerHeight(true) + $('.application').outerHeight(true) + 40
+    }});
+</script>
+
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</body>
+</html>
