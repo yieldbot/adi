@@ -42,7 +42,7 @@
 
   :profiles {:dev {:plugins [[lein-midje "3.1.3"]
                              [lein-hydrox "0.1.8"]]
-                   :dependencies [[com.datomic/datomic-free "0.9.5344" :exclusions [joda-time]]
+                   :dependencies [[com.datomic/datomic-free "0.9.5327" :exclusions [joda-time]]
                                   [midje "1.6.3"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
