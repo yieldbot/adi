@@ -1,5 +1,5 @@
-(defproject im.chit/adi "0.3.2-SNAPSHOT"
-  :description "a datomic interface"
+(defproject im.chit/adi "0.3.2"
+  :description "data modelling for the ambitious"
   :url "https://www.github.com/zcaudate/adi"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
@@ -13,7 +13,7 @@
                  [inflections "0.9.14"]]
   :documentation {:site   "adi"
                   :output "docs"
-                  :description "a datomic interface"
+                  :description "data modelling for the ambitious"
                   :tracking "UA-31320512-2"
                   :owners [{:name    "Chris Zheng"
                             :email   "z@caudate.me"
@@ -31,15 +31,21 @@
                   :files {"index"
                           {:template "home.html"
                            :title "adi"
-                           :subtitle "a datomic interface"}
-                          "adi-guide"
-                          {:input "test/documentation/adi_guide.clj"
-                           :title "adi"
-                           :subtitle "a datomic interface"}}
+                           :subtitle "data modelling for the ambitious"}
+                          "adi-walkthrough"
+                          {:input "test/documentation/adi_walkthrough.clj"
+                           :title "walkthrough"
+                           :subtitle "a whirlwind tour of the library"}
+                          "adi-bookstore"
+                          {:input "test/documentation/adi_bookstore.clj"
+                           :title "the bookstore"
+                           :subtitle "an example of basic data management"}
+                          "adi-schoolyard"
+                          {:input "test/documentation/adi_schoolyard.clj"
+                           :title "the schoolyard"
+                           :subtitle "an example for relational modelling"}}
                 :link {:auto-tag    true
                        :auto-number true}}
-
-
   :profiles {:dev {:plugins [[lein-midje "3.1.3"]
                              [lein-hydrox "0.1.8"]]
                    :dependencies [[com.datomic/datomic-free "0.9.5327" :exclusions [joda-time]]

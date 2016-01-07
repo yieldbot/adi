@@ -1,11 +1,11 @@
-(ns adi.examples.step-1
+(ns documentation.adi-walkthrough.step-1
   [:use midje.sweet]
   (:require [adi.core :as adi]
             [adi.test.checkers :refer :all]))
 
-[[:section {:title "Step One"}]]
+[[:chapter {:title "Step One"}]]
 
-[[:subsection {:title "Schema"}]]
+[[:section {:title "Schema"}]]
 
 "A simple `adi` schema is constructed as follows:"
 
@@ -30,7 +30,7 @@
 "
 
 (facts
-  [[:subsection {:title "Connection"}]]
+  [[:section {:title "Connection"}]]
 
   "So having a basic schema, an adi datastore can be constructed. Note that we are connecting
   to a standard datomic in memory store url. The philosophy of `adi` is that it should work
@@ -44,7 +44,7 @@
   and construct a brand new one, set both flags as `true`. If connecting to an already existing datastore
   set both flags as `false` (by default) otherwise all data will be lost."
 
-  [[:subsection {:title "Writing"}]]
+  [[:section {:title "Writing"}]]
 
   "Once a datastore has been established, lets add some records. Note that multiple records can
   be added by using a vector of multiple records:"
@@ -55,7 +55,7 @@
                    {:account {:user "carl"     :password "pass1"}}])
 
 
-  [[:subsection {:title "Reading"}]]
+  [[:section {:title "Reading"}]]
 
   "Now that there is data, we can then do a search for the record using `select`."
 
@@ -75,7 +75,7 @@
   (adi/select ds {:account {:user "angela"}} :first :ids)
   => {:db {:id 17592186045418}, :account {:user "angela", :password "hello1", :credits 0}}
 
-  [[:subsection {:title "Restrictions"}]]
+  [[:section {:title "Restrictions"}]]
 
   "We now learn what we can't do and how the schema helps in keeping our data regular. Lets try to
   add in some incomplete data:"
@@ -107,7 +107,7 @@
   (adi/insert! {:account {:user "billy" :password "pass2"}})
   => throws
 
-  [[:subsection {:title "Time Travel"}]]
+  [[:section {:title "Time Travel"}]]
 
   "A native feature of datomic allows users to access the state of the database at any point in time.
   This is also supported by `adi`. We can use `transactions` to list all the transactions involving

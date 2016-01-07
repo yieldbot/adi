@@ -1,12 +1,12 @@
-(ns adi.examples.step-3
+(ns documentation.adi-walkthrough.step-3
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [adi.test.checkers :refer :all]
             [datomic.api :as datomic]))
 
-[[:section {:title "Step Three"}]]
+[[:chapter {:title "Step Three"}]]
 
-[[:subsection {:title "Refs"}]]
+[[:section {:title "Refs"}]]
 
 "The most significant feature that `adi` has implemented on top of datomic is the way that it
 deals with `:ref` types. We add more attributes to our schema, this time, we include a `:book`
@@ -64,7 +64,7 @@ namespace:"
                                        :author "Victor Hugo"}}}})
 
 
-  [[:subsection {:title "Walking"}]]
+  [[:section {:title "Walking"}]]
 
   "We start off by listing all the accounts:"
 
@@ -90,7 +90,7 @@ namespace:"
        {:account {:credits 0, :type :free, :password "hello2", :user "adi2"
                   :books #{17592186045425 17592186045426 17592186045424}}}}
 
-  [[:subsection {:title "Data Access"}]]
+  [[:section {:title "Data Access"}]]
 
   "We will now use the `:access` option instead of `:pull`. Essentially, they do the same thing
   except tha `:access` limits the data model on the way in and on the way out, whilst `:pull` limits
@@ -107,9 +107,9 @@ namespace:"
                            {:name "The Count of Monte Cristo"}
                            {:name "Les Miserables"}}}}}
 
-  "### Return
+  [[:subsection {:title "Return"}]]
 
-   In the case where they differ, this is the result of using the `:pull` option:"
+  "In the case where they differ, this is the result of using the `:pull` option:"
 
   (adi/select ds {:account {:books/author "Victor Hugo"}}
               :first
@@ -121,10 +121,9 @@ namespace:"
                          {:name "Les Miserables"}}
                 :password "hello2" :user "adi2"}}
 
+  [[:subsection {:title "Access"}]]
 
-  "### Access
-
-  And this is the result of using the `:access` option. The difference is that because
+  "This is the result of using the `:access` option. The difference is that because
   the `:account/book/author` path is `:unchecked`, the operation raises an exception to
   say that a query like this is not allowed:"
 
@@ -139,9 +138,9 @@ namespace:"
                     :data "Victor Hugo"
                     :not-allowed true})
 
-  "### Combination
+  [[:subsection {:title "Combination"}]]
 
-  To fix this problem limiting searches to the `:account/books` path we can use both `:access`
+  "To fix this problem limiting searches to the `:account/books` path we can use both `:access`
   and `:pull` models for fine-tuning control over how our data is accessed:"
   (adi/select ds {:account {:books/author "Victor Hugo"}}
               :first
@@ -155,7 +154,7 @@ namespace:"
                 :password "hello2" :user "adi2"}}
 
 
-  [[:subsection {:title "Pointers"}]]
+  [[:section {:title "Pointers"}]]
 
   "Entity `:db/id` keys are essentially pointers to data. We can add references to other enities just by
   using copying these `:db/id` keys around. Instead of pulling data, we can use the :pull-ids option to
@@ -177,13 +176,13 @@ namespace:"
   (adi/select ds {:book {:accounts/user "adi1"}})
   => #{{:book {:name "The Book and the Sword" :author "Louis Cha"}}}
 
-  [[:subsection {:title "Playground"}]]
+  [[:section {:title "Playground"}]]
 
   "Lets do a couple more inserts and selects just to show off some different features"
 
-  "###Path Reversal
+  [[:subsection {:title "Path Reversal"}]]
 
-  Inserts can use both forward and backward references. In this case, we are adding a book with a bunch
+  "Inserts can use both forward and backward references. In this case, we are adding a book with a bunch
   of accounts:"
 
   (adi/insert! ds {:book {:name "Charlie and the Chocolate Factory"
@@ -200,10 +199,9 @@ namespace:"
        {:account {:user "adi4"}}
        {:account {:user "adi5"}} }
 
+  [[:subsection {:title "Fulltext Searches"}]]
 
-  "###Fulltext searches
-
-  Fulltext searches are avaliable on schema attributes defined with :fulltext true:"
+  "Fulltext searches are avaliable on schema attributes defined with :fulltext true:"
 
   (adi/select ds {:book/author '(?fulltext "Louis")}
               :pull {:book {:accounts :checked}} :first)
@@ -212,8 +210,10 @@ namespace:"
                          {:credits 0 :type :free :password "hello1" :user "adi1"}}}}
 
 
+  [[:subsection {:title "Model Controlled Deletion"}]]
 
-  "###Deletion controlled by models:"
+  "Deletes are controlled by models:"
+
   (adi/delete-all! ds {:book/author "Roald Dahl"}
                    :access {:book {:accounts :checked}})
   (adi/select ds :account)

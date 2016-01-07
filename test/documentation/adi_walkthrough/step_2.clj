@@ -1,13 +1,13 @@
-(ns adi.examples.step-2
+(ns documentation.adi-walkthrough.step-2
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [adi.core.select :as select]
             [adi.test.checkers :refer :all]
             [datomic.api :as datomic]))
 
-[[:section {:title "Step Two"}]]
+[[:chapter {:title "Step Two"}]]
 
-[[:subsection {:title "Enums"}]]
+[[:section {:title "Enums"}]]
 
 "There is an intrinsic concept of enums in datomic, seen in the website's [schema documentation](http://docs.datomic.com/schema.html).
 `adi` just takes this explicitly and incorporates it into the schema. We see that there is a new entry for the schema - the `account/type`
@@ -36,14 +36,14 @@ them allowed values `#{:admin :free :paid}`"
 
 
 (facts
-  [[:subsection {:title "Updating"}]]
+  [[:section {:title "Updating"}]]
 
   "Lets connect to a brand new database and insert some data. Note the different ways of nesting data. There is
 a correspondence between a nested hashmap and a flat hashmap having keys representing data-paths. `adi` takes
 advantage of this correspondence to give allow users more semantic freedom of how to represent their data:"
 
   (def ds (adi/connect! "datomic:mem://adi-examples-step-2" schema-2 true true))
-  
+
   (adi/insert! ds {:account {:user "adi1"
                              :password "hello1"}
                    :account/type :paid})
@@ -73,7 +73,7 @@ advantage of this correspondence to give allow users more semantic freedom of ho
                              :type :vip}})
   => throws
 
-  [[:subsection {:title "Selection"}]]
+  [[:section {:title "Selection"}]]
 
   "There are many ways of selecting data. We have already seen the basics:"
 
@@ -102,7 +102,7 @@ advantage of this correspondence to give allow users more semantic freedom of ho
 
 
 (facts
-  [[:subsection {:title "Java"}]]
+  [[:section {:title "Java"}]]
 
   "Java expressions can also be used because these functions are executed at the transactor end:"
 

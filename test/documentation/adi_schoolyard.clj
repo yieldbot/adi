@@ -4,13 +4,13 @@
             [adi.test.checkers :refer :all]
             [datomic.api :as datomic]))
 
-[[:chapter {:title "Example - Schoolyard"}]]
-
-[[:section {:title "Data Setup"}]]
+[[:chapter {:title "Data Setup"}]]
 
 "We want to model a simple school, and we have the standard information like classes, teachers students.
 The schema for our bookstore model can be seen in `Figure {{schema-4}}`. It is a rather simplistic
 model. This is actually much like the Bookstore example with a couple more fields."
+
+[[:section {:title "The Schema"}]]
 
 [[:image {:tag "schema-5" :title "Schema Diagram"
           :src "example5.png"}]]
@@ -36,6 +36,8 @@ model. This is actually much like the Bookstore example with a couple more field
                            :cardinality :many}]}})
 
 (facts
+
+  [[:section {:title "Initial Setup"}]]
 
   "Once again, the adi datastore is created:"
 
@@ -141,7 +143,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "**BAM!!** We are now ready to do some Analysis"
 
-  [[:section {:title "Datomic"}]]
+  [[:chapter {:title "Datomic"}]]
 
   "By now, you should be familiar with this query:"
 
@@ -168,7 +170,7 @@ model. This is actually much like the Bookstore example with a couple more field
   "As can be seen, the `select` function is just a more succinct version of `q` with many added
   features."
 
-  [[:section {:title "Querying"}]]
+  [[:chapter {:title "Querying"}]]
 
   "There is a `query` method that is halfway between `select` and `q` in terms and
   is convenient for dropping back into datalog queries. We see more examples of the
@@ -206,11 +208,9 @@ model. This is actually much like the Bookstore example with a couple more field
        (mapv #(-> % :student :name)))
   => ["Bobby" "Francis" "David" "Kelly"]
 
-  [[:section {:title "Datalog Generation"}]]
+  [[:chapter {:title "Datalog Generation"}]]
 
-  "Now the cool thing is that `select` actually generates
-  a datalog query first and then runs it against datomic. We can
-  access the datalog query via the `:raw` option:"
+  "Now the cool thing is that `select` actually generates a datalog query first and then runs it against datomic. We can access the datalog query via the `:raw` option:"
 
   (comment
     (adi/select  ds {:student {:classes/type :maths}} :raw)
@@ -240,8 +240,7 @@ model. This is actually much like the Bookstore example with a couple more field
           [(fulltext $ :teacher/name "Blair")
            [[?e28961 ?e_28963]]]]})
 
-  "As can be seen by this example, the `adi` query is much much more succinct. We can
-  now take the output and stick it into `query` to get the same result as before:"
+  "As can be seen by this example, the `adi` query is much much more succinct. We can now take the output and stick it into `query` to get the same result as before:"
 
   (adi/query ds '[:find ?self :where
                   [?self :student/siblings ?e_28962]
@@ -256,7 +255,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "So which one will you prefer to be using?"
 
-  [[:section {:title "Expressivity"}]]
+  [[:chapter {:title "Expressivity"}]]
 
   "Find all classes that are taught by Mr Anderson:"
   (adi/select ds {:class/teacher {:name "Mr. Anderson"}})
@@ -283,8 +282,8 @@ model. This is actually much like the Bookstore example with a couple more field
    (mapv #(-> % :student :name)))
   => ["Charlie" "Jack" "Anna" "David" "Harry" "Erin" "Kelly"]
 
-  "Not that you'd ever want to write a query like this but you can. Find the class with the teacher that
-  teaches a student that takes the class taken by `Mr. Carpenter`."
+  "Not that you'd ever want to write a query like this but you can. Find the class with the teacher that teaches a student that takes the class taken by `Mr. Carpenter`."
+  
   (->>
    (adi/select ds {:class/teacher
                    {:teaches/students

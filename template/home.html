@@ -55,45 +55,49 @@
 </div>
 
 <div class="row">
-	<div class="col-xs-10 col-md-5">
-		<rd-widget>
-      <rd-widget-body>
-				<div class="title">Installation</div>
-        <div class="comment">&nbsp;</div>
-				<div class="comment">In your <code>project.clj</code> add the following to include the entire <code>hara</code> library:</div>
-        <div class="comment">&nbsp;</div>
-        <div hljs language="clojure">
-[im.chit/hara "<@=version>"]</div>
-        <div class="comment">&nbsp;</div>
-				<div class="comment">Include selected functionality by including the specific package. For example, if the <code>hara.io.watch</code> namespace is required, use the following instead:</div>
-        <div class="comment">&nbsp;</div>
-        <div hljs language="clojure">
-[im.chit/hara.io.watch "<@=version>"]</div>
-    <div class="comment">&nbsp;</div>
-			</rd-widget-body>
-		</rd-widget>
-	</div>
 
   <div class="col-xs-10 col-md-5">
   	<rd-widget>
       <rd-widget-body>
-  			<div class="title">Usage</div>
+  			<div class="title">Introduction</div>
         <div class="comment">&nbsp;</div>
-  			<div class="comment">Depending on the functionality that you wish to use, import the require namespace and start coding:</div>
+        <div class="comment"><b>adi</b> makes creating complex applications easy.</div>
+        <div class="comment">As an extension on top of <a href="http://www.datomic.com">datomic</a>, <b>adi</b> was especially designed to model data, relationships and their complexities.</div>
         <div class="comment">&nbsp;</div>
-        <div hljs  no-escape language="clojure">
-(use 'hara.io.watch)
-(-> (watcher ["."] println
-            {:types #{:create :modify}
-             :recursive true
-             :filter  [".clj"]
-             :async true})
-    (start-watcher))</div>
-    <div class="comment">&nbsp;</div>
-    <div class="comment">More information about packages can be found in the api section and the guides.</div>
+        <div class="comment">So what is <b>adi</b>?</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Document and graph hybrid database.</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Conversion of relational data to maps and vice-versa</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Data-centric, declarative CRUD</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Schema driven validation and processing.</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Intuitive, simple, expressive.</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">The key to <b>adi</b> lies the power of the <b>schema</b>. Instead of limiting the programmer, the <b>schema</b> should exhance him/her, much like what a <b>type system</b> does for programmers but without being as restrictive. <b>adi</b> allows for relationships in data to be expressed as schema and then provides methods for smarter, more declarative control over data access.</div>
   		</rd-widget-body>
   	</rd-widget>
   </div>
+
+	<div class="col-xs-10 col-md-5">
+		<rd-widget>
+      <rd-widget-body>
+				<div class="title">Usage</div>
+        <div class="comment">&nbsp;</div>
+				<div class="comment">In your <code>project.clj</code> add the following to include the library:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs language="clojure">
+[im.chit/adi "<@=version>"]</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">All functionality can be found in <code>adi.core</code>:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs  no-escape language="clojure">
+(use 'adi.core)
+</div>
+    <div class="comment">&nbsp;</div>
+    <div class="comment">More information about packages can be found in the api section and the guides.</div>
+			</rd-widget-body>
+		</rd-widget>
+	</div>
+
 </div>
 
 <div class="row">
@@ -103,59 +107,26 @@
       <rd-widget-body>
   			<div class="title">Guides</div>
         <div class="comment">&nbsp;</div>
-        <div class="comment">Tutorials and comprehensive guides on specific modules with a focus on how the functionality is used within a larger system:</div>
+  			<div class="comment"><a href="adi-walkthrough.html">walkthrough</a> - a whirlwind tour</div>
         <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="hara-component.html">component</a> - constructing composable systems</div>
+        <div class="comment"><a href="adi-bookstore.html">example - bookstore</a> - basic modelling example</div>
         <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="hara-component-ova.html">concurrent.ova</a> - shared mutable state for multi-threaded applications</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="hara-event.html">event</a> - event signalling and conditional restart</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="hara-io-scheduler.html">io.scheduler</a> - easy and intuitive task scheduling</div>
-        <!--div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="#/io-watch">io.watch</a> - file watcher</div-->
-        <!--div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="#/namespace">namespace</a> - utilities for manipulating namespaces</div-->
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="hara-reflect.html">reflect</a> - java reflection made easy</div>
+        <div class="comment"><a href="adi-schoolyard.html">example - schoolyard</a> - relational modelling example</div>
         <div class="comment">&nbsp;</div>
   		</rd-widget-body>
   	</rd-widget>
   </div>
 
-  <div class="col-xs-10 col-md-5">
-  	<rd-widget>
-      <rd-widget-body>
-  			<div class="title">Articles</div>
-        <div class="comment">&nbsp;</div>
-        <div class="comment">Blog posts in relation to the philosophy and ideas behind the library:</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="http://z.caudate.me/verbs-nouns-and-file-watch-semantics/" target="_blank">30/Oct/2014</a> - Verbs, nouns and file watch semantics</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="http://z.caudate.me/hara-component-just-a-bit-more-structure/" target="_blank">02/Sep/2014</a> - hara.component - just a bit more structure</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="http://z.caudate.me/rethinking-clojure-contrib-2/" target="_blank">28/Aug/2014</a> - Rethinking clojure.contrib</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="http://z.caudate.me/the-abstract-container-pattern/" target="_blank">14/Jun/2014</a> - The abstract container pattern</div>
-        <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="http://z.caudate.me/you-took-3-months-to-write-a-mutable-array/" target="_blank">12/Nov/2013</a> - You took 3 months to write a mutable array?</div>
-        <div class="comment">&nbsp;</div>
-  		</rd-widget-body>
-  	</rd-widget>
-  </div>
-</div>
-
-<div class="row">
   <div class="col-xs-10 col-md-5">
   	<rd-widget>
       <rd-widget-body>
   			<div class="title">Resources</div>
         <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="https://docs.caudate.me/adi" target="_blank">Reference</a> - api reference documentation</div>
+  			<div class="comment"><a href="https://docs.caudate.me/adi" target="_blank">website</a> - documentation and api reference</div>
         <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="https://github.com/zcaudate/adi" target="_blank">Source</a> - code is hosted on github</div>
+  			<div class="comment"><a href="https://github.com/zcaudate/adi" target="_blank">source</a> - code is hosted on github</div>
         <div class="comment">&nbsp;</div>
-  			<div class="comment"><a href="http://www.gitter.im/zcaudate/adi" target="_blank">Support</a> - any questions and feedback</div>
+  			<div class="comment"><a href="http://www.gitter.im/zcaudate/adi" target="_blank">support</a> - any questions and feedback</div>
         <div class="comment">&nbsp;</div>
   		</rd-widget-body>
   	</rd-widget>
