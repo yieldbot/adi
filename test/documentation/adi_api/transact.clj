@@ -1,4 +1,4 @@
-(ns midje-doc.api.transact
+(ns documentation.adi-api.transact
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [datomic.api :as datomic]))
