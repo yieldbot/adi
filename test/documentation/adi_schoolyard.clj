@@ -1,4 +1,4 @@
-(ns adi.examples.step-5
+(ns documentation.adi-schoolyard
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [adi.test.checkers :refer :all]
@@ -283,7 +283,7 @@ model. This is actually much like the Bookstore example with a couple more field
   => ["Charlie" "Jack" "Anna" "David" "Harry" "Erin" "Kelly"]
 
   "Not that you'd ever want to write a query like this but you can. Find the class with the teacher that teaches a student that takes the class taken by `Mr. Carpenter`."
-  
+
   (->>
    (adi/select ds {:class/teacher
                    {:teaches/students

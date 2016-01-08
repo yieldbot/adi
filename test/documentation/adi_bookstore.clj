@@ -1,4 +1,4 @@
-(ns adi.examples.step-4
+(ns documentation.adi-bookstore
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [adi.test.checkers :refer :all]
