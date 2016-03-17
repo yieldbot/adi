@@ -4,9 +4,9 @@
 
 [[:section {:title ":schema"}]]
 
-[[:subsection {:title "bookstore"}]]
+[[:subsection {:title "book"}]]
 
-"`:schema` is the other part of the datastore that is created when `connect!` is called. The schema is a powerful ally because it contains information about how data should be related, created and managed. To demonstrate this, a bookstore schema is defined:"
+"`:schema` is the other part of the datastore that is created when `connect!` is called. The schema is a powerful ally because it contains information about how data should be related, created and managed. To demonstrate this, a book schema is defined:"
 
 (def schema-book
    {:book   {:name    [{:required true
@@ -15,7 +15,7 @@
 
 "A connection is created using the schema:"
 
-(def book-ds (adi/connect! "datomic:mem://adi-guide-schema-bookstore" schema-book true true))
+(def book-ds (adi/connect! "datomic:mem://adi-guide-schema-book" schema-book true true))
 
 "A single book is entered:"
 
@@ -199,8 +199,52 @@
 
 [[:section {:title ":access"}]]
 
-[[:section {:title ":pipeline"}]]
+"`:access` provides restrictions on input and an outline on how data should be returned. The following is how it is typically used:"
 
-[[:section {:title ":profiles"}]]
+(fact
+  (adi/select node-ds {:node {:name "C"}}
+              :access {:node :checked})
+  => #{{:node {:name "C"}}})
 
-"To be Done"
+[[:subsection {:title "restrictions"}]]
+
+"When the selector oversteps what is deemed acceptable, an exception is thrown:"
+
+(fact
+  (adi/select node-ds {:node {:next {:name "C"}}}
+              :access {:node :checked})
+  => (throws))
+
+"The model is able to follow the data and the returned values:"
+
+(fact
+  (adi/select node-ds {:node {:next {:name "C"}}}
+              :access {:node {:next :checked}})
+  => #{{:node {:name "B", :next {:name "C"}}}})
+
+"Reverse lookups are also supported"
+
+(fact
+  (adi/select node-ds {:node {:previous {:name "C"}}}
+              :access {:node {:previous :checked}})
+  => #{{:node {:name "D", :previous #{{:name "C"}}}}})
+
+[[:subsection {:title "combination"}]]
+
+"`:access` and `:pull` can be used to work together to limit data:"
+
+(fact
+  (adi/select node-ds {:node {:next {:name "C"}}}
+              :access {:node {:next :checked}}
+              :pull   {:node :checked})
+  => #{{:node {:name "B"}}})
+
+"or to expand the data that is returned:"
+
+(fact
+  (adi/select node-ds {:node {:next {:name "C"}}}
+              :access {:node {:next :checked}}
+              :pull   {:node {:next {:next :checked}}})
+  => #{{:node {:name "B",
+               :next {:name "C",
+                      :next {:name "D"}}}}})

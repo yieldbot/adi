@@ -9,11 +9,13 @@
              [retract :as retract]
              [select :as select]
              [transaction :as transaction]]
-            [adi.schema :as schema]))
+            [adi.schema :as schema]
+            [adi.data.common :as data]))
 
 (ns/import adi.core.connection [connect! disconnect!]
            adi.core.helpers    [transactions transaction-time schema-properties]
-           adi.schema          [schema])
+           adi.schema          [schema]
+           adi.data.common     [iid])
 
 (def reserved
   #{:options
