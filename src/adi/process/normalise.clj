@@ -81,7 +81,7 @@
               (let [f normalise/normalise-single
                     f (enum/wrap-single-enum f)
                     f (keyword/wrap-single-keyword f)
-                    f (if (-> adi :options :model-typecheck) (type-check/wrap-single-type-check f) f)
+                    f (if (-> adi :options :use-typecheck) (type-check/wrap-single-type-check f) f)
                     f (if (-> adi :model :convert)  (convert/wrap-single-model-convert f) f)
                     f (if (-> adi :model :validate)  (validate/wrap-single-model-validate f) f)
                     f (list/wrap-single-list f)

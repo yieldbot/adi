@@ -140,11 +140,11 @@
                       (wrap-query-keyword)
                       (wrap-query-set))
         pull-fn (-> select-base
-                      (wrap-pull-entities)
-                      (wrap-pull-data)
-                      (wrap-pull-adi)
-                      (wrap-pull-first)
-                      (wrap-pull-raw))]
+                    (wrap-pull-entities)
+                    (wrap-pull-data)
+                    (wrap-pull-adi)
+                    (wrap-pull-first)
+                    (wrap-pull-raw))]
     (-> adi
         (prepare/prepare opts data)
         (assoc-nil :op :select)
@@ -153,13 +153,13 @@
 
 (defn query [adi data qargs opts]
   (let [pull-fn  (-> (fn [adi]
-                         (assoc-in adi [:result :ids]
-                                   (map first (apply datomic/q data (:db adi) qargs))))
-                       (wrap-pull-entities)
-                       (wrap-pull-data)
-                       (wrap-pull-adi)
-                       (wrap-pull-first)
-                       (wrap-pull-raw))]
+                       (assoc-in adi [:result :ids]
+                                 (map first (apply datomic/q data (:db adi) qargs))))
+                     (wrap-pull-entities)
+                     (wrap-pull-data)
+                     (wrap-pull-adi)
+                     (wrap-pull-first)
+                     (wrap-pull-raw))]
     (-> adi
         (prepare/prepare opts data)
         (assoc :op :query)

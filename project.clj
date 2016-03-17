@@ -3,13 +3,13 @@
   :url "https://www.github.com/zcaudate/adi"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.6.0"]
-                 [im.chit/hara.common    "2.2.14"]
-                 [im.chit/hara.string    "2.2.14"]
-                 [im.chit/hara.data      "2.2.14"]
-                 [im.chit/hara.function  "2.2.14"]
-                 [im.chit/hara.component "2.2.14"]
-                 [im.chit/hara.event "2.2.14"]
+  :dependencies [[org.clojure/clojure "1.7.0"]
+                 [im.chit/hara.common    "2.2.17"]
+                 [im.chit/hara.string    "2.2.17"]
+                 [im.chit/hara.data      "2.2.17"]
+                 [im.chit/hara.function  "2.2.17"]
+                 [im.chit/hara.component "2.2.17"]
+                 [im.chit/hara.event "2.2.17"]
                  [inflections "0.9.14"]]
   :documentation {:site   "adi"
                   :output "docs"
@@ -32,6 +32,10 @@
                           {:template "home.html"
                            :title "adi"
                            :subtitle "data modelling for the ambitious"}
+                          "adi-guide"
+                          {:input "test/documentation/adi_guide.clj"
+                           :title "adi"
+                           :subtitle "data modelling for the ambitious"}
                           "adi-walkthrough"
                           {:input "test/documentation/adi_walkthrough.clj"
                            :title "walkthrough"
@@ -48,9 +52,9 @@
                        :auto-number true}}
   :profiles {:dev {:plugins [[lein-midje "3.1.3"]
                              [lein-hydrox "0.1.8"]]
-                   :dependencies [[com.datomic/datomic-free "0.9.5327" :exclusions [joda-time]]
+                   :dependencies [[com.datomic/datomic-free "0.9.5350" :exclusions [joda-time]]
                                   [midje "1.6.3"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
                                   [cheshire "5.2.0"]
-                                  [helpshift/hydrox "0.1.8"]]}})
+                                  [helpshift/hydrox "0.1.15"]]}})

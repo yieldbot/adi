@@ -65,7 +65,8 @@
       (process-require req :no-required tdata nsv tsch)
       (f tdata tsch nsv interim fns adi))))
 
-(defn wrap-model-post-require [f]
+(defn wrap-model-post-require 
+  [f]
   (fn [tdata tsch nsv interim fns adi]
     (let [req (:post-require interim)
           output (f tdata tsch nsv interim fns adi)]

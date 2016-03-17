@@ -81,13 +81,13 @@
 
 [[:section {:title "Model"}]]
 
-[[:subsection {:title ":model-typecheck"}]]
-[[:subsection {:title ":model-coerce"}]]
+[[:subsection {:title ":use-typecheck"}]]
+[[:subsection {:title ":use-coerce"}]]
 
 [[:section {:title "Skip"}]]
 
 [[:subsection {:title ":skip-normalise"}]]
-[[:subsection {:title ":skip-typecheck"}]]
+[[:subsection {:title ":skip-typesafety"}]]
 
 [[:section {:title "Select"}]]
 

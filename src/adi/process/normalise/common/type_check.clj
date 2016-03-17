@@ -25,7 +25,7 @@
       (cond
        (chk subdata) (f subdata [attr] nsv interim fns adi)
 
-       (-> adi :options :use-coerce)
+       (-> adi :options :model-coerce)
        (f (coerce subdata t) [attr] nsv interim fns adi)
 
        :else

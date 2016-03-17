@@ -8,7 +8,12 @@
              [nested :as nested]
              [retract :as retract]
              [select :as select]
-             [transaction :as transaction]]))
+             [transaction :as transaction]]
+            [adi.schema :as schema]))
+
+(ns/import adi.core.connection [connect! disconnect!]
+           adi.core.helpers    [transactions transaction-time schema-properties]
+           adi.schema          [schema])
 
 (def reserved
   #{:options
@@ -62,7 +67,10 @@
         name  (-> f meta :name)
         fargs (-> f meta :arglists first butlast vec)]
     `(defn ~name ~(-> fargs (conj '& 'args))
-       (let [~'opts (args->opts ~'args)]
+       (let [~'farg (first ~'args)
+             ~'opts (if (map? ~'farg)
+                      ~'farg
+                      (args->opts ~'args))]
          (~(symbol (str nsp "/" name)) ~@fargs ~'opts)))))
 
 (defmacro define-database-functions [functions]
@@ -70,9 +78,6 @@
        (map resolve)
        (map create-function-template)
        (vec)))
-
-(ns/import adi.core.connection [connect! disconnect!]
-           adi.core.helpers    [transactions transaction-time schema-properties])
 
 (define-database-functions
   [select/select

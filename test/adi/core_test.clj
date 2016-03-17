@@ -8,23 +8,23 @@
     (def adi (connect! "datomic:mem://adi-core-test"
                        {:account/name [{:representative true}]} true true))
 
-    (insert! adi [{:account/name "Chris"} {:account/name "Bob"}] nil)
-    (select adi {:account/name '_} nil)
+    (insert! adi [{:account/name "Chris"} {:account/name "Bob"}])
+    (select adi {:account/name '_})
     => #{{:account {:name "Bob"}} {:account {:name "Chris"}}}
 
-    (select adi :account/name nil)
+    (select adi :account/name)
     => #{{:account {:name "Bob"}} {:account {:name "Chris"}}}
 
-    (select adi :account nil)
+    (select adi :account)
     => #{{:account {:name "Bob"}} {:account {:name "Chris"}}}
 
-    (select adi :account {:options {:ids true}})
+    (select adi :account :ids)
     => #{{:db {:id 17592186045418}, :account {:name "Chris"}}
-            {:db {:id 17592186045419}, :account {:name "Bob"}}}
+         {:db {:id 17592186045419}, :account {:name "Bob"}}}
 
-    (select adi :account {:options {:pull-ids true}})
+    (select adi :account :return :ids)
     => #{17592186045418 17592186045419}
 
-    (delete! adi #{:account} nil)
-    (select adi :account {:options {:pull-ids true}})
+    (delete! adi #{:account})
+    (select adi :account :return :ids)
     => #{}))

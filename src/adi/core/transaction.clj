@@ -86,7 +86,7 @@
                                (resolve-tempids adi transact)
 
                                :else
-                               (error "WRAP_TRANSACT_OPTIONS: " opt-trans))))]
+                               (error "WRAP_TRANSACT_OPTIONS: #{:datomic :async :promise :resolve(default)}"))))]
       (assoc-in adi [:result :transact] result))))
 
 (defn wrap-transact-results [f]
@@ -98,9 +98,9 @@
             adi
 
             (or (nil? opt-trans)
-                (= opt-trans :datomic))
+                (#{:resolve :async :promise :datomic} opt-trans))
             (get-in adi [:result :transact])
-
+            
             :else
             (error "WRAP_TRANSACT_RESULTS: " opt-trans)))))
 

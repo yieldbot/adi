@@ -13,7 +13,8 @@
   (fn [subdata [attr] nsv interim fns adi]
     (if (list? subdata)
       (cond (-> adi :options :ban-expressions)
-            (raise [:adi :normalise :not-allowed {:data subdata :nsv nsv :key-path (:key-path interim)}]
+            (raise [:adi :normalise :not-allowed {:data subdata :nsv nsv :key-path (:key-path interim)
+                                                  :options (:options adi)}]
                (str "WRAP_SINGLE_LIST: " subdata " not allowed"))
 
           :else

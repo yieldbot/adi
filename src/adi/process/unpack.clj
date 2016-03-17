@@ -102,7 +102,8 @@
      (if-let [fmodel (-> adi :model :pull)]
        (unpack ent fmodel (assoc adi :seen-ids (atom #{})))
        (let [ent (d/touch ent)
-             ks  (filter (fn [k] (not (#{:enum :alias :ref} (-> adi :schema :flat k first :type))))
+             ks  (filter (fn [k] (if-let [type (-> adi :schema :flat k first :type)]
+                                   (not (#{:enum :alias :ref} type))))
                          (keys ent))
              res (-> (select-keys ent ks)
                      (merge (unpack-enums ent adi))

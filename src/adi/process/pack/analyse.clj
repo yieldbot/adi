@@ -235,7 +235,7 @@
               :analyse-single
               (let [f analyse-attr-single
                     f (wrap-single-expressions f)
-                    f (if (-> adi :options :skip-typecheck)
+                    f (if (-> adi :options :skip-typesafety)
                         f (wrap-attr-type-check f))]
                 f)
 
