@@ -17,13 +17,13 @@
   for determining correct input"
   (normalise/normalise {:account/name "Chris"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:pre-require {:account {:name :checked}}}}
+                        :pipeline {:pre-require {:account {:name :checked}}}}
                        *wrappers*)
   => {:account {:name "Chris"}}
 
   (normalise/normalise {:account/age 10}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:pre-require {:account {:name :checked}}}}
+                        :pipeline {:pre-require {:account {:name :checked}}}}
                        *wrappers*)
   => (raises-issue {:nsv [:account :name]
                     :no-required true}))
@@ -33,14 +33,14 @@
   (normalise/normalise {:account/orders #{{:number 1}
                                           {:number 2}}}
               {:schema (schema/schema examples/account-orders-items-image)
-               :model {:pre-require {:account {:orders {:number :checked}}}}}
+               :pipeline {:pre-require {:account {:orders {:number :checked}}}}}
               *wrappers*)
   => {:account {:orders #{{:number 1}
                           {:number 2}}}}
   (normalise/normalise {:account/orders #{{:items {:name "stuff"}}
                                           {:number 2}}}
               {:schema (schema/schema examples/account-orders-items-image)
-               :model {:pre-require {:account {:orders {:number :checked}}}}}
+               :pipeline {:pre-require {:account {:orders {:number :checked}}}}}
               *wrappers*)
   => (raises-issue {:data {:items {:name "stuff"}}
                     :nsv [:order :number]

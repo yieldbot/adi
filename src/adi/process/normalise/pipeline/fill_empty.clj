@@ -49,13 +49,13 @@
   "fills data by associating additional elements
   (normalise/normalise {:account/name \"Chris\" :account/age 9}
             {:schema (schema/schema examples/account-name-age-sex)
-             :model {:fill-empty {:account {:age 10}}}}
+             :pipeline {:fill-empty {:account {:age 10}}}}
             *wrappers*)
   => {:account {:name \"Chris\", :age 9}}
 
   (normalise/normalise {:account/name \"Chris\"}
             {:schema (schema/schema examples/account-name-age-sex)
-             :model {:fill-empty {:account {:age (fn [_ adi]
+             :pipeline {:fill-empty {:account {:age (fn [_ adi]
                                                    (:age adi))}}}
              :age 10}
             *wrappers*)

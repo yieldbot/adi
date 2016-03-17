@@ -16,7 +16,7 @@
 (fact "Works together with wrap-attr-model-allow to control access to data"
   (normalise/normalise {:account/name "Chris"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:allow {}}}
+                        :pipeline {:allow {}}}
                        *wrappers*)
   => (raises-issue {:adi true
                     :data {:name "Chris"}
@@ -27,14 +27,14 @@
 
   (normalise/normalise {:account/name "Chris"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:allow {:account {:name :checked}}}}
+                        :pipeline {:allow {:account {:name :checked}}}}
                        *wrappers*)
   => {:account {:name "Chris"}}
   ^:hidden
   (normalise/normalise {:account {:name "Chris"
                                   :age 10}}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:allow {:account {:name :checked}}}}
+                        :pipeline {:allow {:account {:name :checked}}}}
                        *wrappers*)
   => (raises-issue {:adi true
                     :data 10
@@ -47,20 +47,20 @@
 (fact "Allow with Refs"
   (normalise/normalise {:account/orders {:number 1}}
                        {:schema (schema/schema examples/account-orders-items-image)
-                        :model {:allow {:account {:orders {:number :checked}}}}}
+                        :pipeline {:allow {:account {:orders {:number :checked}}}}}
                        *wrappers*)
   => {:account {:orders {:number 1}}}
 
   (normalise/normalise {:account {:user "Chris"}}
                        {:schema (schema/schema examples/account-orders-items-image)
-                        :model {:allow {:account {:user :checked}}}}
+                        :pipeline {:allow {:account {:user :checked}}}}
                        *wrappers*)
   => {:account {:user "Chris"}}
 
 
   (normalise/normalise {:account {:orders {:+ {:account {:user "Chris"}}}}}
                        {:schema (schema/schema examples/account-orders-items-image)
-                        :model {:allow {:account {:user :checked
+                        :pipeline {:allow {:account {:user :checked
                                                   :orders {:+ {:account {:user :checked}}}}}}}
                        *wrappers*)
   => {:account {:orders {:+ {:account {:user "Chris"}}}}}
@@ -68,7 +68,7 @@
 
   (normalise/normalise {:account {:orders {:+ {:account {:user "Chris"}}}}}
                        {:schema (schema/schema examples/account-orders-items-image)
-                        :model {:allow {:account {:user :checked
+                        :pipeline {:allow {:account {:user :checked
                                                   :orders {:+ {:order {:number :checked}}}}}}}
                        *wrappers*)
   => (raises-issue {:adi true

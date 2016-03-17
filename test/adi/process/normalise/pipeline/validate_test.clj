@@ -18,12 +18,12 @@
 
  (normalise/normalise {:account/name "Chris"}
                      {:schema (schema/schema examples/account-name-age-sex)
-                      :model {:validate {:account {:name number?}}}}
+                      :pipeline {:validate {:account {:name number?}}}}
                      *wrappers*)
   => (raises-issue {:not-validated true :nsv [:account :name]})
 
   (normalise/normalise {:account/name "Bob"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:validate {:account {:name #(= % "Bob")}}}}
+                        :pipeline {:validate {:account {:name #(= % "Bob")}}}}
                        *wrappers*)
   => {:account {:name "Bob"}})

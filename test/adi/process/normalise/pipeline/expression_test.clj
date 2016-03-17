@@ -19,42 +19,42 @@
 (fact "controls the expressions allowed for searches"
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name '(= "Chris")}}}}
+                 :pipeline {:expression {:account {:name '(= "Chris")}}}}
                 *wrappers*)
    => {:account {:name '(= "Chris")}}
 
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name '#{=}}}}}
+                 :pipeline {:expression {:account {:name '#{=}}}}}
                 *wrappers*)
    => {:account {:name '(= "Chris")}}
    ^:hidden
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name #{'(= _)}}}}}
+                 :pipeline {:expression {:account {:name #{'(= _)}}}}}
                 *wrappers*)
    => {:account {:name '(= "Chris")}}
 
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name #{'(= string?)}}}}}
+                 :pipeline {:expression {:account {:name #{'(= string?)}}}}}
                 *wrappers*)
    => {:account {:name '(= "Chris")}}
 
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name '_}}}}
+                 :pipeline {:expression {:account {:name '_}}}}
                 *wrappers*)
    => {:account {:name '(= "Chris")}}
 
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name '#{not=}}}}}
+                 :pipeline {:expression {:account {:name '#{not=}}}}}
                 *wrappers*)
    => (raises-issue {:failed-check true})
 
    (normalise/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {}}}
+                 :pipeline {:expression {}}}
                 *wrappers*)
    => (raises-issue {:failed-check true}))

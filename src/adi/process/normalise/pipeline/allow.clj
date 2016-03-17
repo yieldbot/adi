@@ -7,7 +7,7 @@
   "Works together with wrap-attr-model-allow to control access to data
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:allow {}}}
+                        :pipeline {:allow {}}}
                        *wrappers*)
   => (raises-issue {:adi true
                     :data {:name \"Chris\"}
@@ -18,7 +18,7 @@
 
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:allow {:account {:name :checked}}}}
+                        :pipeline {:allow {:account {:name :checked}}}}
                        *wrappers*)
   => {:account {:name \"Chris\"}}
   "
@@ -39,7 +39,7 @@
       (cond (= (:type attr) :ref)
             (cond (= suballow :yield)
                   (let [ynsv   (path/split (-> attr :ref :ns))
-                        tmodel (get-in adi (concat [:model :allow] ynsv))]
+                        tmodel (get-in adi (concat [:pipeline :allow] ynsv))]
                     (f subdata [attr] ynsv (assoc interim :allow tmodel) fns adi))
 
                   (or (= suballow :id) (hash-map? suballow))

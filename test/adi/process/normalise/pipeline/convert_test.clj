@@ -17,6 +17,6 @@
 (fact "converts input according to model"
  (normalise/normalise {:account/name "Chris"}
                      {:schema (schema/schema examples/account-name-age-sex)
-                      :model {:convert {:account {:name #(.toLowerCase %)}}}}
+                      :pipeline {:convert {:account {:name #(.toLowerCase %)}}}}
                      *wrappers*)
   => {:account {:name "chris"}})

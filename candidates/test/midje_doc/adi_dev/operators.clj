@@ -144,7 +144,7 @@
 
 "This is the security profile that governs a particular interface"
 
-[[:section {:title ":model"}]]
+[[:section {:title ":pipeline"}]]
 
 "This is the model used to transform and validate input data"
 

@@ -27,7 +27,7 @@ And the schema related entries are listed as follows:
 
 Furthermore, there is a 
 
-- `:model`
+- `:pipeline`
 - `:profiles`
 
 

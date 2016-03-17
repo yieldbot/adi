@@ -36,13 +36,13 @@
   "controls the expressions allowed for searches
    (normalise/normalise {:account/name '(= \"Chris\")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name '(= \"Chris\")}}}}
+                 :pipeline {:expression {:account {:name '(= \"Chris\")}}}}
                 *wrappers*)
    => {:account {:name '(= \"Chris\")}}
 
    (normalise/normalise {:account/name '(= \"Chris\")}
                 {:schema (schema/schema examples/account-name-age-sex)
-                 :model {:expression {:account {:name '#{=}}}}}
+                 :pipeline {:expression {:account {:name '#{=}}}}}
                 *wrappers*)
    => {:account {:name '(= \"Chris\")}}
    "

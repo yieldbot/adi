@@ -19,13 +19,13 @@
 (fact "fills data by associating additional elements"
   (normalise/normalise {:account/name "Chris" :account/age 9}
             {:schema (schema/schema examples/account-name-age-sex)
-             :model {:fill-empty {:account {:age 10}}}}
+             :pipeline {:fill-empty {:account {:age 10}}}}
             *wrappers*)
   => {:account {:name "Chris", :age 9}}
 
   (normalise/normalise {:account/name "Chris"}
             {:schema (schema/schema examples/account-name-age-sex)
-             :model {:fill-empty {:account {:age (fn [_ env]
+             :pipeline {:fill-empty {:account {:age (fn [_ env]
                                                    (:age env))}}}
              :age 10}
             *wrappers*)
@@ -33,21 +33,21 @@
   ^:hidden
   (normalise/normalise {:db/id 10}
             {:schema (schema/schema examples/account-name-age-sex)
-             :model {:fill-empty {:account {:name (fn [env] "username")}}}}
+             :pipeline {:fill-empty {:account {:name (fn [env] "username")}}}}
              *wrappers*)
   => {:db {:id 10}, :account {:name "username"}}
 
   #_(normalise/normalise {:account/orders #{{:number 1}
                                   {:number 2}}}
               {:schema (schema/schema examples/account-orders-items-image)
-               :model {:fill-empty {:account {:orders (fn [] {:number 4})}}}}
+               :pipeline {:fill-empty {:account {:orders (fn [] {:number 4})}}}}
             *wrappers*)
   ;;=> {:account {:orders #{{:number 2} {:number 1} {:number 4}}}}
 
   (normalise/normalise {:account/orders #{{:number 1 :age 11}
                                {:number 2  :age 11}}}
               {:schema (schema/schema examples/account-orders-items-image)
-               :model {:fill-empty
+               :pipeline {:fill-empty
                        {:account {:age 10
                                   :orders {:age (fn [refs]
                                                   (-> refs first :account :age))}}}

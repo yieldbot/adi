@@ -6,7 +6,7 @@
                        :age 10
                        :parents [\"henry\" \"sally\"]}}
                {:schema (schema/schema examples/account-name-age-sex)
-                :model {:ignore {:account {:parents :checked}}}}
+                :pipeline {:ignore {:account {:parents :checked}}}}
                {:normalise-nil [ignore/wrap-nil-model-ignore]})
   => {:account {:name \"Chris\"
                 :age 10

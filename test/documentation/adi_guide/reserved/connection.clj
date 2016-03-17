@@ -206,12 +206,14 @@
 "Returns the set of datomic entities that matches the query;"
 
 (fact
-  (adi/select ds-1 :book :return :entities)
-  => #{{:db/id 17592186045418}})
+  (-> (adi/select ds-1 :book :return :entities)
+      first
+      :db/id)
+  => 17592186045418)
 
 [[:subsection {:title ":data"}]]
 
-"The default option, returns actual data that can be governed by entries in `:pull` and `:model`"
+"The default option, returns actual data that can be governed by entries in `:pull` and `:pipeline`"
 
 (fact
   (adi/select ds-1 :book :return :data)

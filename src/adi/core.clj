@@ -24,7 +24,7 @@
     :at
     :db
     :op
-    :model
+    :pipeline
     :schema
     :connection
     :profiles})
@@ -37,8 +37,8 @@
     :schema-required
     :schema-restrict
     :schema-defaults
-    :model-typecheck
-    :model-coerce
+    :pipeline-typecheck
+    :pipeline-coerce
     :skip-normalise
     :skip-typecheck
     :first

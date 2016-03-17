@@ -64,7 +64,7 @@
         last-ns (:ns (last svec))
         update (if last-ns {last-ns update} update)
         output  (mapcat
-                 #(transaction/update! (dissoc adi :model) (ndata-fn %) update
+                 #(transaction/update! (dissoc adi :pipeline) (ndata-fn %) update
                                        {:options {:raw true
                                                   :ban-body-ids false
                                                   :ban-ids false
@@ -93,7 +93,7 @@
         svec  (search-path-analysis spath (-> adi :schema :tree))
         ndata-fn (build-search-term-fn svec)
         output  (mapcat
-                 #(transaction/delete! (dissoc adi :model) (ndata-fn %)
+                 #(transaction/delete! (dissoc adi :pipeline) (ndata-fn %)
                                        {:options {:raw true
                                                   :ban-body-ids false
                                                   :ban-ids false
@@ -132,7 +132,7 @@
         nretracts (set (map #(add-ns-entry last-ns %) retracts))
 
         output  (mapcat
-                 (fn [id] (retract/retract! (dissoc adi :model)
+                 (fn [id] (retract/retract! (dissoc adi :pipeline)
                                            (ndata-fn id)
                                            nretracts
                                            {:options {:raw true

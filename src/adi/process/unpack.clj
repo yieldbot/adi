@@ -99,7 +99,7 @@
 
 (defn unpack
   ([ent adi]
-     (if-let [fmodel (-> adi :model :pull)]
+     (if-let [fmodel (-> adi :pipeline :pull)]
        (unpack ent fmodel (assoc adi :seen-ids (atom #{})))
        (let [ent (d/touch ent)
              ks  (filter (fn [k] (if-let [type (-> adi :schema :flat k first :type)]

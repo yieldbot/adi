@@ -6,13 +6,13 @@
   for determining correct input
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:pre-mask {:account {:name :checked}}}}
+                        :pipeline {:pre-mask {:account {:name :checked}}}}
                        *wrappers*)
   => {:account {}}
 
   (normalise/normalise {:account/age 10}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:pre-mask {:account :checked}}}
+                        :pipeline {:pre-mask {:account :checked}}}
                        *wrappers*)
   => {}
   "
@@ -48,7 +48,7 @@
   (normalise/normalise {:account/orders #{{:number 1 :items {:name \"one\"}}
                                           {:number 2 :items {:name \"two\"}}}}
               {:schema (schema/schema examples/account-orders-items-image)
-               :model {:pre-mask {:account {:orders {:number :checked}}}}}
+               :pipeline {:pre-mask {:account {:orders {:number :checked}}}}}
               *wrappers*)
   => {:account {:orders #{{:items {:name \"one\"}}
                           {:items {:name \"two\"}}}}}"

@@ -31,14 +31,14 @@
 
 (defn prepare-model [adi]
   (let [op    (:op adi)
-        model (or (:model adi) (if op (-> adi :profile op)))
+        model (or (:pipeline adi) (if op (-> adi :profile op)))
         model  (if-let [access (:access adi)]
                  (model-access model access (-> adi :schema :tree))
                  model)
         model  (if-let [pull (:pull adi)]
                  (model-pull model pull (-> adi :schema :tree))
                  model)]
-    (assoc adi :model model)))
+    (assoc adi :pipeline model)))
 
 (defn prepare [adi opts input]
   (-> adi

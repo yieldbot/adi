@@ -221,9 +221,9 @@
                                                          :raw false
                                                          :adi true}
                                                :return :entities})
-                                (update-in [:model] dissoc :pull)))
+                                (update-in [:pipeline] dissoc :pull)))
         entities (-> sadi :result :entities)
-        ret-model (if-let [imodel (-> sadi :model :allow)]
+        ret-model (if-let [imodel (-> sadi :pipeline :allow)]
                  (model/model-unpack imodel (-> sadi :schema :tree))
                  (raise :missing-allow-model))
         all-ids (mapcat (fn [entity]

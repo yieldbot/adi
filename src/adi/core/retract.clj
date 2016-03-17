@@ -70,9 +70,9 @@
                              (vector? entry) [(first entry) (second entry)]
                              :else (raise [:invalid-retraction-entry {:value entry}]))
         spath         (path/split path)
-        _             (if-let [mod (-> adi :model :allow)]
+        _             (if-let [mod (-> adi :pipeline :allow)]
                         (if-not (get-in mod spath)
-                          (raise [:model-path-access-not-allowed {:path spath}])))
+                          (raise [:pipeline-path-access-not-allowed {:path spath}])))
         [ets path]    (walk-path ets spath (-> adi :schema :tree))]
     (mapcat #(make-entry-recs-single % path retract) ets)))
 

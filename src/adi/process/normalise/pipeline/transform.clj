@@ -17,21 +17,21 @@
 
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
-                        :model {:pre-transform {:account {:name \"Bob\"}}}}
+                        :pipeline {:pre-transform {:account {:name \"Bob\"}}}}
                        *wrappers*)
   => {:account {:name \"Bob\"}}
 
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
                         :name \"Bob\"
-                        :model {:pre-transform {:account {:name (fn [_ adi] (:name adi))}}}}
+                        :pipeline {:pre-transform {:account {:name (fn [_ adi] (:name adi))}}}}
                        *wrappers*)
   => {:account {:name \"Bob\"}}
 
   (normalise/normalise {:account/name \"Chris\"}
                        {:schema (schema/schema examples/account-name-age-sex)
                         :name \"Bob\"
-                        :model {:pre-transform {:account {:name (fn [v] (str v \"tian\"))}}}}
+                        :pipeline {:pre-transform {:account {:name (fn [v] (str v \"tian\"))}}}}
                        *wrappers*)
   => {:account {:name \"Christian\"}}"
   {:added "0.3"}
@@ -64,7 +64,7 @@
   (normalise/normalise {:account/orders #{{:number 1 :items {:name \"one\"}}
                                           {:number 2 :items {:name \"two\"}}}}
               {:schema (schema/schema examples/account-orders-items-image)
-               :model {:pre-transform {:account {:orders {:number inc
+               :pipeline {:pre-transform {:account {:orders {:number inc
                                                           :items {:name \"thing\"}}}}}}
               *wrappers*)
   => {:account {:orders #{{:items {:name \"thing\"}, :number 2}
