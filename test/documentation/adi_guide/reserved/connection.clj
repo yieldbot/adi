@@ -281,3 +281,49 @@
   ;;                     #datom[17592186045424 63 "The Magic School Bus" 13194139534319 true]],
   ;;           :tempids {-9223350047214995662 17592186045424}}}
 )
+
+
+[[:section {:title ":simulate"}]]
+
+"When `:simulation` is set to `true`, the transaction proceeds as if it was done, without mutating the actual database:"
+
+"The first call to `insert!` looks just like any other call:"
+
+(fact
+  (adi/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true)
+  => {:book {:name "The Magic School Bus"}, :db {:id 17592186045420}})
+
+"But notice that on the next call, the :db/id stays the same:"
+
+(fact
+  (adi/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true)
+  => {:book {:name "The Magic School Bus"}, :db {:id 17592186045420}})
+
+"We can pass `:adi` in as an additional parameter to retrieve the entire datastructure for the call:"
+
+(comment
+  (adi/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true :adi)
+  ;; =>#adi{:tempids ...
+  ;;        :schema #schema{:book {:name :string, :author :string}},
+  ;;        :pipeline nil,
+  ;;        :connection #connection{1001 #inst "2016-03-18T04:13:48.499-00:00"}
+  ;;        :db #db{1001 #inst "2016-03-18T04:13:48.499-00:00"}
+  ;;        :process {... ...},
+  ;;        :options {:adi true,
+  ;;                  :schema-restrict true,
+  ;;                  :schema-required true,
+  ;;                  :schema-defaults true}}
+  )
+
+"A look at `ds-1` shows that it has not changed after the `insert!` calls"
+
+(comment
+  (:connection ds-1)
+  ;;=> #connection{1001 #inst "2016-03-18T04:13:48.499-00:00"}
+  )
+
+"A call to select shows that the book entry has not been added:"
+
+(fact
+  (adi/select ds-1 :book)
+  => #{{:book {:name "Orpheus"}}})

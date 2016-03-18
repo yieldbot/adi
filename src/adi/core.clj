@@ -27,6 +27,7 @@
     :db
     :op
     :pipeline
+    :simulate
     :schema
     :connection
     :profiles})
@@ -45,7 +46,6 @@
     :skip-typecheck
     :first
     :ids
-    :simulate
     :generate-ids
     :generate-syms
     :raw

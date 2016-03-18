@@ -107,7 +107,7 @@
 (defn transact-base [adi]
   (let [opt-trans  (-> adi :transact)
         [datomic-fn sel-key res-key]
-        (cond (-> adi :options :simulate)
+        (cond (-> adi :simulate)
               [datomic/with :db :simulation]
 
               :else

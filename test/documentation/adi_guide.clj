@@ -65,38 +65,14 @@ Pipline related entries:
 
 [[:section {:title "Options"}]]
 
-"There is a seperate param entry holding all the miscellaneous options, called (as you may have guessed) `options` and each sub-entry will be covered seperately. These can be seperated into particular areas:
-
-Result flags:
+"There is a seperate param entry holding all the miscellaneous options, called (as you may have guessed) `options` and each sub-entry will be covered seperately:
 
 - `:first`
 - `:ids`
-
-Selection flags:
-
 - `:ban-expressions`
 - `:ban-ids`
 - `:ban-top-id`
 - `:ban-body-ids`
-
-Schema flags:
-
-- `:schema-required`
-- `:schema-restrict`
-- `:schema-defaults`
-
-Pipeline flags:
-
-- `:use-typecheck`
-- `:use-coerce`
-- `:skip-normalise`
-- `:skip-typesafety`
-
-Debug flags:
-
-- `:simulate`
-- `:generate-ids`
-- `:generate-syms`
 - `:raw`
 - `:adi`
 "
@@ -129,17 +105,9 @@ Debug flags:
 
 [[:file {:src "test/documentation/adi_guide/reserved/schema.clj"}]]
 
-[[:chapter {:title "Query Options"}]]
+[[:chapter {:title "Options"}]]
 
-[[:file {:src "test/documentation/adi_guide/options/query.clj"}]]
-
-[[:chapter {:title "Normalise Options"}]]
-
-[[:file {:src "test/documentation/adi_guide/options/normalise.clj"}]]
-
-[[:chapter {:title "Debug Options"}]]
-
-[[:file {:src "test/documentation/adi_guide/options/debug.clj"}]]
+[[:file {:src "test/documentation/adi_guide/options.clj"}]]
 
 [[:chapter {:title "Pipeline"}]]
 

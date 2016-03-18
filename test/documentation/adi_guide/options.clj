@@ -1,4 +1,4 @@
-(ns documentation.adi-guide.options.query
+(ns documentation.adi-guide.options
   (:use midje.sweet)
   (:require [adi.core :as adi]))
 
@@ -32,10 +32,13 @@
                :class {:subject "Math"
                        :teacher {:name "Mr Nolan"
                                  :age 26}}}
-              {:student {:name "Charlie" :classes #{(adi/iid :science)}}}
-              {:student {:name "Bob"     :classes #{(adi/iid :math)}}}
-              {:student {:name "Anne"    :classes #{(adi/iid :science)
-                                                    (adi/iid :math)}}}])
+              {:student {:name "Charlie"
+                         :classes #{(adi/iid :science)}}}
+              {:student {:name "Bob"
+                         :classes #{(adi/iid :math)}}}
+              {:student {:name "Anne"
+                         :classes #{(adi/iid :science)
+                                    (adi/iid :math)}}}])
 
 "And we are ready to go!"
 
@@ -157,23 +160,95 @@
   (adi/select school-ds {:class/students 17592186045424} :ban-ids)
   => (throws))
 
-[[:section {:title ":use-typecheck"}]]
+[[:section {:title ":raw"}]]
 
-""
-(fact
-  (adi/select school-ds {:student/classes/teacher/age "39"})
-  => #{{:student {:name "Anne"}} {:student {:name "Charlie"}}})
+"Returns the actual input that would be given to datomic:"
 
-(fact
-  (adi/select school-ds {:student/classes/teacher/age "38"}
-              :use-typecheck)
-  => (throws))
+(adi/select school-ds {:class/students 17592186045424} :raw)
+;;=> [:find ?self :where [17592186045424 :student/classes ?self]]
 
-[[:section {:title ":use-coerce"}]]
+"Works for both queries and datoms:"
 
-(fact
-  (adi/select school-ds {:student/classes/teacher/age "39"}
-              :use-typecheck
-              :use-coerce)
-  => #{{:student {:name "Anne"}} {:student {:name "Charlie"}}})
+(comment
+  (adi/insert! school-ds
+               [{:db/id (adi/iid :science)
+                 :class {:subject "Science"
+                         :teacher {:name "Mr Michaels"
+                                   :age 39}}}
+                {:db/id (adi/iid :math)
+                 :class {:subject "Math"
+                         :teacher {:name "Mr Nolan"
+                                   :age 26}}}
+                {:student {:name "Charlie" :classes #{(adi/iid :science)}}}
+                {:student {:name "Bob"     :classes #{(adi/iid :math)}}}
+                {:student {:name "Anne"    :classes #{(adi/iid :science)
+                                                      (adi/iid :math)}}}]
+               :raw)
+  ;;=> [{:db/id #adi[:science]
+  ;;     :class/subject "Science"}
+  ;;     :class/teacher {:db/id #adi[?e262028]
+  ;;                     :teacher/name "Mr Michaels"
+  ;;                     :teacher/age 39}} 
+  ;;    {:db/id #adi[:math]
+  ;;     :class/subject "Math"
+  ;;     :class/teacher {:db/id #adi[?e262029]
+  ;;                     :teacher/name "Mr Nolan"
+  ;;                     :teacher/age 26}}
+  ;;    {:student/name "Charlie", :db/id #adi[?e262030]}
+  ;;    [:db/add #adi[?e262030] :student/classes #adi[:science]]
+  ;;    {:student/name "Bob", :db/id #adi[?e262031]}
+  ;;    [:db/add #adi[?e262031] :student/classes #adi[:math]]
+  ;;    {:student/name "Anne", :db/id #adi[?e262032]}
+  ;;    [:db/add #adi[?e262032] :student/classes #adi[:science]]
+  ;;    [:db/add #adi[?e262032] :student/classes #adi[:math]])
+)
 
+[[:section {:title ":adi"}]]
+
+"Returns the `adi` datastructure used for the query, useful for debugging. This map has all the acculmulated data as the query/insert moves through the adi data pipeline"
+
+(comment
+  (adi/select school-ds {:class/students 17592186045424} :adi)
+  ;;=> #adi{:tempids {:status :ready, :val #{}},
+  ;;        :schema #schema{:student {:name :string,
+  ;;                                  :classes :&class<*>},
+  ;;                        :class   {:subject :string,
+  ;;                                  :teacher :&teacher,
+  ;;                                  :students :&student<*>},
+  ;;                        :teacher {:name :string,
+  ;;                                  :age :long,
+  ;;                                  :class :&class<*>}}
+  ;;        :pipeline nil,
+  ;;        :db #db{1001 #inst "2016-03-18T06:14:23.156-00:00"},
+  ;;        :process {:input
+  ;;                  {:class/students 17592186045424},
+  ;;
+  ;;                  :normalised
+  ;;                  {:class {:students #{17592186045424}}}
+  ;;
+  ;;                  :analysed
+  ;;                  {:# {:sym ?self, :id ?e262444}
+  ;;                   :class/students #{17592186045424}}
+  ;;
+  ;;                  :reviewed
+  ;;                  {:# {:sym ?self, :id ?e262444}
+  ;;                   :class/students #{17592186045424}}
+  ;;
+  ;;                  :characterised
+  ;;                  {:# {:sym ?self, :id ?e262444}
+  ;;                   :rev-ids-many {:student/classes #{}}
+  ;;                   :rev-ids {:student/classes #{17592186045424}}
+  ;;
+  ;;                  :emitted
+  ;;                  [:find ?self :where
+  ;;                   [17592186045424 :student/classes ?self]]},
+  ;;        :type "query",
+  ;;        :op :select,
+  ;;        :result {:ids (17592186045418 17592186045420),
+  ;;                 :entities ({:db/id 17592186045418}
+  ;;                            {:db/id 17592186045420}),
+  ;;                 :data ({:class {:subject "Science"}}
+  ;;                        {:class {:subject "Math"}})}
+  ;;        :options {:adi true},
+  ;;        :connection #connection{1001 #inst "2016-03-18T06:14:23.156-00:00"}}
+  )
