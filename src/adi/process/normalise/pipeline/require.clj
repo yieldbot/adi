@@ -1,6 +1,7 @@
 (ns adi.process.normalise.pipeline.require
   (:require [hara.common :refer [hash-map?]]
-            [hara.event :refer [raise]]))
+            [hara.event :refer [raise]]
+            [hara.function.args :refer [op]]))
 
 (defn process-require
   "Used by both wrap-model-pre-require and wrap-model-post-require
@@ -18,17 +19,27 @@
   => (raises-issue {:nsv [:account :name]
                     :no-required true})"
   {:added "0.3"}
-  [req require-key tdata nsv tsch]
+  [req require-key tdata nsv tsch adi]
   (if-let [[k v] (first req)]
     (cond (= v :checked)
           (do (if (not (get tdata k))
                 (raise [:adi :normalise require-key {:nsv (conj nsv k) :data tdata}]
                        (str "PROCESS_REQUIRE: key " (conj nsv k) " is not present")))
-              (recur (next req) require-key tdata nsv tsch))
+              (recur (next req) require-key tdata nsv tsch adi))
 
+          (fn? v)
+          (let [subdata (get tdata k)
+                flag (op v subdata adi)]
+            (do (if (and (or (= flag :checked)
+                             (true? flag))
+                         (nil? subdata))
+                  (raise [:adi :normalise require-key {:nsv (conj nsv k) :data tdata}]
+                         (str "PROCESS_REQUIRE: key " (conj nsv k) " is not present")))
+                (recur (next req) require-key tdata nsv tsch adi)))
+          
           (and (-> tsch (get k) vector?)
                (-> tsch (get k) first :type (= :ref)))
-          (recur (next req) require-key tdata nsv tsch)
+          (recur (next req) require-key tdata nsv tsch adi)
 
           :else
           (let [subdata (get tdata k)]
@@ -37,8 +48,8 @@
                          (str "PROCESS_REQUIRE: key " (conj nsv k) " is not present"))
 
                   (hash-map? subdata)
-                  (process-require v require-key (get tdata k) (conj nsv k) (get tsch k)))
-            (recur (next req) require-key tdata nsv tsch)))
+                  (process-require v require-key (get tdata k) (conj nsv k) (get tsch k) adi))
+            (recur (next req) require-key tdata nsv tsch adi)))
     tdata))
 
 (defn wrap-model-pre-require
@@ -62,7 +73,7 @@
   [f]
   (fn [tdata tsch nsv interim fns adi]
     (let [req (:pre-require interim)]
-      (process-require req :no-required tdata nsv tsch)
+      (process-require req :no-required tdata nsv tsch adi)
       (f tdata tsch nsv interim fns adi))))
 
 (defn wrap-model-post-require 
@@ -70,4 +81,4 @@
   (fn [tdata tsch nsv interim fns adi]
     (let [req (:post-require interim)
           output (f tdata tsch nsv interim fns adi)]
-      (process-require req :no-required output nsv tsch))))
+      (process-require req :no-required output nsv tsch adi))))

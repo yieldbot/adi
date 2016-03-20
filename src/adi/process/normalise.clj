@@ -2,6 +2,7 @@
   (:require [adi.process.normalise.base :as normalise]
             [hara.data.path :as data]
             [hara.common.error :refer [error]]
+            [hara.function.args :refer [op]]
             [adi.process.normalise.common
               [alias :as alias]
               [db :as db]
@@ -31,7 +32,7 @@
   ([data adi]
    (let [tdata (data/treeify-keys-nested data)
          tdata (if-let [pre-process-fn (-> adi :pipeline :pre-process)]
-                 (pre-process-fn tdata adi)
+                 (op pre-process-fn tdata adi)
                  tdata)
          tsch (-> adi :schema :tree)
          interim (:pipeline adi)

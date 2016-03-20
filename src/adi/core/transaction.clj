@@ -224,8 +224,8 @@
                                 (update-in [:pipeline] dissoc :pull)))
         entities (-> sadi :result :entities)
         ret-model (if-let [imodel (-> sadi :pipeline :allow)]
-                 (model/model-unpack imodel (-> sadi :schema :tree))
-                 (raise :missing-allow-model))
+                    (model/model-unpack imodel (-> sadi :schema :tree))
+                    (raise :missing-allow-model))
         all-ids (mapcat (fn [entity]
                           (link/linked-ids entity ret-model
                                            (-> sadi :schema :flat)))

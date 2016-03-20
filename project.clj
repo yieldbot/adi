@@ -1,4 +1,4 @@
-(defproject im.chit/adi "0.3.2"
+(defproject im.chit/adi "0.3.3"
   :description "data modelling for the ambitious"
   :url "https://www.github.com/zcaudate/adi"
   :license {:name "The MIT License"
@@ -39,15 +39,7 @@
                           "adi-walkthrough"
                           {:input "test/documentation/adi_walkthrough.clj"
                            :title "walkthrough"
-                           :subtitle "a whirlwind tour of the library"}
-                          "adi-bookstore"
-                          {:input "test/documentation/adi_bookstore.clj"
-                           :title "the bookstore"
-                           :subtitle "an example of basic data management"}
-                          "adi-schoolyard"
-                          {:input "test/documentation/adi_schoolyard.clj"
-                           :title "the schoolyard"
-                           :subtitle "an example for relational modelling"}}
+                           :subtitle "a whirlwind tour of the library"}}
                 :link {:auto-tag    true
                        :auto-number true}}
   :profiles {:dev {:plugins [[lein-midje "3.1.3"]

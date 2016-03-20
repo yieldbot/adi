@@ -73,7 +73,6 @@
        refks (find-keys fsch nss :type :ref)
        dataks     (try (set (keys pdata))
                        (catch Throwable t
-                         (println pdata)
                          (throw t)))
        mergeks    (set/difference ks dataks)
        datarefks  (set/intersection refks dataks)]

@@ -1,5 +1,6 @@
 (ns adi.process.normalise.pipeline.mask
-  (:require [hara.common.checks :refer [hash-map?]]))
+  (:require [hara.common.checks :refer [hash-map?]]
+            [hara.function.args :refer [op]]))
 
 (defn process-mask
   "Used by both wrap-model-pre-mask and wrap-model-post-mask
@@ -39,6 +40,17 @@
                                                       adi))
                          nsv interim tsch adi)
 
+                  (= :unchecked v)
+                  (recur (next smask) tdata nsv interim tsch adi)
+
+                  (fn? v)
+                  (let [flag (op v subdata adi)]
+                    (if (or (= :unchecked flag)
+                            (false? flag)
+                            (nil? flag))
+                      (recur (next smask) tdata nsv interim tsch adi)
+                      (recur (next smask) (dissoc tdata k) nsv interim tsch adi)))
+                  
                   :else
                   (recur (next smask) (dissoc tdata k) nsv interim tsch adi))))
     tdata))

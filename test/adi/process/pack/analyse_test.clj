@@ -20,12 +20,10 @@
   ^:hidden
   ["raises an error on wrong schema unless otherwise stated"]
   (analyse-raw {:account {:name :Chris
-                      :hello "world"}}
+                          :hello "world"}}
            {:schema (schema/schema examples/account-name-age-sex)
             :options {:auto-ids false}})
-  => (raises-issue {:no-schema true
-                    :data "world",
-                    :nsv [:account :hello]})
+  => {:account/name "Chris"}
 
   (analyse-raw {:account {:name :Chris
                       :hello "world"}}

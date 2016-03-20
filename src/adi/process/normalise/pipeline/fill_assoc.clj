@@ -33,7 +33,16 @@
 
           :else
           (let [subdata (get tdata k)]
-            (cond (hash-map? subdata)
+            (cond (fn? v)
+                  (recur (next sfill)
+                         (complex/assocs tdata k (op v (:ref-path interim) adi))
+                         nsv interim tsch adi)
+
+                  (not (hash-map? v))
+                  (recur (next sfill)
+                         (complex/assocs tdata k v) nsv interim tsch adi)
+                  
+                  (hash-map? subdata)
                   (recur (next sfill)
                          (assoc tdata k (process-fill-assoc v
                                                       (get tdata k)
@@ -41,16 +50,7 @@
                                                       interim
                                                       (get tsch k)
                                                       adi))
-                         nsv interim tsch adi)
-
-                  (fn? v)
-                  (recur (next sfill)
-                         (complex/assocs tdata k (op v (:ref-path interim) adi))
-                         nsv interim tsch adi)
-
-                  :else
-                  (recur (next sfill)
-                         (complex/assocs tdata k v) nsv interim tsch adi))))
+                         nsv interim tsch adi))))
     tdata))
 
 (defn wrap-model-fill-assoc

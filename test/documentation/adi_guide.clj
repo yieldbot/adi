@@ -35,13 +35,171 @@ All functionality is contained in the `adi.core` namespace:
 
 [[:image {:src "img/adi.png" :width "100%"}]]
 
-[[:chapter {:title "Customisations"}]]
+[[:chapter {:title "API"}]]
 
-"Who knew that manipulating data can be so terse? Well... it kinda is when you want fine grain control. `adi` comes with a bunch of bells and whistles for data - some inherited from the underlying datomic api, others built to deal with the pipeline for schema-assisted transformation of data."
+"Top Level API's are listed below, first, we define a schema:"
 
-[[:section {:title "Params"}]]
+(def schema-api
+ {:account {:user     [{:required true
+                        :unique :value}]
+            :books    [{:type :ref
+                        :cardinality :many
+                        :ref  {:ns :book}}]}
+  :book   {:name    [{:required true
+                      :fulltext true}]
+           :author  [{:fulltext true}]}})
 
-"There are keywords reserved by the top-level operations that can be set/overwritten through arguments.
+[[:section {:title "connect!"}]]
+
+"`connect!` creates a connection to a datomic datastore:"
+
+(def api-ds (adi/connect! "datomic:mem://adi-guide-api" schema-api true true))
+
+[[:section {:title "insert!"}]]
+
+"`insert!` puts data into the datastore:"
+
+(adi/insert! api-ds
+             [{:account {:user "Anne"
+                         :books #{{:name "Watership Down"}}}}
+              {:account {:user "Bob"
+                         :books #{{:name "Canterbury Tales"}}}}])
+
+[[:section {:title "select"}]]
+
+"`select` retrieves from the datastore by category:"
+
+(fact
+  (adi/select api-ds :book)
+  => #{{:book {:name "Watership Down"}}
+       {:book {:name "Canterbury Tales"}}})
+
+"or by the adi query syntax:"
+
+(fact
+  (adi/select api-ds {:book/name '_})
+  => #{{:book {:name "Watership Down"}}
+       {:book {:name "Canterbury Tales"}}})
+
+[[:section {:title "query"}]]
+
+"`query` retrieves results using a datomic style query"
+
+(adi/query api-ds '[:find ?self :where
+                    [?self :book/name _]]
+           [])
+=> #{{:book {:name "Watership Down"}}
+     {:book {:name "Canterbury Tales"}}}
+
+[[:section {:title "update!"}]]
+
+"`update!` will take a query and update all datoms that match with additional values:"
+
+(fact
+  (adi/update! api-ds
+               {:book/name "Watership Down"}
+               {:book/author "Richard Adams"})
+
+  (adi/select api-ds {:book/name "Watership Down"})
+  => #{{:book {:name "Watership Down", :author "Richard Adams"}}})
+
+[[:section {:title "retract!"}]]
+
+"`retract!` will take a query and retract keys in all datoms that match"
+
+(fact
+  (adi/retract! api-ds
+                {:book/name "Watership Down"}
+                [:book/author])
+
+  (adi/select api-ds {:book/name "Watership Down"})
+  => #{{:book {:name "Watership Down"}}})
+
+[[:section {:title "update-in!"}]]
+
+"`update-in!` will take a query and update all datoms through the access path"
+
+(fact
+  (adi/update-in! api-ds
+                  {:account/user "Anne"}
+                  [:account/books {:name "Watership Down"}]
+                  {:author "Richard Adams"})
+
+  (adi/select api-ds {:book/name "Watership Down"})
+  => #{{:book {:name "Watership Down", :author "Richard Adams"}}})
+
+[[:section {:title "retract-in!"}]]
+
+"`retract-in!` will take a query and retracts all keys through the access path"
+
+(fact
+  (adi/retract-in! api-ds
+                  {:account/user "Anne"}
+                  [:account/books {:name "Watership Down"}]
+                  [:author])
+
+  (adi/select api-ds {:book/name "Watership Down"})
+  => #{{:book {:name "Watership Down"}}})
+
+
+[[:section {:title "transact!"}]]
+
+"`transact!` takes datomic datoms for update:"
+
+(fact
+  (adi/transact! api-ds
+                 [{:db/id (adi/iid :charlie)
+                   :account/user "Charlie"}])
+  ;;=> [{:db {:id 17592186045423}
+  ;;     :account {:user "Charlie"} }]
+
+  (adi/select api-ds :account)
+  => #{{:account {:user "Anne"}} {:account {:user "Bob"}} {:account {:user "Charlie"}}})
+
+[[:section {:title "delete!"}]]
+
+"`delete!` removes entities from the datastore:"
+
+(fact
+  (adi/delete! api-ds {:account/user "Charlie"})
+  ;;=> #{{:db {:id 17592186045427}
+  ;;      :account {:user "Charlie"}}}
+
+  (adi/select api-ds :account)
+  => #{{:account {:user "Anne"}} {:account {:user "Bob"}}})
+
+[[:section {:title "delete-in!"}]]
+
+"`delete-in!` will take a query and deletes all entities from the access path:"
+
+(fact
+  (adi/delete-in! api-ds {:account/user "Bob"}
+                  [:account/books {:name '_}])
+  ;;=> #{{:db {:id 17592186045421}
+  ;;      :book {:name "Canterbury Tales"}}}
+
+  
+  (adi/select api-ds :book)
+  => #{{:book {:name "Watership Down"}}})
+
+[[:section {:title "delete-all!"}]]
+
+"`delete-all!` will takes a query and deletes all entities govered by the access model:"
+
+(fact
+  (adi/delete-all! api-ds {:account/user "Anne"}
+                   :access {:account {:books :checked}})
+  ;;=> #{{:db {:id 17592186045418}}}
+  ;;      :account  {:user "Anne",
+  ;;                 :books #{{:name "Watership Down",
+  ;;                           :+ {:db {:id 17592186045419}}}}}, 
+  
+   (adi/select api-ds :book)
+  => #{})
+
+[[:section {:title "Parameters"}]]
+
+"Apart from the core query and transactional functions, there are many parameters and customisations that can be tweaked. This is very terse, but it is important for fine grain control of data. `adi` comes with a bunch of bells and whistles for data - some inherited from the underlying datomic api, others built to deal with the pipeline for schema-assisted transformation of data. There are keywords reserved by the top-level operations that can be set/overwritten through arguments.
 
 Connection related entries:
 
@@ -56,11 +214,6 @@ Schema related entries:
 - `:schema`
 - `:pull`
 - `:access`
-
-Pipline related entries:
-
-- `:pipeline`
-- `:profiles`
 "
 
 [[:section {:title "Options"}]]
@@ -79,7 +232,7 @@ Pipline related entries:
 
 [[:section {:title "Pipeline"}]]
 
-"The `:pipeline` entry has it's own set of sub-keys. They will be described in a later chapter:
+"The `:pipeline` entry has it's own set of sub-keys. They will be described in its own chapter:
 
 - `:pre-process`
 - `:pre-require`
@@ -110,5 +263,9 @@ Pipline related entries:
 [[:file {:src "test/documentation/adi_guide/options.clj"}]]
 
 [[:chapter {:title "Pipeline"}]]
+
+"The data pipeline is used for preprocessing of incoming data before accessing datomic. Different stages of the pipeline can be seen below:"
+
+[[:image {:src "img/adi-pipeline.png" :width "250px"}]]
 
 [[:file {:src "test/documentation/adi_guide/reserved/pipeline.clj"}]]

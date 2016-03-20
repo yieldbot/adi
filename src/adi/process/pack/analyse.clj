@@ -123,7 +123,7 @@
                                 ((:analyse-attr fns) v subsch nsv tsch fns)))
 
                (nil? subsch)
-               (do (if-not (:schema-ignore fns)
+               (do #_(if-not (:schema-ignore fns)
                      (raise [:adi :analyse :no-schema {:nsv (conj nsv k) :data v}]
                             (str "ANALYSE_LOOP: " (conj nsv k) " has no schema.")))
                    (recur (next tdata) psch nsv tsch fns output))

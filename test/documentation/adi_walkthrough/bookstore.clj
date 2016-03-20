@@ -1,15 +1,13 @@
-(ns documentation.adi-bookstore
+(ns documentation.adi-walkthrough.bookstore
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [adi.test.checkers :refer :all]
             [datomic.api :as datomic]))
 
+[[:chapter {:title "Bookstore"}]]
+
 "Lets go ahead and model a network of bookstores around the world. We apply
-the knowledge of `:ref` and `:enum` types from previous tutorial to good use:"
-
-[[:chapter {:title "Definition and Setup"}]]
-
-"The schema for our bookstore model can be seen in `Figure {{schema-4}}`. It is a rather simplistic
+the knowledge of `:ref` and `:enum` types from previous tutorial to good use. The schema for our bookstore model can be seen in `Figure {{schema-4}}`. It is a rather simplistic
 model. The two main concepts being a `Book` and a `Store`. They are connected together
 through an `Inventory`, which keeps how many books there are in a store:"
 
@@ -63,7 +61,7 @@ through an `Inventory`, which keeps how many books there are in a store:"
   (adi/select ds {:store {:address/country "USA"}})
   => #{{:store {:name "Canyon Books"}} {:store {:name "Capital Books"}}}
 
-  [[:chapter {:title "Updating Data"}]]
+  [[:section {:title "Updating Data"}]]
 
   "We can now start adding some books to our Australian store:"
 
@@ -115,7 +113,7 @@ through an `Inventory`, which keeps how many books there are in a store:"
                :inventories #{{:store {:name "Koala Books"}
                                :count 10 :cover :hard}}}}}
 
-  [[:chapter {:title "Different Semantics, Same Result"}]]
+  [[:section {:title "Different Semantics, Same Result"}]]
 
   "Lets test out some other functions, starting with `retract!`. Retract takes a set of
    keys to remove from an entity:"
@@ -155,7 +153,7 @@ through an `Inventory`, which keeps how many books there are in a store:"
   (adi/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
   => {:inventory {:count 3, :cover :hard}}
 
-  [[:chapter {:title "Expanding the Business"}]]
+  [[:section {:title "Expanding the Business"}]]
 
   "Lets replicate the stock at `Koala Books` to `Capital Books`. So basically, we are creating inventory
   records that have a link to the already existing books. It is very simple to do using adi:"
@@ -195,7 +193,7 @@ through an `Inventory`, which keeps how many books there are in a store:"
   => {:book {:author "Mark Twain", :name "Tom Sawyer",
              :inventories #{{:cover :hard, :count 3, :store {:name "Koala Books"}}}}}
 
-  [[:chapter {:title "Moving Stock"}]]
+  [[:section {:title "Moving Stock"}]]
 
   "`Capital Books` ran into financial problems and had to close down. All the stock was
   transfered to `Canyon Books`. In order to perform the whole lot in one transaction, the

@@ -1,10 +1,10 @@
-(ns documentation.adi-schoolyard
+(ns documentation.adi-walkthrough.schoolyard
   (:use midje.sweet)
   (:require [adi.core :as adi]
             [adi.test.checkers :refer :all]
             [datomic.api :as datomic]))
 
-[[:chapter {:title "Data Setup"}]]
+[[:chapter {:title "Schoolyard"}]]
 
 "We want to model a simple school, and we have the standard information like classes, teachers students.
 The schema for our bookstore model can be seen in `Figure {{schema-4}}`. It is a rather simplistic
@@ -35,10 +35,10 @@ model. This is actually much like the Bookstore example with a couple more field
                                  :rval :students}   ;; Same with students
                            :cardinality :many}]}})
 
+
+[[:section {:title "Initial Setup"}]]
+
 (facts
-
-  [[:section {:title "Initial Setup"}]]
-
   "Once again, the adi datastore is created:"
 
   (def ds (adi/connect! "datomic:mem://adi-example-step-5" schema-5 true true))
@@ -143,7 +143,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "**BAM!!** We are now ready to do some Analysis"
 
-  [[:chapter {:title "Datomic"}]]
+  [[:section {:title "Datomic"}]]
 
   "By now, you should be familiar with this query:"
 
@@ -170,7 +170,7 @@ model. This is actually much like the Bookstore example with a couple more field
   "As can be seen, the `select` function is just a more succinct version of `q` with many added
   features."
 
-  [[:chapter {:title "Querying"}]]
+  [[:section {:title "Querying"}]]
 
   "There is a `query` method that is halfway between `select` and `q` in terms and
   is convenient for dropping back into datalog queries. We see more examples of the
@@ -208,7 +208,7 @@ model. This is actually much like the Bookstore example with a couple more field
        (mapv #(-> % :student :name)))
   => ["Bobby" "Francis" "David" "Kelly"]
 
-  [[:chapter {:title "Datalog Generation"}]]
+  [[:section {:title "Datalog Generation"}]]
 
   "Now the cool thing is that `select` actually generates a datalog query first and then runs it against datomic. We can access the datalog query via the `:raw` option:"
 
@@ -255,7 +255,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "So which one will you prefer to be using?"
 
-  [[:chapter {:title "Expressivity"}]]
+  [[:section {:title "Expressivity"}]]
 
   "Find all classes that are taught by Mr Anderson:"
   (adi/select ds {:class/teacher {:name "Mr. Anderson"}})

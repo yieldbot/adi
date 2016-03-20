@@ -143,7 +143,8 @@
 "And when numbers are not in the body, an exception is thrown:"
 
 (fact
-  (adi/select school-ds {:class/students 17592186045424} :ban-body-ids)
+  (adi/select school-ds
+              {:class/students 17592186045424} :ban-body-ids)
   => (throws))
 
 [[:section {:title ":ban-ids"}]]
@@ -157,14 +158,16 @@
 "And when numbers are not in the body, an exception is thrown:"
 
 (fact
-  (adi/select school-ds {:class/students 17592186045424} :ban-ids)
+  (adi/select school-ds
+              {:class/students 17592186045424} :ban-ids)
   => (throws))
 
 [[:section {:title ":raw"}]]
 
 "Returns the actual input that would be given to datomic:"
 
-(adi/select school-ds {:class/students 17592186045424} :raw)
+(adi/select school-ds
+            {:class/students 17592186045424} :raw)
 ;;=> [:find ?self :where [17592186045424 :student/classes ?self]]
 
 "Works for both queries and datoms:"
@@ -179,10 +182,13 @@
                  :class {:subject "Math"
                          :teacher {:name "Mr Nolan"
                                    :age 26}}}
-                {:student {:name "Charlie" :classes #{(adi/iid :science)}}}
-                {:student {:name "Bob"     :classes #{(adi/iid :math)}}}
-                {:student {:name "Anne"    :classes #{(adi/iid :science)
-                                                      (adi/iid :math)}}}]
+                {:student {:name "Charlie"
+                           :classes #{(adi/iid :science)}}}
+                {:student {:name "Bob"
+                           :classes #{(adi/iid :math)}}}
+                {:student {:name "Anne"
+                           :classes #{(adi/iid :science)
+                                      (adi/iid :math)}}}]
                :raw)
   ;;=> [{:db/id #adi[:science]
   ;;     :class/subject "Science"}
