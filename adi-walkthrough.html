@@ -58,9 +58,8 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Guides <span class="caret"></span></a>
               <ul class="dropdown-menu">
+                <li><a href="adi-guide.html">api</a></li>
                 <li><a href="adi-walkthrough.html">walkthrough</a></li>
-                <li><a href="adi-bookstore.html">example - bookstore</a></li>
-                <li><a href="adi-schoolyard.html">example - schoolyard</a></li>
             </ul>
             </li>
             <li>
@@ -76,7 +75,7 @@
   <div class="container row">
     <div class="col-md-4 scrollspy pull-right">
       <ul id="nav" class="nav hidden-xs hidden-sm" data-spy="affix">
-        <li><a href="#introduction">1  &nbsp;&nbsp; Introduction</a></li><li><a href="#step-one">2  &nbsp;&nbsp; Step One</a><ul class="nav"><li><a href="#schema">2.1  &nbsp;&nbsp; Schema</a></li><li><a href="#connection">2.2  &nbsp;&nbsp; Connection</a></li><li><a href="#writing">2.3  &nbsp;&nbsp; Writing</a></li><li><a href="#reading">2.4  &nbsp;&nbsp; Reading</a></li><li><a href="#restrictions">2.5  &nbsp;&nbsp; Restrictions</a></li><li><a href="#time-travel">2.6  &nbsp;&nbsp; Time Travel</a></li></ul></li><li><a href="#step-two">3  &nbsp;&nbsp; Step Two</a><ul class="nav"><li><a href="#enums">3.1  &nbsp;&nbsp; Enums</a></li><li><a href="#updating">3.2  &nbsp;&nbsp; Updating</a></li><li><a href="#selection">3.3  &nbsp;&nbsp; Selection</a></li><li><a href="#java">3.4  &nbsp;&nbsp; Java</a></li></ul></li><li><a href="#step-three">4  &nbsp;&nbsp; Step Three</a><ul class="nav"><li><a href="#refs">4.1  &nbsp;&nbsp; Refs</a></li><li><a href="#walking">4.2  &nbsp;&nbsp; Walking</a></li><li><a href="#data-access">4.3  &nbsp;&nbsp; Data Access</a></li><li><a href="#pointers">4.4  &nbsp;&nbsp; Pointers</a></li><li><a href="#playground">4.5  &nbsp;&nbsp; Playground</a></li></ul></li>
+        <li><a href="#introduction">1  &nbsp;&nbsp; Introduction</a><ul class="nav"><li><a href="#installation">1.1  &nbsp;&nbsp; Installation</a></li><li><a href="#motivation">1.2  &nbsp;&nbsp; Motivation</a></li><li><a href="#off-and-running">1.3  &nbsp;&nbsp; Off and Running</a></li></ul></li><li><a href="#step-one">2  &nbsp;&nbsp; Step One</a><ul class="nav"><li><a href="#schema">2.1  &nbsp;&nbsp; Schema</a></li><li><a href="#connection">2.2  &nbsp;&nbsp; Connection</a></li><li><a href="#writing">2.3  &nbsp;&nbsp; Writing</a></li><li><a href="#reading">2.4  &nbsp;&nbsp; Reading</a></li><li><a href="#restrictions">2.5  &nbsp;&nbsp; Restrictions</a></li><li><a href="#time-travel">2.6  &nbsp;&nbsp; Time Travel</a></li></ul></li><li><a href="#step-two">3  &nbsp;&nbsp; Step Two</a><ul class="nav"><li><a href="#enums">3.1  &nbsp;&nbsp; Enums</a></li><li><a href="#updating">3.2  &nbsp;&nbsp; Updating</a></li><li><a href="#selection">3.3  &nbsp;&nbsp; Selection</a></li><li><a href="#java">3.4  &nbsp;&nbsp; Java</a></li></ul></li><li><a href="#step-three">4  &nbsp;&nbsp; Step Three</a><ul class="nav"><li><a href="#refs">4.1  &nbsp;&nbsp; Refs</a></li><li><a href="#walking">4.2  &nbsp;&nbsp; Walking</a></li><li><a href="#data-access">4.3  &nbsp;&nbsp; Data Access</a></li><li><a href="#pointers">4.4  &nbsp;&nbsp; Pointers</a></li><li><a href="#playground">4.5  &nbsp;&nbsp; Playground</a></li></ul></li><li><a href="#bookstore">5  &nbsp;&nbsp; Bookstore</a><ul class="nav"><li><a href="#updating-data">5.1  &nbsp;&nbsp; Updating Data</a></li><li><a href="#different-semantics-same-result">5.2  &nbsp;&nbsp; Different Semantics, Same Result</a></li><li><a href="#expanding-the-business">5.3  &nbsp;&nbsp; Expanding the Business</a></li><li><a href="#moving-stock">5.4  &nbsp;&nbsp; Moving Stock</a></li></ul></li><li><a href="#schoolyard">6  &nbsp;&nbsp; Schoolyard</a><ul class="nav"><li><a href="#the-schema">6.1  &nbsp;&nbsp; The Schema</a></li><li><a href="#initial-setup">6.2  &nbsp;&nbsp; Initial Setup</a></li><li><a href="#datomic">6.3  &nbsp;&nbsp; Datomic</a></li><li><a href="#querying">6.4  &nbsp;&nbsp; Querying</a></li><li><a href="#datalog-generation">6.5  &nbsp;&nbsp; Datalog Generation</a></li><li><a href="#expressivity">6.6  &nbsp;&nbsp; Expressivity</a></li></ul></li>
       </ul>
     </div>
     <div class="col-md-8" id="content">
@@ -86,7 +85,8 @@
           <h4>a whirlwind tour of the library</h4>
         </div>
       </div>
-      <section class="chapter" id="introduction"><h2 class="chapter">1  &nbsp;&nbsp; Introduction</h2><div class="group"><div class="paragraph"><p>So open up a repl in a project with <code>adi</code> installed and require load up the library:</p></div></div></section><section class="chapter" id="step-one"><h2 class="chapter">2  &nbsp;&nbsp; Step One</h2><section class="section" id="schema"><h3 class="section">2.1  &nbsp;&nbsp; Schema</h3><div class="paragraph"><p>A simple <code>adi</code> schema is constructed as follows:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-1
+      <section class="chapter" id="introduction"><h2 class="chapter">1  &nbsp;&nbsp; Introduction</h2><section class="section" id="installation"><h3 class="section">1.1  &nbsp;&nbsp; Installation</h3><div class="paragraph"><p>Add to <code>project.clj</code> dependencies:</p><pre><code>&#91;im.chit/adi &quot;0.3.3&quot;&#93;
+</code></pre><p>All functionality is contained in the <code>adi.core</code> namespace:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(require '[adi.core :as adi])</div></div></section><section class="section" id="motivation"><h3 class="section">1.2  &nbsp;&nbsp; Motivation</h3><div class="paragraph"><p>At the heart of any modern system lies the database. The database has evolved to become exceedingly powerful with facilities for data management, clustering, concurrent access and search. However, the database is also too powerful to expose directly to the outside world. A malicous attacker, or more likely, a wrong keystroke could wipe out an application's entire list of clients, recievables and other such intellectual property. Anyone with direct access can do a lot of damage and so it much be protected.</p><p>If we view an application as a cell, then the database can be considered the nucleus and the rest of the application like a porous membrane and a network of internal receptors/transmittors through which information can be directed in and out. This network is defined by the application developer as a structure of checks, restrictions and transformations. Ultimately, any robust system has to provide a pipeline for such checks so that the database only exposes the right data to the right authority as well as recieves data that has been deemed safe to enter.</p><p>Security is then the specification of an interface for access to the database. The irony for the developer is that data from the outside world comes in all shapes and sizes. The more controls are defined, the less power and control one has over the data. The current web-development is almost entirely devoted to security and data transformation -> from json, to objects/maps, to validating them and converting them to records and then back again.</p><p>Relational databases rely on orms for converting from data to tables. Document databases allow data to be stored as a tree structure at the expense of query power. However, none of the above address the issue of security. Much of current code for web applications is code to deal with security.</p><p><a href='https://www.github.com/zcaudate/adi'>adi</a> has been designed to generalize the mechanisms for allowing data from an insecure web interface directly into the database. It consists of a declarative security model, a compact object-based syntax that is built on top of datomic.</p></div></section><section class="section" id="off-and-running"><h3 class="section">1.3  &nbsp;&nbsp; Off and Running</h3><div class="paragraph"><p>Open up a repl in a project with <code>adi</code> installed and require load up the library:</p></div></section></section><section class="chapter" id="step-one"><h2 class="chapter">2  &nbsp;&nbsp; Step One</h2><section class="section" id="schema"><h3 class="section">2.1  &nbsp;&nbsp; Schema</h3><div class="paragraph"><p>A simple <code>adi</code> schema is constructed as follows:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-1
   {:account/user     [{:type :string      ;; (1)
                        :cardinality :one
                        :unique :value     ;; (2)
@@ -274,7 +274,268 @@
      {:account {:user &quot;adi1&quot;, :password &quot;hello1&quot;, :credits 0, :type :free}}}
 
 
-;;(adi/update-in)</div></div></section></section></section>
+;;(adi/update-in)</div></div></section></section></section><section class="chapter" id="bookstore"><h2 class="chapter">5  &nbsp;&nbsp; Bookstore</h2><div class="group"><div class="paragraph"><p>Lets go ahead and model a network of bookstores around the world. We apply the knowledge of <code>:ref</code> and <code>:enum</code> types from previous tutorial to good use. The schema for our bookstore model can be seen in <code>Figure 1</code>. It is a rather simplistic model. The two main concepts being a <code>Book</code> and a <code>Store</code>. They are connected together through an <code>Inventory</code>, which keeps how many books there are in a store:</p></div><div class="figure"><a name="schema-4"></a><div class="img"><img src="example4.png" /></div><h4><i>fig.1  &nbsp;-&nbsp; Schema Diagram</i></h4></div><div class="paragraph"><p>The actual schema code is defined as follows:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-4
+ {:book   {:name    [{:required true
+                      :fulltext true}]
+           :author  [{:fulltext true}]}
+
+  :inventory {:count [{:type :long}]
+              :cover [{:type :enum
+                       :enum {:ns :cover.type
+                              :values #{:hard :soft}}}]
+              :book    [{:type :ref
+                         :ref  {:ns :book}}]
+              :store   [{:type :ref
+                         :ref  {:ns :store}}]}
+  :store  {:name    [{:required true
+                      :fulltext true}]
+           :address [{:type :ref
+                      :ref  {:ns :address}}]}
+
+  :address {:country [{:required true}]}})</div></div><div class="paragraph"><p>Once again, the adi datastore is created and the seed stores created</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-example-step-4&quot; schema-4 true true))
+
+(adi/insert! ds [{:address {:country &quot;USA&quot;
+                            :stores #{{:name &quot;Canyon Books&quot;}
+                                      {:name &quot;Capital Books&quot;}}}}
+                 {:db/id [[:AUS]]
+                  :address {:country &quot;Australia&quot;}}
+                 {:store {:address [[:AUS]]
+         :name &quot;Koala Books&quot;}}])</div></div><div class="paragraph"><p>We can see our stores from Australia:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:store {:address/country &quot;Australia&quot;}})
+=&gt; #{{:store {:name &quot;Koala Books&quot;}}}</div></div><div class="paragraph"><p>As well as the USA:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:store {:address/country &quot;USA&quot;}})
+=&gt; #{{:store {:name &quot;Canyon Books&quot;}} {:store {:name &quot;Capital Books&quot;}}}</div></div></div><section class="section" id="updating-data"><h3 class="section">5.1  &nbsp;&nbsp; Updating Data</h3><div class="paragraph"><p>We can now start adding some books to our Australian store:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! ds {:store {:address/country &quot;Australia&quot;}}
+             {:store/inventories #{{:count 10
+                                    :cover :hard
+                                    :book {:name &quot;The Count of Monte Cristo&quot;
+                                           :author &quot;Alexander Dumas&quot;}}
+                                   {:count 5
+                                    :cover :hard
+                                    :book {:name &quot;Tom Sawyer&quot;
+                                           :author &quot;Mark Twain&quot;}}
+                                   {:count 3
+                                    :cover :soft
+                                    :book {:name &quot;Les Miserables&quot;
+                                           :author &quot;Victor Hugo&quot;}}}})</div></div><div class="paragraph"><p>Query for the inventory containing a book in our network starting with <code>&quot;Les&quot;</code>. Notice the   use of the <code>:first</code> keyword, this will return a single result as opposed to a set of results:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:inventory {:book/name '(?fulltext &quot;Les&quot;)}} :first)
+=&gt; {:inventory {:count 3, :cover :soft}}</div></div><div class="paragraph"><p><code>update-in!</code> is a very useful function as it can be used to set values across references.   In this case, we set the inventory count of <code>&quot;Tom Sawyer&quot;</code> in <code>&quot;Koala Books&quot;</code> to <code>4</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! ds {:store/name &quot;Koala Books&quot;}
+                [:store/inventories {:book/name &quot;Tom Sawyer&quot;}]
+                {:count 4})</div></div><div class="paragraph"><p>We can look at the inventory of a specific book and store by specifying more search keys:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                            :store/name &quot;Koala Books&quot;}} :first)
+=&gt; {:inventory {:count 4, :cover :hard}}</div></div><div class="paragraph"><p>We can also return all the books in the network, along with their inventories and stores.   This is done by providing an <code>:access &lt;MODEL&gt;</code> pair of args. In this case, we specify that   linked refs in <code>:inventories</code> and <code>:stores</code> are also returned:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :book :access {:book {:inventories {:store :checked}}})
+=&gt; #{{:book {:author &quot;Mark Twain&quot; :name &quot;Tom Sawyer&quot;
+             :inventories #{{:store {:name &quot;Koala Books&quot;}
+                             :count 4 :cover :hard}}}}
+     {:book {:author &quot;Victor Hugo&quot; :name &quot;Les Miserables&quot;
+             :inventories #{{:store {:name &quot;Koala Books&quot;}
+                             :count 3  :cover :soft}}}}
+     {:book {:author &quot;Alexander Dumas&quot; :name &quot;The Count of Monte Cristo&quot;
+             :inventories #{{:store {:name &quot;Koala Books&quot;}
+                             :count 10 :cover :hard}}}}}</div></div></section><section class="section" id="different-semantics-same-result"><h3 class="section">5.2  &nbsp;&nbsp; Different Semantics, Same Result</h3><div class="paragraph"><p>Lets test out some other functions, starting with <code>retract!</code>. Retract takes a set of    keys to remove from an entity:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/retract! ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                              :store/name &quot;Koala Books&quot;}}
+              #{:inventory/cover})</div></div><div class="paragraph"><p>The result of the retract is that the cover information is missing when we do a search:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                            :store/name &quot;Koala Books&quot;}} :first)
+=&gt; {:inventory {:count 4}}</div></div><div class="paragraph"><p>We can update the cover information using <code>update-in!</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! ds {:book/name &quot;Tom Sawyer&quot;}
+                [:book/inventories {:store/name &quot;Koala Books&quot;}]
+                {:cover :soft})
+(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;}} :first)
+=&gt; {:inventory {:count 4, :cover :soft}}</div></div><div class="paragraph"><p>Oops. we made a mistake. The cover can also be changed using <code>update!</code>   using slightly different semantics:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! ds {:inventory {:book/name &quot;Tom Sawyer&quot;
+                             :store/name &quot;Koala Books&quot;}}
+             {:inventory/cover :hard})
+(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;}} :first)
+=&gt; {:inventory {:count 4, :cover :hard}}</div></div><div class="paragraph"><p>The choice of using <code>update!</code> and  <code>update-in!</code> is purely in its communication:</p><ul><li><code>update!</code>: Find an inventory entity that has <code>:book/name</code> of <code>&quot;Tom Sawyer&quot;</code> and <code>:store/name</code> of <code>&quot;Koala Books&quot;</code> and change the value of <code>:inventory/cover</code> to <code>:soft</code>.<ul><li><code>update-in!</code>: Start off by finding a book with <code>:book/name</code> of <code>&quot;Tom Sawyer&quot;</code>. Then follow the entity accessible through <code>:book/inventories</code> which must be linked to a store with the name <code>&quot;Koala Books&quot;</code>. Then make the update of <code>:cover</code> to <code>:hard</code>.</li></ul></li></ul></div><div class="paragraph"><p>Another way to reach the inventory entity is to start by finding the store, then following the <code>:store/stock</code> link. This time, we are changing the <code>:inventory/count</code> value to <code>3</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! ds {:store/name &quot;Koala Books&quot;}
+                [:store/inventories {:book/name &quot;Tom Sawyer&quot;}]
+                {:count 3})
+(adi/select ds {:inventory {:book/name &quot;Tom Sawyer&quot;}} :first)
+=&gt; {:inventory {:count 3, :cover :hard}}</div></div></section><section class="section" id="expanding-the-business"><h3 class="section">5.3  &nbsp;&nbsp; Expanding the Business</h3><div class="paragraph"><p>Lets replicate the stock at <code>Koala Books</code> to <code>Capital Books</code>. So basically, we are creating inventory   records that have a link to the already existing books. It is very simple to do using adi:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(let [koala-inventories (adi/select ds {:inventory {:store/name &quot;Koala Books&quot;}}
+                                    :pull {:inventory {:book :id}})]
+  (adi/update! ds {:store/name &quot;Capital Books&quot;}
+               {:store/inventories (set (map :inventory koala-inventories))}))</div></div><div class="paragraph"><p>Now, lets look at where we can find <code>Tom Sawyer</code> in our stores:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:book/name &quot;Tom Sawyer&quot;} :pull {:book {:inventories {:store :checked}}} :first)
+=&gt; {:book {:author &quot;Mark Twain&quot;, :name &quot;Tom Sawyer&quot;,
+           :inventories #{{:cover :hard, :count 3, :store {:name &quot;Koala Books&quot;}}
+                          {:cover :hard, :count 3, :store {:name &quot;Capital Books&quot;}}}}}</div></div><div class="paragraph"><p>A fire burnt all the copies of the <code>Count of Monte Cristo</code> from <code>Koala Books</code>. Instead of   setting the count to <code>0</code>, we can use <code>delete!</code> to get rid of the inventory entity entirely</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete! ds {:inventory {:store/name &quot;Koala Books&quot;
+                             :book/name '(?fulltext &quot;Count&quot;)}})</div></div><div class="paragraph"><p>We see that now there is only one inventory record:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:book/name '(?fulltext &quot;Count&quot;)}
+            :pull {:book {:inventories {:store :checked}}} :first)
+=&gt; {:book {:author &quot;Alexander Dumas&quot;, :name &quot;The Count of Monte Cristo&quot;,
+           :inventories #{{:cover :hard, :count 10, :store {:name &quot;Capital Books&quot;}}}}}</div></div><div class="paragraph"><p>The copies of <code>Tom Sawyer</code> exceeded expectations and sold out. We will delete the   inventory record but this time using <code>delete-in!</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete-in! ds {:store/name &quot;Capital Books&quot;}
+                [:store/inventories {:book/name &quot;Tom Sawyer&quot;}])
+(adi/select ds {:book/name &quot;Tom Sawyer&quot;}
+            :pull {:book {:inventories {:store :checked}}} :first)
+=&gt; {:book {:author &quot;Mark Twain&quot;, :name &quot;Tom Sawyer&quot;,
+           :inventories #{{:cover :hard, :count 3, :store {:name &quot;Koala Books&quot;}}}}}</div></div></section><section class="section" id="moving-stock"><h3 class="section">5.4  &nbsp;&nbsp; Moving Stock</h3><div class="paragraph"><p><code>Capital Books</code> ran into financial problems and had to close down. All the stock was   transfered to <code>Canyon Books</code>. In order to perform the whole lot in one transaction, the   macro <code>sync-&gt;</code> is used:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(let [inventory-ids (adi/select ds {:inventory {:store/name &quot;Capital Books&quot;}}
+                                :return :ids)]
+  (adi/sync-&gt; ds
+              (adi/update! {:store/name &quot;Canyon Books&quot;}
+                           {:store/inventories inventory-ids})
+              (adi/delete! {:store/name &quot;Capital Books&quot;})))</div></div><div class="paragraph"><p>Now we can see that <code>Capital Books</code> is no more:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds :store :pull {:store {:inventories {:cover :unchecked
+                                                   :book {:author :unchecked}}}})
+=&gt; #{{:store {:name &quot;Koala Books&quot;
+              :inventories #{{:book {:name &quot;Les Miserables&quot;} :count 3}
+                             {:book {:name &quot;Tom Sawyer&quot;} :count 3}}}}
+{:store {:name &quot;Canyon Books&quot;
+         :inventories #{{:book {:name &quot;The Count of Monte Cristo&quot;} :count 10}
+                        {:book {:name &quot;Les Miserables&quot;} :count 3}}}}}</div></div></section></section><section class="chapter" id="schoolyard"><h2 class="chapter">6  &nbsp;&nbsp; Schoolyard</h2><div class="group"><div class="paragraph"><p>We want to model a simple school, and we have the standard information like classes, teachers students. The schema for our bookstore model can be seen in <code>Figure 1</code>. It is a rather simplistic model. This is actually much like the Bookstore example with a couple more fields.</p></div></div><section class="section" id="the-schema"><h3 class="section">6.1  &nbsp;&nbsp; The Schema</h3><div class="figure"><a name="schema-5"></a><div class="img"><img src="example5.png" /></div><h4><i>fig.2  &nbsp;-&nbsp; Schema Diagram</i></h4></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-5
+  {:class   {:type    [{:type :keyword}]
+             :name    [{:type :string}]
+             :accelerated [{:type :boolean}]
+             :teacher [{:type :ref                  ;; &lt;- Note that refs allow a reverse
+                        :ref  {:ns   :teacher       ;; look-up to be defined to allow for more
+                               :rval :teaches}}]}   ;; natural expression. In this case,
+   :teacher {:name     [{:type :string              ;; we say that every `class` has a `teacher`
+                         :fulltext true}]
+             :canTeach [{:type :keyword             ;; so the reverse will be defined as a
+                         :cardinality :many}]       ;; a `teacher` `teaches` a class
+             :pets     [{:type :keyword
+                         :cardinality :many}]}
+   :student {:name     [{:type :string}]
+             :siblings [{:type :long}]
+             :classes    [{:type :ref
+                         :ref   {:ns   :class
+                                 :rval :students}   ;; Same with students
+                           :cardinality :many}]}})</div></div></section><section class="section" id="initial-setup"><h3 class="section">6.2  &nbsp;&nbsp; Initial Setup</h3><div class="paragraph"><p>Once again, the adi datastore is created:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds (adi/connect! &quot;datomic:mem://adi-example-step-5&quot; schema-5 true true))</div></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(println ds)
+;; #adi{:connection #connection{1001 #inst &quot;2014-10-29T19:05:09.697-00:00&quot;}
+;;      :schema #schema{:teacher {:pets :keyword&lt;*&gt;
+;;                                :canTeach :keyword&lt;*&gt;
+;;                                :teaches :&amp;class&lt;*&gt;
+;;                                :name :string}
+;;                      :class   {:type :keyword
+;;                                :name :string
+;;                                :teacher :&amp;teacher
+;;                                :students :&amp;student&lt;*&gt;
+;;                                :accelerated :boolean}
+;;                      :student {:classes :&amp;class&lt;*&gt;
+;;                                :name :string
+;;                                :siblings :long}}}</div></div><div class="paragraph"><p>Now here is the fun part. Lets fill in the data. This is one way of filling out the data.   There are many other ways. Note that it is object-like in nature, with links defined through ids.   If it doesn't contain an id, the record is automatically created. The example is slightly contrived mainly   to show-off some different features of <code>adi</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def class-data                      ;;; Lets See....
+  [{:db/id [[:MATHS]]
+    :class {:type :maths             ;;; There's Math. The most important subject
+            :name &quot;Maths&quot;            ;;; We will be giving all the classes ids
+            :accelerated true}}      ;;; for easier reference
+
+   {:db/id [[:SCIENCE]]              ;;; Lets add Science and Art
+    :class {:type :science
+            :name &quot;Science&quot;
+            :accelerated false}}
+
+   {:db/id [[:ART]]
+    :class {:type :art
+            :name &quot;Art&quot;
+            :accelerated false}}
+
+   {:teacher {:name &quot;Mr. Blair&quot;                       ;; Here's Mr Blair
+              :teaches #{[[:ART]]
+                         [[:SCIENCE]]}                ;; He also teaches Science
+              :canTeach #{:maths :science}
+              :pets    #{:fish :bird}}}
+
+   {:teacher {:name &quot;Mr. Carpenter&quot;                   ;; This is Mr Carpenter
+              :canTeach #{:sports :maths}
+              :pets    #{:dog :fish :bird}
+              :teaches #{{:+ {:db/id [[:SPORTS]]}      ;; He teaches sports
+                          :type :sports
+                          :name &quot;Sports&quot;
+                          :accelerated false
+                          :students #{{:name &quot;Jack&quot;   ;; There's Jack
+                                       :siblings 4    ;; Who is also in EnglishB and Maths
+                                       :classes #{{:+ {:db/id [[:ENGLISHB]]}
+                                                   :type :english
+                                                   :name &quot;English B&quot;
+                                                   :accelerated false
+                                                   :students #{{:name  &quot;Anna&quot;  ;; There's also Anna in the class
+                                                                :siblings 1
+                                                                :classes #{[[:ART]]
+                                                                           [[:SPORTS]]}}
+                                                               {:name    &quot;Charlie&quot;
+                                                                :siblings 3
+                                                                :classes  #{[[:ART]]}}
+                                                               {:name    &quot;Francis&quot;
+                                                                :siblings 0
+                                                                :classes #{[[:MATHS]]}}
+                                                               {:name    &quot;Harry&quot;
+                                                                :siblings 2
+                                                                :classes #{[[:SCIENCE]]}}}}}}}}}}}
+   {:db/id [[:ENGLISHA]]       ;; What about English A ?
+    :class {:type :english
+            :name &quot;English A&quot;
+            :accelerated true
+            :teacher {:name &quot;Mr. Anderson&quot;   ;; Mr Anderson is the teacher
+                      :teaches  #{[[:MATHS]]
+                                  [[:ENGLISHB]]}   ;; He also takes Maths
+                      :canTeach :maths
+                      :pets     :dog}
+            :students #{{:name &quot;Bobby&quot;   ;; And the students are listed
+                         :siblings 2
+                         :classes  #{[[:MATHS]]}}
+                        {:name &quot;David&quot;
+                         :siblings 5
+                         :classes #{[[:SCIENCE]]
+                                    [[:MATHS]]}}
+                        {:name &quot;Erin&quot;
+                         :siblings 1
+                         :classes #{[[:ART]]}}
+                        {:name &quot;Kelly&quot;
+                         :siblings 0
+                         :classes #{[[:SCIENCE]]
+                                    [[:MATHS]]}}}}}])</div></div><div class="paragraph"><p>Okay... our data is defined... and...</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds class-data)</div></div><div class="paragraph"><p><strong>BAM!!</strong> We are now ready to do some Analysis</p></div></section><section class="section" id="datomic"><h3 class="section">6.3  &nbsp;&nbsp; Datomic</h3><div class="paragraph"><p>By now, you should be familiar with this query:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student/name &quot;Harry&quot;})
+=&gt; #{{:student {:name &quot;Harry&quot;, :siblings 2}}}</div></div><div class="paragraph"><p>What we want to explore is how this query relates to the Datomic API. So lets   go under the hood a little bit and check out the :db/id of the entity that we   are gettin back:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student/name &quot;Harry&quot;} :first :return :ids)
+=&gt; 17592186045426</div></div><div class="paragraph"><p>Lets now do a raw datomic query.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(datomic/q '[:find ?x :where
+             [?x :student/name &quot;Harry&quot;]]
+           (datomic/db (:connection ds)))
+
+=&gt; #{[17592186045426]}</div></div><div class="paragraph"><p>As can be seen, the <code>select</code> function is just a more succinct version of <code>q</code> with many added   features.</p></div></section><section class="section" id="querying"><h3 class="section">6.4  &nbsp;&nbsp; Querying</h3><div class="paragraph"><p>There is a <code>query</code> method that is halfway between <code>select</code> and <code>q</code> in terms and   is convenient for dropping back into datalog queries. We see more examples of the   query for Harry's id:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query ds '[:find ?x :where
+                [?x :student/name &quot;Harry&quot;]]
+           []  :first :return :ids)
+=&gt; 17592186045426</div></div><div class="paragraph"><p>And again, the same query with <code>Harry</code> passed in as a parameter:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query ds '[:find ?x
+                :in $ ?name
+                :where
+                [?x :student/name ?name]]
+           [&quot;Harry&quot;] :first :return :ids)
+=&gt; 17592186045426</div></div><div class="paragraph"><p>Lets do a <code>query</code> for all the students in maths:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt; (adi/query ds
+                '[:find ?x :in $ ?class :where
+                  [?x :student/classes ?c]
+                  [?c :class/type ?class]]
+                [:maths])
+     (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Bobby&quot; &quot;Francis&quot; &quot;David&quot; &quot;Kelly&quot;]</div></div><div class="paragraph"><p>Here is the equivalent result using <code>select</code></p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt; (adi/select ds {:student {:classes/type :maths}})
+     (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Bobby&quot; &quot;Francis&quot; &quot;David&quot; &quot;Kelly&quot;]</div></div></section><section class="section" id="datalog-generation"><h3 class="section">6.5  &nbsp;&nbsp; Datalog Generation</h3><div class="paragraph"><p>Now the cool thing is that <code>select</code> actually generates a datalog query first and then runs it against datomic. We can access the datalog query via the <code>:raw</code> option:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select  ds {:student {:classes/type :maths}} :raw)
+
+=&gt; #{[:find ?self :where
+      [?self :student/classes ?e25242]
+      [?e25242 :class/type :maths]]}</div></div><div class="paragraph"><p>So very complex queries can be built up</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student {:classes/teacher {:name '(?fulltext &quot;Blair&quot;)}
+                          :siblings '(&gt; 2)}})
+=&gt; #{{:student {:name &quot;Charlie&quot;, :siblings 3}}
+     {:student {:name &quot;David&quot;, :siblings 5}}}</div></div><div class="paragraph"><p>Lets check out what the generated datalog query is:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:student {:classes/teacher {:name '(?fulltext &quot;Blair&quot;)}
+                          :siblings '(&gt; 1)}} :raw)
+=&gt; #{[:find ?self :where
+      [?self :student/siblings ?e_28962]
+      [(&gt; ?e_28962 2)]
+      [?self :student/classes ?e28960]
+      [?e28960 :class/teacher ?e28961]
+      [(fulltext $ :teacher/name &quot;Blair&quot;)
+       [[?e28961 ?e_28963]]]]}</div></div><div class="paragraph"><p>As can be seen by this example, the <code>adi</code> query is much much more succinct. We can now take the output and stick it into <code>query</code> to get the same result as before:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query ds '[:find ?self :where
+                [?self :student/siblings ?e_28962]
+                [(&gt; ?e_28962 2)]
+                [?self :student/classes ?e28960]
+                [?e28960 :class/teacher ?e28961]
+                [(fulltext $ :teacher/name &quot;Blair&quot;)
+                 [[?e28961 ?e_28963]]]]
+           [])
+=&gt; #{{:student {:name &quot;Charlie&quot;, :siblings 3}}
+     {:student {:name &quot;David&quot;, :siblings 5}}}</div></div><div class="paragraph"><p>So which one will you prefer to be using?</p></div></section><section class="section" id="expressivity"><h3 class="section">6.6  &nbsp;&nbsp; Expressivity</h3><div class="paragraph"><p>Find all classes that are taught by Mr Anderson:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds {:class/teacher {:name &quot;Mr. Anderson&quot;}})
+=&gt; #{{:class {:type :english, :name &quot;English A&quot;, :accelerated true}}
+     {:class {:type :english, :name &quot;English B&quot;, :accelerated false}}
+     {:class {:type :maths, :name &quot;Maths&quot;, :accelerated true}}}</div></div><div class="paragraph"><p>Find the teacher that teaches a student called <code>Harry</code> with a pet bird</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt; (adi/select ds {:teacher {:teaches {:students/name &quot;Harry&quot;}
+                               :pets :bird}})
+     (mapv #(-&gt; % :teacher :name)))
+=&gt; [&quot;Mr. Blair&quot;]</div></div><div class="paragraph"><p>Find all students taught by <code>Mr. Blair</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt;
+ (adi/select ds {:student/classes {:teacher/name &quot;Mr. Blair&quot;}})
+ (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Charlie&quot; &quot;Anna&quot; &quot;David&quot; &quot;Harry&quot; &quot;Erin&quot; &quot;Kelly&quot;]</div></div><div class="paragraph"><p>Find all the students that have class with teachers with a pet fish</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt;
+ (adi/select ds {:student/classes {:teacher/pets :fish}})
+ (mapv #(-&gt; % :student :name)))
+=&gt; [&quot;Charlie&quot; &quot;Jack&quot; &quot;Anna&quot; &quot;David&quot; &quot;Harry&quot; &quot;Erin&quot; &quot;Kelly&quot;]</div></div><div class="paragraph"><p>Not that you'd ever want to write a query like this but you can. Find the class with the teacher that teaches a student that takes the class taken by <code>Mr. Carpenter</code>.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt;&gt;
+ (adi/select ds {:class/teacher
+                 {:teaches/students
+                  {:classes/teacher {:name &quot;Mr. Carpenter&quot;}}}})
+ (mapv #(-&gt; % :class :name)))
+=&gt; [&quot;Science&quot; &quot;English B&quot; &quot;English A&quot; &quot;Art&quot; &quot;Sports&quot; &quot;Maths&quot;]</div></div><div class="paragraph"><p>Note that the search path <code>:class/teacher/teaches/students/classes/teacher/name</code> will also work.</p></div></section></section>
     </div>
 </div><!--end of .container-->
 

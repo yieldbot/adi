@@ -56,10 +56,10 @@
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Sections <span class="caret"></span></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Guides <span class="caret"></span></a>
               <ul class="dropdown-menu">
-                <li><a href="hara-class.html">class</a></li>
-                <li><a href="hara-common.html">common</a></li>
+                <li><a href="adi-guide.html">api</a></li>
+                <li><a href="adi-walkthrough.html">walkthrough</a></li>
             </ul>
             </li>
             <li>
@@ -75,17 +75,606 @@
   <div class="container row">
     <div class="col-md-4 scrollspy pull-right">
       <ul id="nav" class="nav hidden-xs hidden-sm" data-spy="affix">
-        <li><a href="#introduction">1  &nbsp;&nbsp; Introduction</a></li><li><a href="#tutorial">2  &nbsp;&nbsp; Tutorial</a></li>
+        <li><a href="#introduction">1  &nbsp;&nbsp; Introduction</a><ul class="nav"><li><a href="#installation">1.1  &nbsp;&nbsp; Installation</a></li><li><a href="#outline">1.2  &nbsp;&nbsp; Outline</a></li><li><a href="#architecture">1.3  &nbsp;&nbsp; Architecture</a></li></ul></li><li><a href="#api">2  &nbsp;&nbsp; API</a><ul class="nav"><li><a href="#connect">2.1  &nbsp;&nbsp; connect!</a></li><li><a href="#insert">2.2  &nbsp;&nbsp; insert!</a></li><li><a href="#select">2.3  &nbsp;&nbsp; select</a></li><li><a href="#query">2.4  &nbsp;&nbsp; query</a></li><li><a href="#update">2.5  &nbsp;&nbsp; update!</a></li><li><a href="#retract">2.6  &nbsp;&nbsp; retract!</a></li><li><a href="#update-in">2.7  &nbsp;&nbsp; update-in!</a></li><li><a href="#retract-in">2.8  &nbsp;&nbsp; retract-in!</a></li><li><a href="#transact">2.9  &nbsp;&nbsp; transact!</a></li><li><a href="#delete">2.10  &nbsp;&nbsp; delete!</a></li><li><a href="#delete-in">2.11  &nbsp;&nbsp; delete-in!</a></li><li><a href="#delete-all">2.12  &nbsp;&nbsp; delete-all!</a></li><li><a href="#parameters">2.13  &nbsp;&nbsp; Parameters</a></li><li><a href="#options">2.14  &nbsp;&nbsp; Options</a></li><li><a href="#pipeline">2.15  &nbsp;&nbsp; Pipeline</a></li></ul></li><li><a href="#connection-params">3  &nbsp;&nbsp; Connection Params</a><ul class="nav"><li><a href="#connection">3.1  &nbsp;&nbsp; :connection</a></li><li><a href="#db">3.2  &nbsp;&nbsp; :db</a></li><li><a href="#at">3.3  &nbsp;&nbsp; :at</a></li><li><a href="#return">3.4  &nbsp;&nbsp; :return</a></li><li><a href="#transact-0">3.5  &nbsp;&nbsp; :transact</a></li><li><a href="#simulate">3.6  &nbsp;&nbsp; :simulate</a></li></ul></li><li><a href="#schema-params">4  &nbsp;&nbsp; Schema Params</a><ul class="nav"><li><a href="#schema">4.1  &nbsp;&nbsp; :schema</a></li><li><a href="#pull">4.2  &nbsp;&nbsp; :pull</a></li><li><a href="#access">4.3  &nbsp;&nbsp; :access</a></li></ul></li><li><a href="#options-0">5  &nbsp;&nbsp; Options</a><ul class="nav"><li><a href="#first">5.1  &nbsp;&nbsp; :first</a></li><li><a href="#ids-0">5.2  &nbsp;&nbsp; :ids</a></li><li><a href="#ban-expressions">5.3  &nbsp;&nbsp; :ban-expressions</a></li><li><a href="#ban-top-id">5.4  &nbsp;&nbsp; :ban-top-id</a></li><li><a href="#ban-body-ids">5.5  &nbsp;&nbsp; :ban-body-ids</a></li><li><a href="#ban-ids">5.6  &nbsp;&nbsp; :ban-ids</a></li><li><a href="#raw">5.7  &nbsp;&nbsp; :raw</a></li><li><a href="#adi">5.8  &nbsp;&nbsp; :adi</a></li></ul></li><li><a href="#pipeline-0">6  &nbsp;&nbsp; Pipeline</a><ul class="nav"><li><a href="#pre-process">6.1  &nbsp;&nbsp; :pre-process</a></li><li><a href="#pre-require">6.2  &nbsp;&nbsp; :pre-require</a></li><li><a href="#pre-mask">6.3  &nbsp;&nbsp; :pre-mask</a></li><li><a href="#pre-transform">6.4  &nbsp;&nbsp; :pre-transform</a></li><li><a href="#fill-empty">6.5  &nbsp;&nbsp; :fill-empty</a></li><li><a href="#fill-assoc">6.6  &nbsp;&nbsp; :fill-assoc</a></li><li><a href="#ignore">6.7  &nbsp;&nbsp; :ignore</a></li><li><a href="#allow">6.8  &nbsp;&nbsp; :allow</a></li><li><a href="#validate">6.9  &nbsp;&nbsp; :validate</a></li><li><a href="#convert">6.10  &nbsp;&nbsp; :convert</a></li><li><a href="#post-require">6.11  &nbsp;&nbsp; :post-require</a></li><li><a href="#post-mask">6.12  &nbsp;&nbsp; :post-mask</a></li><li><a href="#post-transform">6.13  &nbsp;&nbsp; :post-transform</a></li><li><a href="#post-process">6.14  &nbsp;&nbsp; :post-process</a></li></ul></li>
       </ul>
     </div>
     <div class="col-md-8" id="content">
       <div class="jumbotron">
         <div class="container">
           <h1>adi</h1>
-          <h4>a datomic interface</h4>
+          <h4>data modelling for the ambitious</h4>
         </div>
       </div>
-      <section class="chapter" id="introduction"><h2 class="chapter">1  &nbsp;&nbsp; Introduction</h2><div class="group"><div class="paragraph"><h3>Installation</h3><p>Add to <code>project.clj</code> dependencies</p><p><code>&#91;im.chit/adi </code>"<code>0.3.2</code>"<code>&#93;</code>.</p><p>All the functionality can be loaded using:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(require '[adi.core :as adi])</div></div><div class="paragraph"><h3>Overview</h3><p><code>adi</code> makes creating complex applications easy. Built on top of datomic, <code>adi</code> was especially designed to model complexity, relationships and partial data. Having said that, <code>adi</code> is for the faint of heart. It has been built especially for the creative, crazy and super ambitious. Small apps with simple data models are very easy to define and explore. But why stop there? The bigger, more intertwined the data model becomes, the more <code>adi</code> will have its chance to shine.</p><p>So what exactly is <code>adi</code>?</p><ul><li>It empowers <code>datomic</code> to something best described as a <code>&quot;document database on steroids&quot;</code>.</li><li>It functions as a <code>schema-driven</code>, <code>document</code> and <code>graph</code> database hybrid.</li><li>It simplifies <code>crud</code> operations to be <code>logical</code>, <code>declarative</code> and <code>data-centric</code>.</li><li>It uses the <code>schema</code> and an application <code>pipeline</code> to process incoming data, similar to that of what a <code>type system</code>.</li><li>It is <code>simple</code> and <code>expressive</code>, a pure <code>joy</code> to use.</li></ul><p>The key to understanding <code>adi</code> lies in understanding the power of a <code>schema</code>. The <code>schema</code> dictates what you can do with the data. Instead of limiting the programmer, the <code>schema</code> should exhance him/her, much like what a <code>type system</code> does for programmers but without being as restrictive. Once we have a <code>schema</code>, there should be no difference in the <code>shape</code> of the <code>query</code> and the <code>shape</code> of the <code>data</code> that we get back from the <code>query</code>. We shouldn't have to play around turning objects into records, objects into queries, etc. Furthermore, data can be queried and inserted in <strong>ANY</strong> shape or form, as long as it follows the conventions specified within that schema.</p></div></div></section><section class="chapter" id="tutorial"><h2 class="chapter">2  &nbsp;&nbsp; Tutorial</h2><div class="group"><div class="paragraph"><p>So open up a repl in a project with <code>adi</code> installed and require load up the library:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(require '[adi.core :as adi])</div></div><div class="paragraph"><p>We are off and away!</p></div></div></section>
+      <section class="chapter" id="introduction"><h2 class="chapter">1  &nbsp;&nbsp; Introduction</h2><div class="group"><div class="paragraph"><p><a href='https://www.github.com/zcaudate/adi'>adi</a> provides a simple, intuitive data layer to access datomic using a document-based syntax, as well as a data-processing pipeline for fine-grain manipulation and access of data.</p></div></div><section class="section" id="installation"><h3 class="section">1.1  &nbsp;&nbsp; Installation</h3><div class="paragraph"><p>Add to <code>project.clj</code> dependencies:</p><pre><code>&#91;im.chit/adi &quot;0.3.3&quot;&#93;
+</code></pre><p>All functionality is contained in the <code>adi.core</code> namespace:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(require '[adi.core :as adi])</div></div></section><section class="section" id="outline"><h3 class="section">1.2  &nbsp;&nbsp; Outline</h3><div class="paragraph"><p><a href='https://www.github.com/zcaudate/adi'>adi</a> provides the following advantages</p><ul><li>Using the schema as a 'type' system to process incoming data.</li><li>Relations mapped to nested object structures (using a graph-like notion)</li><li>Nested maps/objects as declarative logic queries.</li><li>Custom views on data (similar to the <code>:pull</code> api)</li></ul></div></section><section class="section" id="architecture"><h3 class="section">1.3  &nbsp;&nbsp; Architecture</h3><div class="paragraph"><p>The architecture can be seen below:</p></div><div class="figure"><a name="img-img--adi-png"></a><div class="img"><img src="img/adi.png" width="100%" /></div></div></section></section><section class="chapter" id="api"><h2 class="chapter">2  &nbsp;&nbsp; API</h2><div class="group"><div class="paragraph"><p>Top Level API's are listed below, first, we define a schema:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-api
+ {:account {:user     [{:required true
+                        :unique :value}]
+            :books    [{:type :ref
+                        :cardinality :many
+                        :ref  {:ns :book}}]}
+  :book   {:name    [{:required true
+                      :fulltext true}]
+           :author  [{:fulltext true}]}})</div></div></div><section class="section" id="connect"><h3 class="section">2.1  &nbsp;&nbsp; connect!</h3><div class="paragraph"><p><code>connect!</code> creates a connection to a datomic datastore:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def api-ds (adi/connect! &quot;datomic:mem://adi-guide-api&quot; schema-api true true))</div></div></section><section class="section" id="insert"><h3 class="section">2.2  &nbsp;&nbsp; insert!</h3><div class="paragraph"><p><code>insert!</code> puts data into the datastore:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! api-ds
+             [{:account {:user &quot;Anne&quot;
+                         :books #{{:name &quot;Watership Down&quot;}}}}
+              {:account {:user &quot;Bob&quot;
+                         :books #{{:name &quot;Canterbury Tales&quot;}}}}])</div></div></section><section class="section" id="select"><h3 class="section">2.3  &nbsp;&nbsp; select</h3><div class="paragraph"><p><code>select</code> retrieves from the datastore by category:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select api-ds :book)
+=&gt; #{{:book {:name &quot;Watership Down&quot;}}
+     {:book {:name &quot;Canterbury Tales&quot;}}}</div></div><div class="paragraph"><p>or by the adi query syntax:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select api-ds {:book/name '_})
+=&gt; #{{:book {:name &quot;Watership Down&quot;}}
+     {:book {:name &quot;Canterbury Tales&quot;}}}</div></div></section><section class="section" id="query"><h3 class="section">2.4  &nbsp;&nbsp; query</h3><div class="paragraph"><p><code>query</code> retrieves results using a datomic style query</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/query api-ds '[:find ?self :where
+                    [?self :book/name _]]
+           [])
+=&gt; #{{:book {:name &quot;Watership Down&quot;}}
+     {:book {:name &quot;Canterbury Tales&quot;}}}</div></div></section><section class="section" id="update"><h3 class="section">2.5  &nbsp;&nbsp; update!</h3><div class="paragraph"><p><code>update!</code> will take a query and update all datoms that match with additional values:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! api-ds
+             {:book/name &quot;Watership Down&quot;}
+             {:book/author &quot;Richard Adams&quot;})
+
+(adi/select api-ds {:book/name &quot;Watership Down&quot;})
+=&gt; #{{:book {:name &quot;Watership Down&quot;, :author &quot;Richard Adams&quot;}}}</div></div></section><section class="section" id="retract"><h3 class="section">2.6  &nbsp;&nbsp; retract!</h3><div class="paragraph"><p><code>retract!</code> will take a query and retract keys in all datoms that match</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/retract! api-ds
+              {:book/name &quot;Watership Down&quot;}
+              [:book/author])
+
+(adi/select api-ds {:book/name &quot;Watership Down&quot;})
+=&gt; #{{:book {:name &quot;Watership Down&quot;}}}</div></div></section><section class="section" id="update-in"><h3 class="section">2.7  &nbsp;&nbsp; update-in!</h3><div class="paragraph"><p><code>update-in!</code> will take a query and update all datoms through the access path</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update-in! api-ds
+                {:account/user &quot;Anne&quot;}
+                [:account/books {:name &quot;Watership Down&quot;}]
+                {:author &quot;Richard Adams&quot;})
+
+(adi/select api-ds {:book/name &quot;Watership Down&quot;})
+=&gt; #{{:book {:name &quot;Watership Down&quot;, :author &quot;Richard Adams&quot;}}}</div></div></section><section class="section" id="retract-in"><h3 class="section">2.8  &nbsp;&nbsp; retract-in!</h3><div class="paragraph"><p><code>retract-in!</code> will take a query and retracts all keys through the access path</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/retract-in! api-ds
+                {:account/user &quot;Anne&quot;}
+                [:account/books {:name &quot;Watership Down&quot;}]
+                [:author])
+
+(adi/select api-ds {:book/name &quot;Watership Down&quot;})
+=&gt; #{{:book {:name &quot;Watership Down&quot;}}}</div></div></section><section class="section" id="transact"><h3 class="section">2.9  &nbsp;&nbsp; transact!</h3><div class="paragraph"><p><code>transact!</code> takes datomic datoms for update:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/transact! api-ds
+               [{:db/id (adi/iid :charlie)
+                 :account/user &quot;Charlie&quot;}])
+;;=&gt; [{:db {:id 17592186045423}
+;;     :account {:user &quot;Charlie&quot;} }]
+
+(adi/select api-ds :account)
+=&gt; #{{:account {:user &quot;Anne&quot;}} {:account {:user &quot;Bob&quot;}} {:account {:user &quot;Charlie&quot;}}}</div></div></section><section class="section" id="delete"><h3 class="section">2.10  &nbsp;&nbsp; delete!</h3><div class="paragraph"><p><code>delete!</code> removes entities from the datastore:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete! api-ds {:account/user &quot;Charlie&quot;})
+;;=&gt; #{{:db {:id 17592186045427}
+;;      :account {:user &quot;Charlie&quot;}}}
+
+(adi/select api-ds :account)
+=&gt; #{{:account {:user &quot;Anne&quot;}} {:account {:user &quot;Bob&quot;}}}</div></div></section><section class="section" id="delete-in"><h3 class="section">2.11  &nbsp;&nbsp; delete-in!</h3><div class="paragraph"><p><code>delete-in!</code> will take a query and deletes all entities from the access path:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete-in! api-ds {:account/user &quot;Bob&quot;}
+                [:account/books {:name '_}])
+;;=&gt; #{{:db {:id 17592186045421}
+;;      :book {:name &quot;Canterbury Tales&quot;}}}
+
+  
+(adi/select api-ds :book)
+=&gt; #{{:book {:name &quot;Watership Down&quot;}}}</div></div></section><section class="section" id="delete-all"><h3 class="section">2.12  &nbsp;&nbsp; delete-all!</h3><div class="paragraph"><p><code>delete-all!</code> will takes a query and deletes all entities govered by the access model:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete-all! api-ds {:account/user &quot;Anne&quot;}
+                 :access {:account {:books :checked}})
+;;=&gt; #{{:db {:id 17592186045418}}}
+;;      :account  {:user &quot;Anne&quot;,
+;;                 :books #{{:name &quot;Watership Down&quot;,
+;;                           :+ {:db {:id 17592186045419}}}}}, 
+  
+ (adi/select api-ds :book)
+=&gt; #{}</div></div></section><section class="section" id="parameters"><h3 class="section">2.13  &nbsp;&nbsp; Parameters</h3><div class="paragraph"><p>Apart from the core query and transactional functions, there are many parameters and customisations that can be tweaked. This is very terse, but it is important for fine grain control of data. <code>adi</code> comes with a bunch of bells and whistles for data - some inherited from the underlying datomic api, others built to deal with the pipeline for schema-assisted transformation of data. There are keywords reserved by the top-level operations that can be set/overwritten through arguments.</p><p>Connection related entries:</p><ul><li><code>:connection</code></li><li><code>:db</code></li><li><code>:at</code></li><li><code>:return</code></li><li><code>:transact</code></li></ul><p>Schema related entries:</p><ul><li><code>:schema</code></li><li><code>:pull</code></li><li><code>:access</code></li></ul></div></section><section class="section" id="options"><h3 class="section">2.14  &nbsp;&nbsp; Options</h3><div class="paragraph"><p>There is a seperate param entry holding all the miscellaneous options, called (as you may have guessed) <code>options</code> and each sub-entry will be covered seperately:</p><ul><li><code>:first</code></li><li><code>:ids</code></li><li><code>:ban-expressions</code></li><li><code>:ban-ids</code></li><li><code>:ban-top-id</code></li><li><code>:ban-body-ids</code></li><li><code>:raw</code></li><li><code>:adi</code></li></ul></div></section><section class="section" id="pipeline"><h3 class="section">2.15  &nbsp;&nbsp; Pipeline</h3><div class="paragraph"><p>The <code>:pipeline</code> entry has it's own set of sub-keys. They will be described in its own chapter:</p><ul><li><code>:pre-process</code></li><li><code>:pre-require</code></li><li><code>:pre-mask</code></li><li><code>:pre-transform</code></li><li><code>:fill-empty</code></li><li><code>:fill-assoc</code></li><li><code>:ignore</code></li><li><code>:allow</code></li><li><code>:validate</code></li><li><code>:convert</code></li><li><code>:post-require</code></li><li><code>:post-mask</code></li><li><code>:post-transform</code></li><li><code>:post-process</code></li></ul></div></section></section><section class="chapter" id="connection-params"><h2 class="chapter">3  &nbsp;&nbsp; Connection Params</h2><section class="section" id="connection"><h3 class="section">3.1  &nbsp;&nbsp; :connection</h3><section class="subsection" id="creating-a-datastore"><h4 class="subsection">3.1.1  &nbsp;&nbsp; creating a datastore</h4><div class="paragraph"><p>When <code>connect!</code> is called, it returns a datastore represented as a map containing entries for <code>:connection</code> and <code>:schema</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-connection
+  {:book {:name    [{:required true
+                     :fulltext true}]
+          :author  [{:fulltext true}]}})
+
+
+(def ds-1 (adi/connect! &quot;datomic:mem://adi-guide-connection-1&quot; schema-connection true true))
+
+(println ds-1)
+;;=&gt; #adi{:connection #connection{1000 #inst &quot;2016-03-15T12:47:10.039-00:00&quot;},
+;;        :schema     #schema{:book {:name :string, :author :string}}}</div></div></section><section class="subsection" id="more-datastores"><h4 class="subsection">3.1.2  &nbsp;&nbsp; more datastores</h4><div class="paragraph"><p><code>:connection</code> is a reserved keyword in options. We can show how this works by creating two more datastores:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def ds-2 (adi/connect! &quot;datomic:mem://adi-guide-connection-2&quot; schema-connection true true))
+
+(def ds-3 (adi/connect! &quot;datomic:mem://adi-guide-connection-3&quot; schema-connection true true))</div></div><div class="paragraph"><p>Passing a value for <code>:connection</code> will change the connection object that is used. This shouldn't be used very frequently but the feature is there to be exploited. To highlight this, a standard call to <code>insert!</code> is made:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;Orpheus&quot;})
+=&gt; (contains {:book {:name &quot;Orpheus&quot;}, :db map?})</div></div></section><section class="subsection" id="key--value-input"><h4 class="subsection">3.1.3  &nbsp;&nbsp; key/value input</h4><div class="paragraph"><p>Lets see the different ways that the <code>:connection</code> entry can be overwritten, first via key/value pair:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;Ulysses&quot;} :connection (:connection ds-2))
+=&gt; (contains {:book {:name &quot;Ulysses&quot;}, :db map?})</div></div></section><section class="subsection" id="map-input"><h4 class="subsection">3.1.4  &nbsp;&nbsp; map input</h4><div class="paragraph"><p>The arguments can also be passed in as part of a map:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1  {:book/name &quot;Eurydice&quot;} {:connection (:connection ds-3)})
+=&gt; (contains {:book {:name &quot;Eurydice&quot;}, :db map?})</div></div></section><section class="subsection" id="different-sinks"><h4 class="subsection">3.1.5  &nbsp;&nbsp; different sinks</h4><div class="paragraph"><p>It can be seen that each datastore has a book of their own:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book)
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}
+
+
+(adi/select ds-2 :book)
+=&gt; #{{:book {:name &quot;Ulysses&quot;}}}
+
+(adi/select ds-3 :book)
+=&gt; #{{:book {:name &quot;Eurydice&quot;}}}</div></div></section><section class="subsection" id="update-example"><h4 class="subsection">3.1.6  &nbsp;&nbsp; update example</h4><div class="paragraph"><p>Examples below show overwriting of <code>:connection</code> for top level operations such as <code>update!</code></p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/update! ds-1 :book {:book/name &quot;Medea&quot;} (select-keys ds-3 [:connection]))
+(adi/select ds-3 :book)
+=&gt; #{{:book {:name &quot;Medea&quot;}}}</div></div></section><section class="subsection" id="delete-example"><h4 class="subsection">3.1.7  &nbsp;&nbsp; delete example</h4><div class="paragraph"><p>An example for <code>delete!</code> has alse beeen shown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/delete! (assoc ds-1 :connection (:connection ds-3)) :book)
+(adi/select ds-3 :book)
+=&gt; #{}</div></div></section></section><section class="section" id="db"><h3 class="section">3.2  &nbsp;&nbsp; :db</h3><div class="paragraph"><p>For searches (<code>select</code>), instead of specifying a <code>:connection</code> entry, a <code>:db</code> entry can be passed. The following are equivalent calls:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book)
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div><section class="subsection" id="key--value-input-0"><h4 class="subsection">3.2.1  &nbsp;&nbsp; key/value input</h4><div class="paragraph"><p><code>:db</code> passed in as args</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book :db (datomic/db (:connection ds-1)))
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div></section><section class="subsection" id="map-input-0"><h4 class="subsection">3.2.2  &nbsp;&nbsp; map input</h4><div class="paragraph"><p><code>:db</code> passed in as a map</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book {:db (datomic/db (:connection ds-1))})
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div></section><section class="subsection" id="overwriting"><h4 class="subsection">3.2.3  &nbsp;&nbsp; overwriting</h4><div class="paragraph"><p>Like <code>:connection</code>, the entry for <code>:db</code> can be something completely unrelated to the original <code>:db</code> object, in this case, we are searching on <code>ds-2</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book {:db (datomic/db (:connection ds-2))})
+=&gt; #{{:book {:name &quot;Ulysses&quot;}}}</div></div></section></section><section class="section" id="at"><h3 class="section">3.3  &nbsp;&nbsp; :at</h3><section class="subsection" id="time-travel"><h4 class="subsection">3.3.1  &nbsp;&nbsp; time travel</h4><div class="paragraph"><p><a href='http://www.datomic.com/'>datomic</a> allows searching of the database at any point in time. This functionality is accessible through the <code>:at</code> keyword. We can see this in action:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book :at 0)
+=&gt; #{}</div></div></section><section class="subsection" id="syntactic-sugar"><h4 class="subsection">3.3.2  &nbsp;&nbsp; syntactic sugar</h4><div class="paragraph"><p><code>:at</code> makes the intent more clear. The previous statement is equivalent to:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book {:db (-&gt; (:connection ds-1)
+                                (datomic/db) 
+                                (datomic/as-of 0))})
+=&gt; #{}</div></div></section><section class="subsection" id="transaction-id"><h4 class="subsection">3.3.3  &nbsp;&nbsp; transaction id</h4><div class="paragraph"><p>We can query the datastore after the first transaction has occured, by using an id of <code>1001</code> to access the datastore.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book :at 1001)
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div><div class="paragraph"><p>Again, this is equivalent to:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book {:db (-&gt; (:connection ds-1)
+                                (datomic/db) 
+                                (datomic/as-of 1001))})
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div></section><section class="subsection" id="transaction-time"><h4 class="subsection">3.3.4  &nbsp;&nbsp; transaction time</h4><div class="paragraph"><p>We can query the datastore after the first transaction has occured through the time parameter:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(:connection ds-1)
+;;=&gt; #connection{1001 #inst &quot;2016-03-15T19:13:37.085-00:00&quot;}
+
+(adi/select ds-1 :book :at #inst &quot;2016-03-15T19:13:00.000-00:00&quot;)
+;;=&gt; #{}
+
+(adi/select ds-1 :book :at #inst &quot;2016-03-15T19:14:00.000-00:00&quot;)
+;;=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div></section><section class="subsection" id="mix-and-match"><h4 class="subsection">3.3.5  &nbsp;&nbsp; mix and match</h4><div class="paragraph"><p>The <code>:at</code> entry can be used in conjunction with <code>:db</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book {:db (datomic/db (:connection ds-2))
+                        :at 0})
+=&gt; #{}</div></div><div class="paragraph"><p>as well as <code>:connection</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book {:connection (:connection ds-2)
+                        :at 1001})
+=&gt; #{{:book {:name &quot;Ulysses&quot;}}}</div></div></section></section><section class="section" id="return"><h3 class="section">3.4  &nbsp;&nbsp; :return</h3><div class="paragraph"><p><code>:return</code> determines the data that has been queried. This is only for <code>select</code> and there are three options available:</p><ul><li><code>:ids</code></li><li><code>:entities</code></li><li><code>:data</code></li></ul></div><section class="subsection" id="ids"><h4 class="subsection">3.4.1  &nbsp;&nbsp; :ids</h4><div class="paragraph"><p>Returns the set of datomic ids that matches the query;</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book :return :ids)
+=&gt; #{17592186045418}</div></div></section><section class="subsection" id="entities"><h4 class="subsection">3.4.2  &nbsp;&nbsp; :entities</h4><div class="paragraph"><p>Returns the set of datomic entities that matches the query;</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(-&gt; (adi/select ds-1 :book :return :entities)
+    first
+    :db/id)
+=&gt; 17592186045418</div></div></section><section class="subsection" id="data"><h4 class="subsection">3.4.3  &nbsp;&nbsp; :data</h4><div class="paragraph"><p>The default option, returns actual data that can be governed by entries in <code>:pull</code> and <code>:pipeline</code></p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book :return :data)
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div></section></section><section class="section" id="transact-0"><h3 class="section">3.5  &nbsp;&nbsp; :transact</h3><div class="paragraph"><p><code>:transact</code> determines how the results of the call is returned to the caller. This is an important to tune for mutation operations to place emphasis on correctness or speed. There are four options available:</p><ul><li><code>:resolve</code></li><li><code>:datomic</code></li><li><code>:promise</code></li><li><code>:async</code></li></ul></div><section class="subsection" id="resolve"><h4 class="subsection">3.5.1  &nbsp;&nbsp; :resolve</h4><div class="paragraph"><p>This is the default option and takes the longest time. Ensures that that generated temporary ids are resolved and that the data can be used in further transactions:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} {:transact :resolve})
+;;=&gt; {:book {:name &quot;The Magic School Bus&quot;},
+;;    :db {:id 17592186045432}}</div></div></section><section class="subsection" id="datomic"><h4 class="subsection">3.5.2  &nbsp;&nbsp; :datomic</h4><div class="paragraph"><p>Waits for the result of the transaction to come back before returning the results:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} {:transact :datomic})
+;;=&gt; {:db-before #db{1007 #inst &quot;2016-03-16T12:23:35.761-00:00&quot;},
+;;    :db-after #db{1009 #inst &quot;2016-03-16T12:25:42.566-00:00&quot;},
+;;    :tx-data [#datom[13194139534321 50 #inst &quot;2016-03-16T12:25:42.566-00:00&quot; 13194139534321 true]
+;;              #datom[17592186045426 63 &quot;The Magic School Bus&quot; 13194139534321 true]],
+;;    :tempids {-9223350046901838717 17592186045426}}</div></div></section><section class="subsection" id="promise"><h4 class="subsection">3.5.3  &nbsp;&nbsp; :promise</h4><div class="paragraph"><p>Wraps datomic's <code>transact</code> call to return a promise:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} {:transact :promise})
+;;=&gt; #promise
+;;    {:status :ready,
+;;     :val {:db-before #db{1005 #inst &quot;2016-03-16T12:23:15.992-00:00&quot;},
+;;           :db-after #db{1007 #inst &quot;2016-03-16T12:23:35.761-00:00&quot;},
+;;           :tx-data [#datom[13194139534319 50 #inst &quot;2016-03-16T12:23:35.761-00:00&quot; 13194139534319 true]
+;;                     #datom[17592186045424 63 &quot;The Magic School Bus&quot; 13194139534319 true]],
+;;           :tempids {-9223350048542385808 17592186045424}}}</div></div></section><section class="subsection" id="async"><h4 class="subsection">3.5.4  &nbsp;&nbsp; :async</h4><div class="paragraph"><p>Wraps datomic's <code>transact-async</code> call to return a promise:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} {:transact :async})
+;;=&gt; #promise
+;;    {:status :ready,
+;;     :val {:db-before #db{1005 #inst &quot;2016-03-16T08:53:44.894-00:00&quot;},
+;;           :db-after #db{1007 #inst &quot;2016-03-16T08:53:48.645-00:00&quot;},
+;;           :tx-data [#datom[13194139534319 50 #inst &quot;2016-03-16T08:53:48.645-00:00&quot; 13194139534319 true]
+;;                     #datom[17592186045424 63 &quot;The Magic School Bus&quot; 13194139534319 true]],
+;;           :tempids {-9223350047214995662 17592186045424}}}</div></div></section></section><section class="section" id="simulate"><h3 class="section">3.6  &nbsp;&nbsp; :simulate</h3><div class="paragraph"><p>When <code>:simulation</code> is set to <code>true</code>, the transaction proceeds as if it was done, without mutating the actual database:</p></div><div class="paragraph"><p>The first call to <code>insert!</code> looks just like any other call:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} :simulate true)
+=&gt; {:book {:name &quot;The Magic School Bus&quot;}, :db {:id 17592186045420}}</div></div><div class="paragraph"><p>But notice that on the next call, the :db/id stays the same:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} :simulate true)
+=&gt; {:book {:name &quot;The Magic School Bus&quot;}, :db {:id 17592186045420}}</div></div><div class="paragraph"><p>We can pass <code>:adi</code> in as an additional parameter to retrieve the entire datastructure for the call:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! ds-1 {:book/name &quot;The Magic School Bus&quot;} :simulate true :adi)
+;; =&gt;#adi{:tempids ...
+;;        :schema #schema{:book {:name :string, :author :string}},
+;;        :pipeline nil,
+;;        :connection #connection{1001 #inst &quot;2016-03-18T04:13:48.499-00:00&quot;}
+;;        :db #db{1001 #inst &quot;2016-03-18T04:13:48.499-00:00&quot;}
+;;        :process {... ...},
+;;        :options {:adi true,
+;;                  :schema-restrict true,
+;;                  :schema-required true,
+;;                  :schema-defaults true}}</div></div><div class="paragraph"><p>A look at <code>ds-1</code> shows that it has not changed after the <code>insert!</code> calls</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(:connection ds-1)
+;;=&gt; #connection{1001 #inst &quot;2016-03-18T04:13:48.499-00:00&quot;}</div></div><div class="paragraph"><p>A call to select shows that the book entry has not been added:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select ds-1 :book)
+=&gt; #{{:book {:name &quot;Orpheus&quot;}}}</div></div></section></section><section class="chapter" id="schema-params"><h2 class="chapter">4  &nbsp;&nbsp; Schema Params</h2><section class="section" id="schema"><h3 class="section">4.1  &nbsp;&nbsp; :schema</h3><section class="subsection" id="book"><h4 class="subsection">4.1.1  &nbsp;&nbsp; book</h4><div class="paragraph"><p><code>:schema</code> is the other part of the datastore that is created when <code>connect!</code> is called. The schema is a powerful ally because it contains information about how data should be related, created and managed. To demonstrate this, a book schema is defined:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-book
+   {:book   {:name    [{:required true
+                        :fulltext true}]
+             :author  [{:fulltext true}]}})</div></div><div class="paragraph"><p>A connection is created using the schema:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def book-ds (adi/connect! &quot;datomic:mem://adi-guide-schema-book&quot; schema-book true true))</div></div><div class="paragraph"><p>A single book is entered:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! book-ds {:book {:name &quot;The Magicians&quot;
+                             :author &quot;Lev Grossman&quot;}})</div></div><div class="paragraph"><p>And then accessed:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select book-ds :book)
+=&gt; #{{:book {:name &quot;The Magicians&quot;, :author &quot;Lev Grossman&quot;}}}</div></div><div class="paragraph"><p>We see that both the name and the author of the book is returned.</p></div></section><section class="subsection" id="partial-schema"><h4 class="subsection">4.1.2  &nbsp;&nbsp; partial schema</h4><div class="paragraph"><p>However, lets define a partial schema:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def name-schema (adi/schema {:book {:name  [{:required true}]}}))</div></div><div class="paragraph"><p>And make a call to select, passing in the <code>:schema</code> entry</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select book-ds :book :schema name-schema)
+=&gt; #{{:book {:name &quot;The Magicians&quot;}}}</div></div><div class="paragraph"><p>It can be seen that only the book name is returned.</p></div></section><section class="subsection" id="more-examples"><h4 class="subsection">4.1.3  &nbsp;&nbsp; more examples</h4><div class="paragraph"><p>By passing in different schemas, an application can allow for isolation of various functionalities as well have as basic protection of data. It can be seen how the two schemas behave. Below shows a normal search on :book/author:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select book-ds :book/author)
+=&gt; #{{:book {:name &quot;The Magicians&quot;, :author &quot;Lev Grossman&quot;}}}</div></div><div class="paragraph"><p>Using the abridged schema, an exception is thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select book-ds :book/author :schema name-schema)
+=&gt; (throws)</div></div></section></section><section class="section" id="pull"><h3 class="section">4.2  &nbsp;&nbsp; :pull</h3><div class="paragraph"><p>A connection is created using the schema:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-store
+   {:book   {:name    [{:required true
+                        :fulltext true}]
+             :author  [{:fulltext true}]}
+    :inventory {:count [{:type :long}]
+                :book    [{:type :ref
+                           :ref  {:ns :book}}]
+                :store   [{:type :ref
+                           :ref  {:ns :store
+                                  :rval :inventory}}]}
+    :store  {:name    [{:required true
+                        :fulltext true}]}})
+
+(def store-ds (adi/connect! &quot;datomic:mem://adi-guide-schema-store&quot; schema-store true true))</div></div><div class="paragraph"><p>A store is created with inventory:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! store-ds
+             {:store {:name &quot;Happy Books&quot;
+                      :inventory #{{:count 10
+                                    :book {:name &quot;The Magicians&quot;
+                                           :author &quot;Lev Grossman&quot;}}
+                                   {:count 8
+                                    :book {:name &quot;The Color of Magic&quot;
+                                           :author &quot;Terry Pratchett&quot;}}}}})</div></div><section class="subsection" id="defaults"><h4 class="subsection">4.2.1  &nbsp;&nbsp; defaults</h4><div class="paragraph"><p>The default behaviour for <code>:pull</code> is to grab all attributes from an entity that are not references:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select store-ds :store)
+=&gt; #{{:store {:name &quot;Happy Books&quot;}}}</div></div></section><section class="subsection" id="checked-and-unchecked"><h4 class="subsection">4.2.2  &nbsp;&nbsp; :checked and :unchecked</h4><div class="paragraph"><p>However, this can be customised by using <code>:checked</code> and <code>:unchecked</code></p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select store-ds :store
+            :pull {:store {:name :unchecked
+                           :inventory :checked}})
+=&gt; #{{:store {:inventory #{{:count 8} {:count 10}}}}}</div></div></section><section class="subsection" id="id"><h4 class="subsection">4.2.3  &nbsp;&nbsp; :id</h4><div class="paragraph"><p>The pull model can be nested and allows very quick customisation of data. Using <code>:id</code> restricts refs to return the internal id:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select store-ds :store
+            :pull {:store {:inventory {:book :id}}}
+            :first)
+=&gt; (contains {:store
+              (contains {:name &quot;Happy Books&quot;, :inventory
+                         (contains [(contains {:count 8, :book number?})
+                                    (contains {:count 10, :book number?})])})})</div></div></section><section class="subsection" id="forward-walk"><h4 class="subsection">4.2.4  &nbsp;&nbsp; forward walk</h4><div class="paragraph"><p>Using <code>{}</code> for defining the <code>:pull</code> model for a ref is the same as using <code>:checked</code></p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select store-ds {:store/name &quot;Happy Books&quot;}
+            :pull {:store {:inventory {:book {}}}})
+=&gt; #{{:store {:name &quot;Happy Books&quot;,
+               :inventory #{{:count 10
+                             :book {:name &quot;The Magicians&quot;
+                                    :author &quot;Lev Grossman&quot;}}
+                            {:count 8
+                             :book {:name &quot;The Color of Magic&quot;
+                                    :author &quot;Terry Pratchett&quot;}}}}}}</div></div></section><section class="subsection" id="reverse-walk"><h4 class="subsection">4.2.5  &nbsp;&nbsp; reverse walk</h4><div class="paragraph"><p><code>:pull</code> also works for reverse lookups, having the ability to walk the schema in the opposite direction:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select store-ds {:book/name '(?fulltext &quot;Magic&quot;)}
+            :pull {:book {:inventories {:store :checked}}})
+=&gt; #{{:book {:name &quot;The Color of Magic&quot;,
+             :author &quot;Terry Pratchett&quot;,
+             :inventories #{{:count 8,
+                             :store {:name &quot;Happy Books&quot;}}}}}}</div></div></section><section class="subsection" id="yield"><h4 class="subsection">4.2.6  &nbsp;&nbsp; :yield</h4><div class="paragraph"><p>A special option <code>:yield</code> is available for recursive references. To show this in action, a different datastore is required:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-nodes
+   {:node   {:name   [{:required true}]
+             :next   [{:type :ref
+                       :ref {:ns :node
+                             :rval :previous}}]}})
+
+(def node-ds (adi/connect! (adi/connect! &quot;datomic:mem://adi-guide-schema-nodes&quot; schema-nodes true true)))</div></div><div class="paragraph"><p>A set of maps are inserted:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! node-ds {:node {:name &quot;A&quot;
+                             :next {:name &quot;B&quot;
+                                    :next {:name &quot;C&quot;
+                                           :next {:name &quot;D&quot;}}}}})</div></div><div class="paragraph"><p>We can now perform selection:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node/name &quot;B&quot;})
+=&gt; #{{:node {:name &quot;B&quot;}}}</div></div><div class="paragraph"><p>when <code>:yield</code> is flagged on a ref, the <code>:pull</code> model yields to what was previously defined:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node/name &quot;B&quot;}
+            :pull {:node {:next :yield}})
+=&gt; #{{:node {:name &quot;B&quot;, :next {:name &quot;C&quot;, :next {:name &quot;D&quot;}}}}}</div></div></section><section class="subsection" id="recursion"><h4 class="subsection">4.2.7  &nbsp;&nbsp; recursion</h4><div class="paragraph"><p>The option is great for arbitrarily linked data. Additionally, the data model can be walked both forwards and backwards</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node/name &quot;D&quot;}
+            :pull {:node {:previous :yield}})
+=&gt; #{{:node {:name &quot;D&quot;, :previous #{{:name &quot;C&quot;, :previous #{{:name &quot;B&quot;, :previous #{{:name &quot;A&quot;}}}}}}}}}</div></div><div class="paragraph"><p>A mix of <code>:yield</code> and <code>:checked</code> makes for some interesting datastructures</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node/name &quot;C&quot;}
+            :pull {:node {:next :yield
+                          :previous :checked}})
+=&gt; #{{:node {:name &quot;C&quot;, :next {:name &quot;D&quot;,
+                               :previous #{{:name &quot;C&quot;}}},
+             :previous #{{:name &quot;B&quot;}}}}}</div></div></section></section><section class="section" id="access"><h3 class="section">4.3  &nbsp;&nbsp; :access</h3><div class="paragraph"><p><code>:access</code> provides restrictions on input and an outline on how data should be returned. The following is how it is typically used:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node {:name &quot;C&quot;}}
+            :access {:node :checked})
+=&gt; #{{:node {:name &quot;C&quot;}}}</div></div><section class="subsection" id="restrictions"><h4 class="subsection">4.3.1  &nbsp;&nbsp; restrictions</h4><div class="paragraph"><p>When the selector oversteps what is deemed acceptable, an exception is thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node {:next {:name &quot;C&quot;}}}
+            :access {:node :checked})
+=&gt; (throws)</div></div><div class="paragraph"><p>The model is able to follow the data and the returned values:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node {:next {:name &quot;C&quot;}}}
+            :access {:node {:next :checked}})
+=&gt; #{{:node {:name &quot;B&quot;, :next {:name &quot;C&quot;}}}}</div></div><div class="paragraph"><p>Reverse lookups are also supported</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node {:previous {:name &quot;C&quot;}}}
+            :access {:node {:previous :checked}})
+=&gt; #{{:node {:name &quot;D&quot;, :previous #{{:name &quot;C&quot;}}}}}</div></div></section><section class="subsection" id="combination"><h4 class="subsection">4.3.2  &nbsp;&nbsp; combination</h4><div class="paragraph"><p><code>:access</code> and <code>:pull</code> can be used to work together to limit data:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node {:next {:name &quot;C&quot;}}}
+            :access {:node {:next :checked}}
+            :pull   {:node :checked})
+=&gt; #{{:node {:name &quot;B&quot;}}}</div></div><div class="paragraph"><p>or to expand the data that is returned:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select node-ds {:node {:next {:name &quot;C&quot;}}}
+            :access {:node {:next :checked}}
+            :pull   {:node {:next {:next :checked}}})
+=&gt; #{{:node {:name &quot;B&quot;,
+             :next {:name &quot;C&quot;,
+                    :next {:name &quot;D&quot;}}}}}</div></div></section></section></section><section class="chapter" id="options-0"><h2 class="chapter">5  &nbsp;&nbsp; Options</h2><div class="group"><div class="paragraph"><p>For demonstration of search options, we define a schema</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def schema-school
+  {:student   {:name      [{:required true
+                            :fulltext true}]
+               :classes   [{:type :ref
+                            :cardinality :many
+                            :ref {:ns   :class}}]}
+   :class     {:subject [{:required true}]
+               :teacher [{:type :ref
+                          :ref {:ns   :teacher
+                                :rval :class}}]}
+   :teacher   {:name    [{:required true}]
+               :age     [{:type :long}]}})</div></div><div class="paragraph"><p>The datastore is created:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(def school-ds (adi/connect! &quot;datomic:mem://adi-guide-options-school-store&quot; schema-school true true))</div></div><div class="paragraph"><p>Data is put into the system:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! school-ds
+             [{:db/id (adi/iid :science)
+               :class {:subject &quot;Science&quot;
+                       :teacher {:name &quot;Mr Michaels&quot;
+                                 :age 39}}}
+              {:db/id (adi/iid :math)
+               :class {:subject &quot;Math&quot;
+                       :teacher {:name &quot;Mr Nolan&quot;
+                                 :age 26}}}
+              {:student {:name &quot;Charlie&quot;
+                         :classes #{(adi/iid :science)}}}
+              {:student {:name &quot;Bob&quot;
+                         :classes #{(adi/iid :math)}}}
+              {:student {:name &quot;Anne&quot;
+                         :classes #{(adi/iid :science)
+                                    (adi/iid :math)}}}])</div></div><div class="paragraph"><p>And we are ready to go!</p></div></div><section class="section" id="first"><h3 class="section">5.1  &nbsp;&nbsp; :first</h3><div class="paragraph"><p>Instead of returning a set of values, returns the first element of the results. Useful when only one value is returned:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:student/name &quot;Anne&quot;} {:options {:first :true}})
+=&gt; {:student {:name &quot;Anne&quot;}}</div></div><div class="paragraph"><p>The shorthand can be used:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:student/name &quot;Anne&quot;} :first)
+=&gt; {:student {:name &quot;Anne&quot;}}</div></div><div class="paragraph"><p>Also works when there is more than one possible value:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds :student)
+=&gt; #{{:student {:name &quot;Bob&quot;}} {:student {:name &quot;Anne&quot;}} {:student {:name &quot;Charlie&quot;}}}</div></div><div class="paragraph"><p>Because <code>Charlie</code> was put in first, we expect that his name comes up first:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds :student :first)
+=&gt; {:student {:name &quot;Charlie&quot;}}</div></div></section><section class="section" id="ids-0"><h3 class="section">5.2  &nbsp;&nbsp; :ids</h3><div class="paragraph"><p>Returns the datomic ids for the piece of data:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:student/name &quot;Anne&quot;} {:options {:ids :true}})
+
+=&gt; #{{:student {:name &quot;Anne&quot;}, :db {:id 17592186045424}}}</div></div><div class="paragraph"><p><code>:ids</code> work fine with <code>:pull</code>, <code>:access</code> and data related options</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:student/name &quot;Anne&quot;}
+            :ids
+            :pull {:student {:classes {:teacher :checked}}})
+  
+=&gt; #{{:db {:id 17592186045424}
+      :student {:name &quot;Anne&quot;,
+                :classes #{{:+ {:db {:id 17592186045420}}
+                            :subject &quot;Math&quot;,
+                            :teacher {:+ {:db {:id 17592186045421}}
+                                      :name &quot;Mr Nolan&quot;
+                                      :age 26}}
+                           {:+ {:db {:id 17592186045418}}
+                            :subject &quot;Science&quot;,
+                            :teacher {:+ {:db {:id 17592186045419}}
+                                      :name &quot;Mr Michaels&quot;
+                                      :age 39}}}}}}</div></div></section><section class="section" id="ban-expressions"><h3 class="section">5.3  &nbsp;&nbsp; :ban-expressions</h3><div class="paragraph"><p>expressions can be used to select</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:student/name '(.startsWith ? &quot;A&quot;)})
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>At times, especially when directly exposing the interface to the outside, it may be a good idea to disable this functionality:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:student/name '(.startsWith ? &quot;A&quot;)}
+            :ban-expressions)
+=&gt; (throws)</div></div></section><section class="section" id="ban-top-id"><h3 class="section">5.4  &nbsp;&nbsp; :ban-top-id</h3><div class="paragraph"><p>When there are no restrictions, ids can be used as direct input:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds 17592186045424)
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>This option disables selection of entity from the very top</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds 17592186045424 :ban-top-id)
+=&gt; (throws)</div></div><div class="paragraph"><p>However, this does not prevent selection of related data:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:class/students 17592186045424} :ban-top-id)
+=&gt; #{{:class {:subject &quot;Math&quot;}} {:class {:subject &quot;Science&quot;}}}</div></div></section><section class="section" id="ban-body-ids"><h3 class="section">5.5  &nbsp;&nbsp; :ban-body-ids</h3><div class="paragraph"><p>The opposite of <code>:ban-top-id</code>. This option disables selection of entity from the query:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds 17592186045424 :ban-body-ids)
+#{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>And when numbers are not in the body, an exception is thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:class/students 17592186045424} :ban-body-ids)
+=&gt; (throws)</div></div></section><section class="section" id="ban-ids"><h3 class="section">5.6  &nbsp;&nbsp; :ban-ids</h3><div class="paragraph"><p>The combination of both options. Throws whever it sees an id:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds 17592186045424 :ban-ids)
+=&gt; (throws)</div></div><div class="paragraph"><p>And when numbers are not in the body, an exception is thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:class/students 17592186045424} :ban-ids)
+=&gt; (throws)</div></div></section><section class="section" id="raw"><h3 class="section">5.7  &nbsp;&nbsp; :raw</h3><div class="paragraph"><p>Returns the actual input that would be given to datomic:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:class/students 17592186045424} :raw)
+;;=&gt; [:find ?self :where [17592186045424 :student/classes ?self]]</div></div><div class="paragraph"><p>Works for both queries and datoms:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/insert! school-ds
+             [{:db/id (adi/iid :science)
+               :class {:subject &quot;Science&quot;
+                       :teacher {:name &quot;Mr Michaels&quot;
+                                 :age 39}}}
+              {:db/id (adi/iid :math)
+               :class {:subject &quot;Math&quot;
+                       :teacher {:name &quot;Mr Nolan&quot;
+                                 :age 26}}}
+              {:student {:name &quot;Charlie&quot;
+                         :classes #{(adi/iid :science)}}}
+              {:student {:name &quot;Bob&quot;
+                         :classes #{(adi/iid :math)}}}
+              {:student {:name &quot;Anne&quot;
+                         :classes #{(adi/iid :science)
+                                    (adi/iid :math)}}}]
+             :raw)
+;;=&gt; [{:db/id #adi[:science]
+;;     :class/subject &quot;Science&quot;}
+;;     :class/teacher {:db/id #adi[?e262028]
+;;                     :teacher/name &quot;Mr Michaels&quot;
+;;                     :teacher/age 39}} 
+;;    {:db/id #adi[:math]
+;;     :class/subject &quot;Math&quot;
+;;     :class/teacher {:db/id #adi[?e262029]
+;;                     :teacher/name &quot;Mr Nolan&quot;
+;;                     :teacher/age 26}}
+;;    {:student/name &quot;Charlie&quot;, :db/id #adi[?e262030]}
+;;    [:db/add #adi[?e262030] :student/classes #adi[:science]]
+;;    {:student/name &quot;Bob&quot;, :db/id #adi[?e262031]}
+;;    [:db/add #adi[?e262031] :student/classes #adi[:math]]
+;;    {:student/name &quot;Anne&quot;, :db/id #adi[?e262032]}
+;;    [:db/add #adi[?e262032] :student/classes #adi[:science]]
+;;    [:db/add #adi[?e262032] :student/classes #adi[:math]])</div></div></section><section class="section" id="adi"><h3 class="section">5.8  &nbsp;&nbsp; :adi</h3><div class="paragraph"><p>Returns the <code>adi</code> datastructure used for the query, useful for debugging. This map has all the acculmulated data as the query/insert moves through the adi data pipeline</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds {:class/students 17592186045424} :adi)
+;;=&gt; #adi{:tempids {:status :ready, :val #{}},
+;;        :schema #schema{:student {:name :string,
+;;                                  :classes :&amp;class&lt;*&gt;},
+;;                        :class   {:subject :string,
+;;                                  :teacher :&amp;teacher,
+;;                                  :students :&amp;student&lt;*&gt;},
+;;                        :teacher {:name :string,
+;;                                  :age :long,
+;;                                  :class :&amp;class&lt;*&gt;}}
+;;        :pipeline nil,
+;;        :db #db{1001 #inst &quot;2016-03-18T06:14:23.156-00:00&quot;},
+;;        :process {:input
+;;                  {:class/students 17592186045424},
+;;
+;;                  :normalised
+;;                  {:class {:students #{17592186045424}}}
+;;
+;;                  :analysed
+;;                  {:# {:sym ?self, :id ?e262444}
+;;                   :class/students #{17592186045424}}
+;;
+;;                  :reviewed
+;;                  {:# {:sym ?self, :id ?e262444}
+;;                   :class/students #{17592186045424}}
+;;
+;;                  :characterised
+;;                  {:# {:sym ?self, :id ?e262444}
+;;                   :rev-ids-many {:student/classes #{}}
+;;                   :rev-ids {:student/classes #{17592186045424}}
+;;
+;;                  :emitted
+;;                  [:find ?self :where
+;;                   [17592186045424 :student/classes ?self]]},
+;;        :type &quot;query&quot;,
+;;        :op :select,
+;;        :result {:ids (17592186045418 17592186045420),
+;;                 :entities ({:db/id 17592186045418}
+;;                            {:db/id 17592186045420}),
+;;                 :data ({:class {:subject &quot;Science&quot;}}
+;;                        {:class {:subject &quot;Math&quot;}})}
+;;        :options {:adi true},
+;;        :connection #connection{1001 #inst &quot;2016-03-18T06:14:23.156-00:00&quot;}}</div></div></section></section><section class="chapter" id="pipeline-0"><h2 class="chapter">6  &nbsp;&nbsp; Pipeline</h2><div class="group"><div class="paragraph"><p>The data pipeline is used for preprocessing of incoming data before accessing datomic. Different stages of the pipeline can be seen below:</p></div><div class="figure"><a name="img-img--adi-pipeline-png"></a><div class="img"><img src="img/adi-pipeline.png" width="250px" /></div></div></div><section class="section" id="pre-process"><h3 class="section">6.1  &nbsp;&nbsp; :pre-process</h3><div class="paragraph"><p>Manipulation of the datastructure before going into the pipeline. Takes one function the first the data structure</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Charlie&quot;}
+            {:pipeline {:pre-process
+                        (fn [x]
+                          (assoc-in x [:student :name] &quot;Bob&quot;))}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}}</div></div><div class="paragraph"><p>Different options can be passed into the datastore through a second optional param: the datastore object:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Charlie&quot;}
+            {:pipeline {:pre-process
+                        (fn [x adi]
+                          (assoc-in x [:student :name]
+                                    (-&gt; adi :params :name)))}
+             :params {:name &quot;Bob&quot;}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}}</div></div></section><section class="section" id="pre-require"><h3 class="section">6.2  &nbsp;&nbsp; :pre-require</h3><div class="paragraph"><p>Checks to see if data in a certain field is availiable:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Charlie&quot;}
+            {:pipeline {:pre-require
+                        {:student {:name :checked}}}})
+=&gt; #{{:student {:name &quot;Charlie&quot;}}}</div></div><div class="paragraph"><p>If it is not, then the operation throws an error:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/classes/subject &quot;Math&quot;}
+            {:pipeline {:pre-require
+                        {:student {:name :checked}}}})
+=&gt; (throws)</div></div><div class="paragraph"><p>The fields are accessed in a nested fashion:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/classes/subject &quot;Math&quot;}
+            {:pipeline {:pre-require
+                        {:student
+                         {:classes {:subject (fn [_ _] true)}}}}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}
+     {:student {:name &quot;Anne&quot;}}}</div></div></section><section class="section" id="pre-mask"><h3 class="section">6.3  &nbsp;&nbsp; :pre-mask</h3><div class="paragraph"><p>Removes an entry in the map. For example, it is currently the case that a search for student named Charlie that takes Math class does not yield any results:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:name &quot;Charlie&quot;
+                       :classes {:subject &quot;Math&quot;}}})
+=&gt; #{}</div></div><div class="paragraph"><p>However, we can mask the data, in this case, taking out the value for <code>:student/name</code> to only search for students that are taking Math class.</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:name &quot;Charlie&quot;
+                       :classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:pre-mask
+                        {:student {:name :checked}}}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}
+     {:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>This example shows the class subject being masked:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:name &quot;Charlie&quot;
+                       :classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:pre-mask
+                        {:student
+                         {:classes {:subject (fn [_ _] true)}}}}})
+=&gt; #{{:student {:name &quot;Charlie&quot;}}}</div></div></section><section class="section" id="pre-transform"><h3 class="section">6.4  &nbsp;&nbsp; :pre-transform</h3><div class="paragraph"><p>Applies a transformation directly to the value, takes a function containing the value as well as the adi datastructure:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(defn capitalise [x]
+  (str (.toUpperCase (str (first x)))
+       (.toLowerCase (apply str (rest x)))))</div></div><div class="paragraph"><p>Takes one or two arguments, like <code>pre-process</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:name &quot;Charlie&quot;
+                       :classes {:subject &quot;SCIENCE&quot;}}}
+            {:pipeline {:pre-transform
+                        {:student
+                         {:classes
+                          {:subject capitalise}}}}})
+=&gt; #{{:student {:name &quot;Charlie&quot;}}}</div></div><div class="paragraph"><p>A more explicit version where capitalise is passed in is shown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:name &quot;Charlie&quot;
+                       :classes {:subject &quot;SCIENCE&quot;}}}
+            {:fn capitalise
+             :pipeline {:pre-transform
+                        {:student
+                         {:classes
+                          {:subject
+                           (fn [x adi]
+                             ((:fn adi) x))}}}}})
+=&gt; #{{:student {:name &quot;Charlie&quot;}}}</div></div></section><section class="section" id="fill-empty"><h3 class="section">6.5  &nbsp;&nbsp; :fill-empty</h3><div class="paragraph"><p>Makes sure that if a value is empty, then it will be filled either by a value</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {}
+            {:pipeline {:fill-empty
+                        {:student {:classes
+                                   {:subject &quot;Science&quot;}}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}} {:student {:name &quot;Charlie&quot;}}}</div></div><div class="paragraph"><p>Or a function:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {}
+            {:params {:subject &quot;Science&quot;}
+             :pipeline {:fill-empty
+                        {:student
+                         {:classes
+                          {:subject (fn [x]
+                                      &quot;Science&quot;)}}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}} {:student {:name &quot;Charlie&quot;}}}</div></div><div class="paragraph"><p>Again, like previous pipeline segments values can be passed in:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {}
+            {:params {:subject &quot;Science&quot;}
+             :pipeline {:fill-empty
+                        {:student
+                         {:classes
+                          {:subject
+                           (fn [_ adi]
+                             (-&gt; adi :params :subject))}}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}} {:student {:name &quot;Charlie&quot;}}}</div></div></section><section class="section" id="fill-assoc"><h3 class="section">6.6  &nbsp;&nbsp; :fill-assoc</h3><div class="paragraph"><p>Makes sure that additional values are added, in this case, we have imposed an additional restriction that the student should be taking Math as well as Science:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       {:subject &quot;Science&quot;}}}
+            {:pipeline {:fill-assoc
+                        {:student
+                         {:classes #{{:subject &quot;Math&quot;}}}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>Use of a function is also valid:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       {:subject &quot;Science&quot;}}}
+            {:pipeline {:fill-assoc
+                        {:student
+                         {:classes
+                          (fn [_] {:subject &quot;Math&quot;})}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>Note that this will not work:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       {:subject &quot;Science&quot;}}}
+            {:pipeline {:fill-assoc
+                        {:student
+                         {:classes
+                          {:subject &quot;Math&quot;}}}}})
+=&gt; #{}</div></div><div class="paragraph"><p>This is because of the generated search query. As can be seen, for the previous case, the query generates a statement where we need to find a subject that has both <code>Science</code> and <code>Math</code> as names (which is impossible)</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       {:subject #{&quot;Math&quot; &quot;Science&quot;}}}}
+            :raw)
+=&gt; [:find ?self :where
+    [?self :student/classes ?e160221]
+    [?e160221 :class/subject &quot;Science&quot;]
+    [?e160221 :class/subject &quot;Math&quot;]]</div></div><div class="paragraph"><p>Whereas the correct way, is to say that the student takes two different classes, whose names are <code>Math</code> for the first and <code>Science</code> for the second:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       #{{:subject &quot;Science&quot;}
+                         {:subject &quot;Math&quot;}}}}
+            :raw)
+=&gt; [:find ?self :where
+    [?self :student/classes ?e160225]
+    [?self :student/classes ?e160226]
+    [?e160225 :class/subject &quot;Math&quot;]
+    [?e160226 :class/subject &quot;Science&quot;]]</div></div></section><section class="section" id="ignore"><h3 class="section">6.7  &nbsp;&nbsp; :ignore</h3><div class="paragraph"><p>Sometimes, there is data that is not in the schema, resulting in an exception being thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:rating 10
+                       :classes {:subject &quot;Science&quot;}}})
+=&gt; (throws)</div></div><div class="paragraph"><p>Having <code>:ignore</code> params makes sure that the extra entries do not raise any issues</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:rating 10
+                       :classes
+                       #{{:subject &quot;Science&quot;}}}}
+            {:pipeline {:ignore
+                        {:student {:rating :checked}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}} {:student {:name &quot;Charlie&quot;}}}</div></div></section><section class="section" id="allow"><h3 class="section">6.8  &nbsp;&nbsp; :allow</h3><div class="paragraph"><p>Allows only entries that have been specified:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       #{{:subject &quot;Science&quot;}}}}
+            {:pipeline {:allow
+                        {:student
+                         {:classes {:subject :checked}}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}}
+     {:student {:name &quot;Charlie&quot;}}}</div></div><div class="paragraph"><p>If there is a search on entries that are not allowed, an exception will be thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Anne&quot;}
+            {:pipeline {:allow
+                        {:student
+                         {:classes {:subject :checked}}}}})
+=&gt; (throws)</div></div><div class="paragraph"><p>When the map is empty, everything is restricted:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes
+                       #{{:subject &quot;Science&quot;}}}}
+            {:pipeline {:allow {}}})
+=&gt; (throws)</div></div></section><section class="section" id="validate"><h3 class="section">6.9  &nbsp;&nbsp; :validate</h3><div class="paragraph"><p>Validates the map using a function of two parameters:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Anne&quot;}
+            {:validate {:name &quot;Anne&quot;}
+             :pipeline {:validate
+                        {:student
+                         {:name
+                          (fn [x adi]
+                            (= x
+                               (-&gt; adi :validate :name)))}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>If the validation fails, an exception is thrown:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Anne&quot;}
+            {:pipeline {:validate
+                        {:student
+                         {:name (fn [x _] (not= &quot;Anne&quot; x))}}}})
+=&gt; (throws)</div></div></section><section class="section" id="convert"><h3 class="section">6.10  &nbsp;&nbsp; :convert</h3><div class="paragraph"><p>Same as the <code>pre</code> and <code>post</code> transforms, just another place in the pipeline where a generic function can be used:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;anne&quot;}
+            {:pipeline {:convert
+                        {:student {:name capitalise}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>Works with one or two arguments:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;anne&quot;}
+            {:fn capitalise
+             :pipeline {:convert
+                        {:student
+                         {:name (fn [x adi]
+                                  ((:fn adi) x))}}}})
+=&gt; #{{:student {:name &quot;Anne&quot;}}}</div></div></section><section class="section" id="post-require"><h3 class="section">6.11  &nbsp;&nbsp; :post-require</h3><div class="paragraph"><p>Same as <code>:pre-require</code> but happens later in the pipeline:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:fill-assoc
+                        {:student {:name &quot;Bob&quot;}}
+                        :post-require
+                        {:student {:name :checked}}}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}}</div></div><div class="paragraph"><p>It can be seen that if the above statement was replaced with <code>:pre-require</code>, an exception would be thrown because <code>:fill-assoc</code> occurs after <code>:post-require</code> but before <code>:post-require</code>. Since that particular stage has not been run, the require check shows an empty entry:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:fill-assoc
+                        {:student {:name &quot;Bob&quot;}}
+                        :pre-require
+                        {:student {:name :checked}}}})
+=&gt; (throws)</div></div></section><section class="section" id="post-mask"><h3 class="section">6.12  &nbsp;&nbsp; :post-mask</h3><div class="paragraph"><p>Like <code>:pre-mask</code>, but occurs after the validation and fill stages:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:fill-assoc {:student {:name &quot;Bob&quot;}}
+                        :post-mask
+                        {:student {:name (fn [_] true)}}}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}
+     {:student {:name &quot;Anne&quot;}}}</div></div><div class="paragraph"><p>Compared to what happens when using <code>:pre-mask</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:fill-assoc {:student {:name &quot;Bob&quot;}}
+                        :pre-mask
+                        {:student {:name :checked}}}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}}</div></div></section><section class="section" id="post-transform"><h3 class="section">6.13  &nbsp;&nbsp; :post-transform</h3><div class="paragraph"><p>Like <code>:pre-transform</code> but later in the pipeline:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:fill-assoc {:student {:name &quot;BOB&quot;}}
+                        :post-transform
+                        {:student {:name capitalise}}}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}}</div></div><div class="paragraph"><p>Compared with a similar call to <code>:pre-transform</code>:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student {:classes {:subject &quot;Math&quot;}}}
+            {:pipeline {:fill-assoc {:student {:name &quot;BOB&quot;}}
+                        :pre-transform
+                        {:student {:name capitalise}}}})
+=&gt; #{}</div></div></section><section class="section" id="post-process"><h3 class="section">6.14  &nbsp;&nbsp; :post-process</h3><div class="paragraph"><p>Final function that is called on the datastructure at the end of the pipeline:</p></div><div class="code"><div hljs="hljs" language="clojure" no-escape="no-escape">(adi/select school-ds
+            {:student/name &quot;Charlie&quot;}
+            {:pipeline
+             {:post-process
+              (fn [x _]
+                (assoc-in x [:student :name] #{&quot;Bob&quot;}))}})
+=&gt; #{{:student {:name &quot;Bob&quot;}}}</div></div></section></section>
     </div>
 </div><!--end of .container-->
 
