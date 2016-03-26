@@ -48,6 +48,7 @@
     :ids
     :generate-ids
     :generate-syms
+    :blank
     :raw
     :adi})
 
