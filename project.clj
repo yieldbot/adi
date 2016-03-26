@@ -43,10 +43,10 @@
                 :link {:auto-tag    true
                        :auto-number true}}
   :profiles {:dev {:plugins [[lein-midje "3.1.3"]
-                             [lein-hydrox "0.1.8"]]
+                             [lein-hydrox "0.1.16"]]
                    :dependencies [[com.datomic/datomic-free "0.9.5350" :exclusions [joda-time]]
                                   [midje "1.6.3"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
                                   [cheshire "5.2.0"]
-                                  [helpshift/hydrox "0.1.15"]]}})
+                                  [helpshift/hydrox "0.1.16"]]}})

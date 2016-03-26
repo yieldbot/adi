@@ -250,6 +250,10 @@ Schema related entries:
 - `:post-process`
 "
 
+[[:chapter {:title "Schema"}]]
+
+[[:file {:src "test/documentation/adi_guide/schema.clj"}]]
+
 [[:chapter {:title "Connection Params"}]]
 
 [[:file {:src "test/documentation/adi_guide/reserved/connection.clj"}]]
