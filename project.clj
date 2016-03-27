@@ -1,4 +1,4 @@
-(defproject im.chit/adi "0.3.4-SNAPSHOT"
+(defproject im.chit/adi "0.3.4"
   :description "data modelling for the ambitious"
   :url "https://www.github.com/zcaudate/adi"
   :license {:name "The MIT License"

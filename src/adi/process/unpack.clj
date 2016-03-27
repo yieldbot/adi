@@ -73,12 +73,16 @@
                              (assoc-in-if output (path/split k)
                                           ((wrap-unpack-sets unpack-ref) ent attr v adi))
 
-
                              (= :enum (-> attr :type))
                              (assoc-in-if output (path/split k)
                                           (if-let [ens (-> attr :enum :ns)]
                                             (-> ent (get k) path/split last)
                                             (get ent k)))
+
+                             (-> adi :options :blank)
+                             (if (= v :checked)
+                                 (assoc-in-if output (path/split k) (get ent k))
+                                 output)
 
                              :else
                              (assoc-in-if output (path/split k) (get ent k)))]
@@ -99,18 +103,20 @@
 
 (defn unpack
   ([ent adi]
-     (if-let [fmodel (-> adi :pipeline :pull)]
-       (unpack ent fmodel (assoc adi :seen-ids (atom #{})))
-       (let [ent (d/touch ent)
-             ks  (filter (fn [k] (if-let [type (-> adi :schema :flat k first :type)]
-                                   (not (#{:enum :alias :ref} type))))
-                         (keys ent))
-             res (-> (select-keys ent ks)
-                     (merge (unpack-enums ent adi))
-                     (treeify-keys))]
-         (if (-> adi :options :ids)
-           (assoc-in res
-                     [:db :id] (:db/id ent))
-           res))))
+   (if-let [fmodel (-> adi :pipeline :pull)]
+     (unpack ent fmodel (assoc adi :seen-ids (atom #{})))
+     (let [ent (d/touch ent)
+           res (if (-> adi :options :blank)
+                 {}
+                 (let [ks  (filter (fn [k] (if-let [type (-> adi :schema :flat k first :type)]
+                                             (not (#{:enum :alias :ref} type))))
+                                   (keys ent))]
+                   (-> (select-keys ent ks)
+                       (merge (unpack-enums ent adi))
+                       (treeify-keys))))]
+       (if (-> adi :options :ids)
+         (assoc-in res
+                   [:db :id] (:db/id ent))
+         res))))
   ([ent fmodel adi]
-     ((wrap-db-id unpack-loop) ent fmodel fmodel adi)))
+   ((wrap-db-id unpack-loop) ent fmodel fmodel adi)))

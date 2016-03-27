@@ -186,6 +186,7 @@ Additional
   (adi/schema {:node/link   [{:type :ref
                               :doc "The link to the next node"
                               :ref {:ns :node}}]})
+  ;;=> #schema{:node {:link :&node, :link_of :&node<*>}}
   )
 
 [[:section {:title ":index"}]]

@@ -155,7 +155,7 @@
                        :ref {:ns :node
                              :rval :previous}}]}})
 
-(def node-ds (adi/connect! (adi/connect! "datomic:mem://adi-guide-schema-nodes" schema-nodes true true)))
+(def node-ds (adi/connect! "datomic:mem://adi-guide-schema-nodes" schema-nodes true true))
 
 "A set of maps are inserted:"
 

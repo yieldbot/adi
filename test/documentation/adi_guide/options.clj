@@ -80,9 +80,9 @@
 "`:ids` work fine with `:pull`, `:access` and data related options"
 
 (fact
-  (adi/select school-ds {:student/name "Anne"}
-              :ids
-              :pull {:student {:classes {:teacher :checked}}})
+ (adi/select school-ds {:student/name "Anne"}
+             :ids
+             :pull {:student {:classes {:teacher :checked}}})
   
   => #{{:db {:id 17592186045424}
         :student {:name "Anne",
@@ -97,13 +97,85 @@
                                         :name "Mr Michaels"
                                         :age 39}}}}}})
 
+[[:section {:title ":blank"}]]
+
+"works with `:pull` to specify how refs should be returned:"
+
+(fact
+ (adi/select school-ds {:student/name "Anne"} :blank)
+ => #{{}})
+
+[[:subsection {:title "default setting"}]]
+
+"For default behaviour on queries, this option can be set as default on initialisation:"
+
+(def blank-ds
+  (adi/connect! {:uri "datomic:mem://adi-guide-options-school-store"
+                 :schema schema-school
+                 :options {:blank true}}))
+
+
+(fact
+  (adi/select blank-ds {:student/name "Anne"})
+  => #{{}})
+
+[[:subsection {:title "pull behaviour"}]]
+
+"Once set, the results will only be what the model governed by `:pull` allows:"
+
+(fact
+ (adi/select blank-ds {:student/name "Anne"}
+             :pull {:student {:name :checked}})
+ => #{{:student {:name "Anne"}}})
+
+(fact
+ (adi/select blank-ds {:student/classes/teacher/age 39}
+             :pull {:student {:name :checked}})
+ => #{{:student {:name "Anne"}}
+      {:student {:name "Charlie"}}})
+
+[[:subsection {:title "access behaviour"}]]
+
+"`:access` will also work the same as `:pull` but with query restrictions"
+(fact
+  (adi/select blank-ds {:student/name "Anne"}
+              :first
+              :access {:student {:name :checked}})
+  => {:student {:name "Anne"}})
+
+(fact
+  (adi/select blank-ds {:student/classes/teacher/age 39}
+              :access {:student {:name :checked}})
+  => (throws))
+
+[[:subsection {:title "ref traversal"}]]
+
+"when a key in a ref is checked, it will return only the data for that particular key"
+
+(fact
+  (adi/select school-ds {:student/name "Anne"}
+              :blank
+              :pull {:student {:classes {:teacher {:name :checked}}}})
+  => #{{:student {:classes #{{:teacher {:name "Mr Michaels"}}
+                             {:teacher {:name "Mr Nolan"}}}}}})
+
+"when the ref itself is checked, it will return all non ref data"
+
+(fact
+ (adi/select school-ds {:student/name "Anne"}
+             {:options {:blank true}
+              :pull {:student {:classes {:teacher :checked}}}})
+ => #{{:student {:classes #{{:teacher {:name "Mr Michaels", :age 39}}
+                            {:teacher {:name "Mr Nolan", :age 26}}}}}})
+
+
 [[:section {:title ":ban-expressions"}]]
 
 "expressions can be used to select"
 
 (fact
-  (adi/select school-ds {:student/name '(.startsWith ? "A")})
-  => #{{:student {:name "Anne"}}})
+ (adi/select school-ds {:student/name '(.startsWith ? "A")})
+ => #{{:student {:name "Anne"}}})
 
 "At times, especially when directly exposing the interface to the outside, it may be a good idea to disable this functionality:"
 

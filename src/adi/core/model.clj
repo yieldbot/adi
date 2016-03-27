@@ -66,8 +66,6 @@
       (error "MODEL_INPUT_ATTR: Values only take :checked and :unchecked as directives"))))
 
 (defn model-input
-  ([tmodel tsch]
-     (model-input tmodel :checked tsch))
   ([tmodel dft tsch]
      (model-input tmodel dft tsch tsch {}))
   ([tmodel dft psch tsch output]

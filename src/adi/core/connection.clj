@@ -10,11 +10,10 @@
   (dissoc adi :connection))
 
 (defn connect!
-  ([adi]
-     (disconnect! adi)
-     (let [{:keys [uri reset? install-schema?]} (:meta adi)]
-       (connect! uri (:schema adi) reset? install-schema?)))
-  ([uri schema & [reset? install-schema?]]
+  ([{:keys [uri schema reset? install-schema?] :as args}]
+   (let [pargs (dissoc args :uri :schema :reset? :install-schema?)]
+     (connect! uri schema reset? install-schema? pargs)))
+  ([uri schema & [reset? install-schema? more]]
       (when reset?
         (datomic/delete-database uri)
         (datomic/create-database uri))
@@ -31,6 +30,7 @@
             _      (if install-schema?
                      (let [dschema (-> schema :flat datomic)]
                        (datomic/transact conn dschema)))]
-        (types/map->Adi {:meta {:uri uri :reset? reset? :install-schema? install-schema?}
-                   :connection conn
-                   :schema schema}))))
+        (-> (types/map->Adi {:meta {:uri uri :reset? reset? :install-schema? install-schema?}
+                             :connection conn
+                             :schema schema})
+            (merge more)))))

@@ -11,32 +11,35 @@
         db (if-let [t (:at adi)] (datomic/as-of db t) db)]
     (assoc adi :db db)))
 
-(defn model-access [model access tsch]
+(defn model-access [model access dft tsch]
   (cond (and (:allow model) (:pull model))
         model
 
         (and (not (:allow model)) (:pull model))
-        (assoc model :allow (model/model-input access tsch))
+        (assoc model :allow (model/model-input access dft tsch))
 
         :else
-        (let [imodel (model/model-input access tsch)
+        (let [imodel (model/model-input access dft tsch)
               rmodel (model/model-unpack imodel tsch)]
           (assoc-nil model :allow imodel :pull rmodel))))
 
-(defn model-pull [model pull tsch]
+(defn model-pull [model pull dft tsch]
   (assoc model :pull
          (-> pull
-             (model/model-input tsch)
+             (model/model-input dft tsch)
              (model/model-unpack tsch))))
 
 (defn prepare-model [adi]
   (let [op    (:op adi)
+        dft   (if (-> adi :options :blank)
+                :unchecked 
+                :checked)
         model (or (:pipeline adi) (if op (-> adi :profile op)))
         model  (if-let [access (:access adi)]
-                 (model-access model access (-> adi :schema :tree))
+                 (model-access model access dft (-> adi :schema :tree))
                  model)
         model  (if-let [pull (:pull adi)]
-                 (model-pull model pull (-> adi :schema :tree))
+                 (model-pull model pull dft (-> adi :schema :tree))
                  model)]
     (assoc adi :pipeline model)))
 
