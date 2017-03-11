@@ -1,52 +1,40 @@
-(defproject im.chit/adi "0.3.4"
-  :description "data modelling for the ambitious"
-  :url "https://www.github.com/zcaudate/adi"
+(defproject im.chit/spirit "0.5.1"
+  :description "simplify data connectivity"
+  :url "https://www.github.com/zcaudate/spirit"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.7.0"]
-                 [im.chit/hara.common    "2.2.17"]
-                 [im.chit/hara.string    "2.2.17"]
-                 [im.chit/hara.data      "2.2.17"]
-                 [im.chit/hara.function  "2.2.17"]
-                 [im.chit/hara.component "2.2.17"]
-                 [im.chit/hara.event "2.2.17"]
+  :dependencies [[org.clojure/clojure    "1.7.0"]
+                 [im.chit/hara.common    "2.5.2"]
+                 [im.chit/hara.component "2.5.2"]
+                 [im.chit/hara.data      "2.5.2"]
+                 [im.chit/hara.event     "2.5.2"]
+                 [im.chit/hara.function  "2.5.2"]
+                 [im.chit/hara.string    "2.5.2"]
                  [inflections "0.9.14"]]
-  :documentation {:site   "adi"
-                  :output "docs"
-                  :description "data modelling for the ambitious"
-                  :tracking "UA-31320512-2"
-                  :owners [{:name    "Chris Zheng"
-                            :email   "z@caudate.me"
-                            :website "http://z.caudate.me"}]
-                  :template {:path "template"
-                             :copy ["assets"]
-                             :defaults {:template "article.html"
-                                        :navbar  [:file "partials/navbar.html"]
-                                        :sidebar [:file "partials/sidebar.html"]
-                                        :footer  [:file "partials/footer.html"]
-                                        :dependencies [:file "partials/deps-web.html"]
-                                        :contentbar  :navigation
-                                        :article     :article}}
-                  :paths ["test/documentation"]
-                  :files {"index"
-                          {:template "home.html"
-                           :title "adi"
-                           :subtitle "data modelling for the ambitious"}
-                          "adi-guide"
-                          {:input "test/documentation/adi_guide.clj"
-                           :title "adi"
-                           :subtitle "data modelling for the ambitious"}
-                          "adi-walkthrough"
-                          {:input "test/documentation/adi_walkthrough.clj"
-                           :title "walkthrough"
-                           :subtitle "a whirlwind tour of the library"}}
-                :link {:auto-tag    true
-                       :auto-number true}}
-  :profiles {:dev {:plugins [[lein-midje "3.1.3"]
-                             [lein-hydrox "0.1.16"]]
+  
+  :publish {:theme  "stark"
+            
+            :template {:site   "spirit"
+                       :author "Chris Zheng"
+                       :email  "z@caudate.me"
+                       :icon   "favicon"
+                       :tracking-enabled "true"
+                       :tracking "UA-31320512-2"}
+            
+            :files {"index"
+                    {:template "home.html"
+                     :input "test/documentation/home_spirit.clj"
+                     :title "spirit"
+                     :subtitle "simplify data connectivity"}}}
+  
+  :distribute {:jars  :dependencies
+               :files [{:type :clojure
+                        :levels 1
+                        :path "src"}]}
+  
+  :profiles {:dev {:plugins []
                    :dependencies [[com.datomic/datomic-free "0.9.5350" :exclusions [joda-time]]
-                                  [midje "1.6.3"]
+                                  [im.chit/hara.test  "2.5.2"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
-                                  [cheshire "5.2.0"]
-                                  [helpshift/hydrox "0.1.16"]]}})
+                                  [cheshire "5.2.0"]]}})
