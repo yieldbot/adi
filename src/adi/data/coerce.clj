@@ -2,10 +2,14 @@
   (:require [clojure.edn :as edn]
             [hara.event :refer [raise]]
             [hara.common :refer [error long? hash-map?]]
-            [hara.data.nested :refer [merge-nested]]))
+            [hara.data.nested :refer [merge-nested]])
+  (:import (java.text ParseException)))
 
 (def date-format-json
   (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss'Z'"))
+
+(def date-format-js
+  (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"))
 
 (defn assoc-set
   "associates a set as keys to a map
@@ -50,6 +54,9 @@
 (def Strings
   #{java.util.UUID java.net.URI})
 
+(defn- parse-date [s]
+  (try (.parse date-format-js s) (catch ParseException _ (.parse date-format-json s))))
+
 (def from-string-chart
   {:keyword (fn [v] (keyword v))
    :bigint  (fn [v] (BigInteger. v))
@@ -57,7 +64,7 @@
    :long    (fn [v] (Long/parseLong v))
    :float   (fn [v] (Float/parseFloat v))
    :double  (fn [v] (Double/parseDouble v))
-   :instant (fn [v] (.parse date-format-json v))
+   :instant (fn [v] (parse-date v))
    :uuid    (fn [v] (hara.common/uuid v))
    :uri     (fn [v] (hara.common/uri v))
    :enum    (fn [v] (read-enum v))
@@ -75,7 +82,7 @@
     (hash-mapset Strings           (fn [v] (keyword (str v)))
                  Numbers           (fn [v] (keyword (str v))))
     :string
-    (hash-mapset java.util.Date (fn [v] (.format date-format-json v))
+    (hash-mapset java.util.Date (fn [v] (.format date-format-js v))
                  clojure.lang.Keyword (fn [v] (name v))
                  Strings (fn [v] (str v))
                  Numbers (fn [v] (str v)))
