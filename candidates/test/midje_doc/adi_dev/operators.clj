@@ -1,16 +1,16 @@
 
-[[:section {:title "adi.core"}]]
+[[:section {:title "spirit.core"}]]
 
 
 [[:subsection {:title "connect-env!"}]]
 
 (connect-env!
-  "datomic:mem://adi-test-api-linked" schema :install :reset)
+  "datomic:mem://spirit-test-api-linked" schema :install :reset)
 
 [[:subsection {:title "release-env!"}]]
 
 (release-env!
-  "datomic:mem://adi-test-api-linked" schema :delete)
+  "datomic:mem://spirit-test-api-linked" schema :delete)
 
 
 [[:subsection {:title "install-schema!"}]]
@@ -58,7 +58,7 @@
 [[:subsection {:title "->sync"}]]
 
 
-[[:section {:title "adi.util"}]]
+[[:section {:title "spirit.util"}]]
 
 [[:subsection {:title "transactions"}]]
 

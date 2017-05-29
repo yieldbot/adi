@@ -1,0 +1,146 @@
+
+
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <meta name="google" value="notranslate">
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+
+    <title><@=title></title>
+
+    <@=dependencies>
+
+  <script>
+    window.console = window.console || function(t) {};
+    window.open = function(){ console.log("window.open is disabled."); };
+    window.print   = function(){ console.log("window.print is disabled."); };
+  </script>
+
+  <script>
+  angular.module('app',['ui.bootstrap', 'ngCookies', 'hljs']);
+
+  function rdLospiritng(){var d={restrict:"AE",template:'<div class="lospiritng"><div class="double-bounce1"></div><div class="double-bounce2"></div></div>'};return d}angular.module("app").directive("rdLospiritng",rdLospiritng);
+  function rdWidgetBody(){var d={requires:"^rdWidget",scope:{lospiritng:"@?",classes:"@?"},transclude:!0,template:'<div class="widget-body" ng-class="classes"><rd-lospiritng ng-show="lospiritng"></rd-lospiritng><div ng-hide="lospiritng" class="widget-content" ng-transclude></div></div>',restrict:"E"};return d}angular.module("app").directive("rdWidgetBody",rdWidgetBody);
+  function rdWidgetFooter(){var e={requires:"^rdWidget",transclude:!0,template:'<div class="widget-footer" ng-transclude></div>',restrict:"E"};return e}angular.module("app").directive("rdWidgetFooter",rdWidgetFooter);
+  function rdWidgetTitle(){var e={requires:"^rdWidget",scope:{title:"@",icon:"@"},transclude:!0,template:'<div class="widget-header"><i class="fa" ng-class="icon"></i> {{title}} <div class="pull-right" ng-transclude></div></div>',restrict:"E"};return e}angular.module("app").directive("rdWidgetHeader",rdWidgetTitle);
+  function rdWidget(){var d={transclude:!0,template:'<div class="widget" ng-transclude></div>',restrict:"EA"};return d}angular.module("app").directive("rdWidget",rdWidget);
+  function AlertsCtrl(e){e.alerts=[{type:"success",msg:"Thanks for visiting! Feel free to create pull requests to improve the dashboard!"},{type:"danger",msg:"Found a bug? Create an issue with as many details as you can."}],e.addAlert=function(){e.alerts.push({msg:"Another alert!"})},e.closeAlert=function(t){e.alerts.splice(t,1)}}angular.module("app").controller("AlertsCtrl",["$scope",AlertsCtrl]);
+  function MasterCtrl(t,e){var o=992;t.getWidth=function(){return window.innerWidth},t.$watch(t.getWidth,function(g){t.toggle=g>=o?angular.isDefined(e.get("toggle"))?e.get("toggle")?!0:!1:!0:!1}),t.toggleSidebar=function(){t.toggle=!t.toggle,e.put("toggle",t.toggle)},window.onresize=function(){t.$apply()}}angular.module("app").controller("MasterCtrl",["$scope","$cookieStore",MasterCtrl]);
+
+  </script>
+  </head>
+
+  <body ng-app="app" ng-controller="MasterCtrl" data-spy="scroll" data-target=".scrollspy">
+    <div id="page-wrapper" ng-class="{'open': toggle}" ng-cloak>
+      <!-- Sidebar -->
+      <@=sidebar>
+      <!-- End Sidebar -->
+
+      <div id="content-wrapper">
+        <div class="page-content">
+
+          <div class="container">
+
+<div class="row">
+   <div class="col-xs-10">
+		<rd-widget>
+			<rd-widget-body>
+				<div class="title" style="margin: 0 auto">
+          <img src="img/logo.png" class="img-responsive center-block" style="padding-bottom:20px;height:100px"></div>
+          <div class="text-center"><i><@=description></i></div>
+			</rd-widget-body>
+		</rd-widget>
+	</div>
+</div>
+
+<div class="row">
+
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Introduction</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment"><b>spirit</b> makes creating complex applications easy.</div>
+        <div class="comment">As an extension on top of <a href="http://www.datomic.com">datomic</a>, <b>spirit</b> was especially designed to model data, relationships and their complexities.</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">So what is <b>spirit</b>?</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Document and graph hybrid database.</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Conversion of relational data to maps and vice-versa</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Data-centric, declarative CRUD</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Schema driven validation and processing.</div>
+        <div class="comment">&nbsp;&nbsp;&nbsp;- Intuitive, simple, expressive.</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">The key to <b>spirit</b> lies the power of the <b>schema</b>. Instead of limiting the programmer, the <b>schema</b> should exhance him/her, much like what a <b>type system</b> does for programmers but without being as restrictive. <b>spirit</b> allows for relationships in data to be expressed as schema and then provides methods for smarter, more declarative control over data access.</div>
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+
+	<div class="col-xs-10 col-md-5">
+		<rd-widget>
+      <rd-widget-body>
+				<div class="title">Usage</div>
+        <div class="comment">&nbsp;</div>
+				<div class="comment">In your <code>project.clj</code> add the following to include the library:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs language="clojure">
+[im.chit/spirit "<@=version>"]</div>
+        <div class="comment">&nbsp;</div>
+        <div class="comment">All functionality can be found in <code>spirit.core</code>:</div>
+        <div class="comment">&nbsp;</div>
+        <div hljs  no-escape language="clojure">
+(use 'spirit.core)
+</div>
+    <div class="comment">&nbsp;</div>
+    <div class="comment">More information about packages can be found in the api section and the guides.</div>
+			</rd-widget-body>
+		</rd-widget>
+	</div>
+
+</div>
+
+<div class="row">
+
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Guides</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="datomic.html">api</a> - comprehensive documentation</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="spirit-walkthrough.html">walkthrough</a> - a whirlwind tour</div>
+		
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+
+  <div class="col-xs-10 col-md-5">
+  	<rd-widget>
+      <rd-widget-body>
+  			<div class="title">Resources</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="https://docs.caudate.me/spirit" target="_blank">website</a> - documentation and api reference</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="https://github.com/zcaudate/spirit" target="_blank">source</a> - code is hosted on github</div>
+        <div class="comment">&nbsp;</div>
+  			<div class="comment"><a href="http://www.gitter.im/zcaudate/spirit" target="_blank">support</a> - any questions and feedback</div>
+        <div class="comment">&nbsp;</div>
+  		</rd-widget-body>
+  	</rd-widget>
+  </div>
+</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script>
+  if (document.location.search.match(/type=embed/gi)) {
+    window.parent.postMessage("resize", "*");
+  }
+</script>
+</body>
+</html>

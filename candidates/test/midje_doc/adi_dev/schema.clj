@@ -1,8 +1,8 @@
-(ns midje-doc.adi-dev.schema
-  (:use midje.sweet
-        adi.schema.types
-        adi.schema.xm
-        adi.schema.emit))
+(ns midje-doc.spirit-dev.schema
+  (:use hara.test
+        spirit.schema.types
+        spirit.schema.xm
+        spirit.schema.emit))
 
 [[:chapter {:title "Schema"}]]
 
@@ -10,7 +10,7 @@
 [[:section {:title "Terminology"}]]
 
 
-"The word **schema** is a very general term. In the context of `adi` we have to define the following types of schemas:
+"The word **schema** is a very general term. In the context of `spirit` we have to define the following types of schemas:
 
  - `schema` or `ischm`
  - `flat-schema` or `fschm`
@@ -25,7 +25,7 @@
 
 [[:subsection {:title "meta-schema / mschm"}]]
 
-"The term `meta-schema` or mschm contains all information used to describe adi schemas."
+"The term `meta-schema` or mschm contains all information used to describe spirit schemas."
 
 [[:subsection {:title "flat-schema / fschm"}]]
 
@@ -37,7 +37,7 @@
 
 [[:subsection {:title "executable-schema / xm"}]]
 
-"The term `executable-schema` or xm is used to describe a hashmap with both a tree, and a flat schema as well as a lookup. This is the main workhorse for `adi`."
+"The term `executable-schema` or xm is used to describe a hashmap with both a tree, and a flat schema as well as a lookup. This is the main workhorse for `spirit`."
 
 [[:subsection {:title "datomic-schema / dschm"}]]
 

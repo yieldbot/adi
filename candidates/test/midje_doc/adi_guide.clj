@@ -1,5 +1,5 @@
-(ns midje-doc.adi-guide
-  (:use midje.sweet)
+(ns midje-doc.datomic
+  (:use hara.test)
   (:require [datomic.api :as d]))
 
 [[:chapter {:title "Interface"}]]
@@ -17,5 +17,5 @@ Adi was designed to address these issues, consisting of a declarative security m
 
 "
 
-;;[[:file {:src "test/midje_doc/adi_dev/schema.clj"}]]
-[[:file {:src "test/midje_doc/adi_dev/operators.clj"}]]
+;;[[:file {:src "test/midje_doc/spirit_dev/schema.clj"}]]
+[[:file {:src "test/midje_doc/spirit_dev/operators.clj"}]]

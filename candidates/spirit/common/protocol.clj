@@ -1,0 +1,1 @@
+(ns spirit.common.protocol)
