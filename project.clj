@@ -1,4 +1,4 @@
-(defproject im.chit/spirit "0.5.1"
+(defproject im.chit/adi "0.3.5"
   :description "simplify data connectivity"
   :url "https://www.github.com/zcaudate/spirit"
   :license {:name "The MIT License"
