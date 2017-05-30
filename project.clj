@@ -36,8 +36,7 @@
                         :levels 1
                         :path "src"}]}
   
-  :profiles {:dev {:plugins [[lein-lucid "1.3.9"]]
-                   :dependencies [[com.datomic/datomic-pro "0.9.5561"]
+  :profiles {:dev {:dependencies [[com.datomic/datomic-pro "0.9.5561"]
                                   [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
                                   [org.clojure/java.jdbc "0.7.0-alpha3"]
                                   [org.postgresql/postgresql "42.1.1"]
