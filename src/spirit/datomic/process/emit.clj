@@ -6,6 +6,6 @@
 
 (defn emit [datasource]
   (let [ndatasource (characterise/characterise datasource)]
-    (condp = (:type ndatasource)
-      "query"  (query/query ndatasource)
-      "datoms" (datoms/datoms ndatasource))))
+    (condp = (:command ndatasource)
+      :query  (query/query ndatasource)
+      :datoms (datoms/datoms ndatasource))))

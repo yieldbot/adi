@@ -40,7 +40,7 @@
     (cond (not (= subdata '_))
           (f subdata subsch nsv interim fns datasource)
 
-          (= (:type datasource) "query")
+          (= (:command datasource) :query)
           (assoc-in {} (rep-key subsch) '#{_})
 
           :else

@@ -15,7 +15,7 @@
     (let [v (f v [attr] nsv tsch fns)
           id (:id fns)]
       (if (and (-> attr :ref :mutual)
-               (= "datoms" (:type fns)))
+               (= :datoms (:command fns)))
         (cond (nil? id) v
 
               (hash-map? v)
@@ -48,7 +48,7 @@
         (= v '_) v
 
         (symbol? v)
-        (if (= (:type fns) "datoms")
+        (if (= (:commond fns) :datoms)
           (iid v) v)
 
         :else
@@ -161,14 +161,14 @@
            (cond (or (nil? id) (= id '_)) output
 
                  (and (symbol? id)
-                      (= "query" (:type fns)))
+                      (= :query (:command fns)))
                  (assoc-in-if output [:# :sym] id)
 
                  :else
                  (assoc-in-if output [:# :id] id))
 
            :else
-           (cond (= "query" (:type fns))
+           (cond (= :query (:command fns))
                  (let [noutput (assoc-in output [:# :sym] '?self)]
                    (cond (or (nil? id) (= id '_)) noutput
 
@@ -220,7 +220,7 @@
         fns  {:analyse
               (let [f (-> analyse-loop
                           wrap-plus)
-                    f (if (and (not= "query" (:type datasource))
+                    f (if (and (not= :query (:command datasource))
                                (or (-> datasource :options :schema-defaults)
                                    (-> datasource :options :schema-required)))
                         (wrap-nss f) f)
@@ -238,8 +238,8 @@
                     f (if (-> datasource :options :skip-typesafety)
                         f (wrap-attr-type-check f))]
                 f)
-
-              :type            (-> datasource :type)
+``
+              :command         (-> datasource :command)
               :schema-ignore   (-> datasource :options :schema-ignore)
               :auto-ids        (-> datasource :options :auto-ids)
               :ban-ids         (-> datasource :options :ban-ids)

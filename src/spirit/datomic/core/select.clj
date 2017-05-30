@@ -76,7 +76,7 @@
                  :schema-required
                  :schema-restrict
                  :schema-defaults)
-      (assoc :type "query")
+      (assoc :command :query)
       (normalise/normalise)
       (pack/pack)
       (emit/emit)))

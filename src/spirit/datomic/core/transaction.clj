@@ -25,7 +25,7 @@
 
 (defn gen-datoms [datasource]
   (-> datasource
-      (assoc :type "datoms")
+      (assoc :command :datoms)
       (normalise/normalise)
       (pack/pack)
       (emit/emit)))

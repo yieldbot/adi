@@ -60,7 +60,7 @@
   (fn [tdata tsch nsv interim fns datasource]
     (let [ks (keys tdata)
           aliases (find-aliases tsch ks)
-          _       (if (and (= :type "datoms")
+          _       (if (and (= (:command datasource) :datoms)
                            (not (empty? alias)))
                     (raise [:normalise :no-alias
                             {:data tdata :nsv nsv :key-path (:key-path interim)}]

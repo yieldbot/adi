@@ -119,11 +119,11 @@
   [pdata datasource]
   (let [fns {:characterise
              (let [f characterise-loop
-                   f (cond (and (= "query" (:type datasource))
+                   f (cond (and (= :query (:command datasource))
                                 (not (false? (-> datasource :options :generate-syms))))
                            (wrap-gen-sym f)
 
-                           (and (= "datoms" (:type datasource))
+                           (and (= :datoms (:command datasource))
                                 (not (false? (-> datasource :options :generate-ids))))
                            (wrap-gen-id f)
 

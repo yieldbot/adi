@@ -2,7 +2,7 @@
   (:require [hara.event :refer [raise]]))
 
 (defn is-query [datasource]
-  (= (:type datasource) "query"))
+  (= (:command datasource) :query))
 
 (defn is-set [attr datasource]
   (or (is-query datasource)

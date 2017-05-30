@@ -15,7 +15,7 @@
     (cond (not (symbol? subdata))
           (f subdata [attr] nsv interim fns datasource)
 
-          (and (= (:type datasource) "datoms")
+          (and (= (:command datasource) :datoms)
                (not= (:type attr) :ref))
           (raise [:normalise :ref-only
                   {:nsv nsv :key-path (:key-path interim)}]

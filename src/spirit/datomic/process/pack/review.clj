@@ -26,7 +26,7 @@
           dft    (:default attr)
           value  (if (fn? dft) (dft) dft)
           value  (if (and (not (set? value))
-                          (or (= "query" (:type datasource))
+                          (or (= :query (:command datasource))
                               (= :many (:cardinality attr))))
                    #{value} value)
           npdata  (cond (= t :keyword)
@@ -85,7 +85,7 @@
   (if-let [k (first ks)]
     (let [meta   (-> (fsch k) first)
           pr-fn  (fn [rf] ((wrap-id review-fn k) rf fsch merge-fn datasource))
-          npdata  (if (or (= "query" (:type datasource))
+          npdata  (if (or (= :query (:command datasource))
                           (= :many (:cardinality meta)))
                     (assoc pdata k (set (map pr-fn (pdata k))))
                     (assoc pdata k (pr-fn (pdata k))))]
@@ -101,7 +101,7 @@
   => (throws)"
   {:added "0.3"}
   [pdata datasource]
-  (if (and (not= "query" (:type datasource))
+  (if (and (not= :query (:command datasource))
            (or (-> datasource :options :schema-defaults)
                (-> datasource :options :schema-required)))
     (let [fsch   (-> datasource :schema :flat)
