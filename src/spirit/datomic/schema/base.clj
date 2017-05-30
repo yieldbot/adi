@@ -1,5 +1,5 @@
 (ns spirit.datomic.schema.base
-  (:require [spirit.common :as common]
+  (:require [spirit.common.schema.base :as common]
             [hara.common.checks :refer [boolean? type-checker]]
             [hara.data.nested :as nested]))
 
@@ -27,7 +27,7 @@
        (reduce-kv (fn [out k v]
                     (assoc out k (assoc v :schema true)))
                   {})
-       (nested/merge-nested common/base)))
+       (nested/merge-nested common/base-meta)))
 
 (def datomic-specific
   (->> datomic-meta

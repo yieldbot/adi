@@ -5,12 +5,12 @@
             :url "http://http://opensource.org/licenses/MIT"}
   :aliases {"test" ["run" "-m" "hara.test" "exit"]}
   :dependencies [[org.clojure/clojure    "1.8.0"]
-                 [im.chit/hara.common    "2.5.5"]
-                 [im.chit/hara.component "2.5.5"]
-                 [im.chit/hara.data      "2.5.5"]
-                 [im.chit/hara.event     "2.5.5"]
-                 [im.chit/hara.function  "2.5.5"]
-                 [im.chit/hara.string    "2.5.5"]
+                 [im.chit/hara.common    "2.5.6"]
+                 [im.chit/hara.component "2.5.6"]
+                 [im.chit/hara.data      "2.5.6"]
+                 [im.chit/hara.event     "2.5.6"]
+                 [im.chit/hara.function  "2.5.6"]
+                 [im.chit/hara.string    "2.5.6"]
                  [inflections "0.9.14"]]
   
   :publish {:theme  "mormont"
@@ -41,11 +41,12 @@
                                   [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
                                   [org.clojure/java.jdbc "0.7.0-alpha3"]
                                   [org.postgresql/postgresql "42.1.1"]
-                                  [im.chit/lucid.publish "1.3.9"]
-                                  [im.chit/lucid.unit "1.3.9"]
-                                  [im.chit/lucid.package "1.3.9"]
+                                  [im.chit/lucid.publish "1.3.10"]
+                                  [im.chit/lucid.unit "1.3.10"]
+                                  [im.chit/lucid.package "1.3.10"]
+                                  [im.chit/lucid.package "1.3.10"]
                                   
-                                  [im.chit/hara.test  "2.5.5"]
+                                  [im.chit/hara.test  "2.5.6"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
                                   [cheshire "5.2.0"]]}}

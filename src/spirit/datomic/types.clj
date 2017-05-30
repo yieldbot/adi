@@ -52,7 +52,7 @@
 
   Object
   (toString [this]
-    (str "#datomic" (into {} (dissoc this :meta))))
+    (str "#datomic" (into {} (dissoc this :functions))))
   
   component/IComponent
     
@@ -89,13 +89,16 @@
     (datomic/transact connection datoms)
     (assoc datomic :schema schema)))
 
+(defn datomic [config]
+  (assoc (map->Datomic config)
+         :functions {:delete-database delete-database
+                     :install-schema  install-schema}))
+
 (comment
-  (def topology {:db [{:constructor map->Datomic
-                       :functions {:delete-database delete-database
-                                   :install-schema  install-schema}
-                       :triggers {:pre-start  [:delete-database]
-                                  :post-start [:install-schema]
-                                  :post-stop  [:delete-database]}}
+  (def topology {:db [{:constructor datomic
+                       :hooks {:pre-start  [:delete-database]
+                               :post-start [:install-schema]
+                               :post-stop  [:delete-database]}}
                       :schema]
                  
                  :schema [create-schema]})
@@ -111,8 +114,9 @@
                  :schema {:account {:name [{}]}}})
   
   (datomic/delete-database (construct-uri (map->Datomic (:db config))))
-  (def system (component/start (component/system topology config)))
+  (def system (component/stop (component/start (component/system topology config))))
   
+  (datomic/connect (construct-uri (:db config)))
   (meta (:db (component/system topology config)))
   (:connection (:db system))
   

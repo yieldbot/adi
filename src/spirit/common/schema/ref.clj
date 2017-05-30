@@ -11,7 +11,7 @@
                    :type    :ref
                    :ref     {:ns  :email}})
   => true
-
+  
   (is-reversible? {:ident   :email            ;; does not have keyword-ns
                    :type    :ref
                    :ref     {:ns  :email}})
