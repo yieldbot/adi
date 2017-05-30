@@ -1,5 +1,5 @@
 (defproject im.chit/spirit "0.5.1"
-  :description "simplify data connectivity"
+  :description "data. simplified"
   :url "https://www.github.com/zcaudate/spirit"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
@@ -25,11 +25,11 @@
             :files {"index"
                     {:input "test/documentation/home_spirit.clj"
                      :title "spirit"
-                     :subtitle "simplify data connectivity"}
-                    "spirit.datomic"
-                    {:input "test/documentation/datomic.clj"
+                     :subtitle "data. simplified."}
+                    #_"datomic"
+                    #_{:input "test/documentation/datomic.clj"
                      :title "datomic"
-                     :subtitle "guide to spirit"}}}
+                     :subtitle "Datomic API Reference"}}}
   
   :distribute {:jars  :dependencies
                :files [{:type :clojure
@@ -37,9 +37,19 @@
                         :path "src"}]}
   
   :profiles {:dev {:plugins [[lein-lucid "1.3.9"]]
-                   :dependencies [[com.datomic/datomic-free "0.9.5561" :exclusions [joda-time]]
+                   :dependencies [[com.datomic/datomic-pro "0.9.5561"]
+                                  [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
+                                  [org.clojure/java.jdbc "0.7.0-alpha3"]
+                                  [org.postgresql/postgresql "42.1.1"]
                                   [im.chit/lucid.publish "1.3.9"]
+                                  [im.chit/lucid.unit "1.3.9"]
+                                  [im.chit/lucid.package "1.3.9"]
+                                  
                                   [im.chit/hara.test  "2.5.5"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
-                                  [cheshire "5.2.0"]]}})
+                                  [cheshire "5.2.0"]]}}
+
+  :repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
+                                   :username "z@caudate.me",
+                                   :password "cb4fe259-c2c4-48eb-a25f-719a1899a03e"}})

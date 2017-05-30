@@ -1,0 +1,32 @@
+version: '3'
+      
+networks:
+  chit.im:
+    driver: bridge
+    
+services:
+
+  postgres:
+    image: postgres:9.6.3
+    hostname: spirit-postgres
+    volumes:
+      - ~/env/spirit/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: spirit
+      POSTGRES_PASSWORD: spirit
+      POSTGRES_DB: spirit
+    networks:
+      - chit.im
+
+  dynamodb:
+    image: dwmkerr/dynamodb
+    hostname: spirit-dynamodb
+    volumes:
+      - ~/env/spirit/dynamodb/data:/data
+    ports:
+      - 8001:8000
+    command: -dbPath /data
+    networks:
+      - chit.im
