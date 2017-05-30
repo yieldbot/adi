@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.common.enum
+(ns spirit.datomic.process.normalise.common.enum
   (:require [hara.event :refer [raise]]
             [hara.common.error :as error]
             [hara.string.path :as path]))
@@ -15,7 +15,7 @@
   "
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns spirit]
+  (fn [subdata [attr] nsv interim fns datasource]
     (cond (= :enum (:type attr))
           (let [kns (-> attr :enum :ns)
                 v (if (and kns (path/path-ns? subdata kns))
@@ -26,6 +26,6 @@
               (raise [:normalise :wrong-input
                 {:data subdata :nsv nsv :key-path (:key-path interim) :check chk}]
                 (str "WRAP_SINGLE_ENUMS: " v " in " nsv " can only be one of: " chk))
-              (f v [attr] nsv interim fns spirit)))
+              (f v [attr] nsv interim fns datasource)))
           :else
-          (f subdata [attr] nsv interim fns spirit))))
+          (f subdata [attr] nsv interim fns datasource))))

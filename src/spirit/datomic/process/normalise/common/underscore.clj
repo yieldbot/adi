@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.common.underscore
+(ns spirit.datomic.process.normalise.common.underscore
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.event :refer [raise]]))
 
@@ -36,11 +36,11 @@
   => {:account {:user '#{_}}}"
   {:added "0.3"}
   [f]
-  (fn [subdata subsch nsv interim fns spirit]
+  (fn [subdata subsch nsv interim fns datasource]
     (cond (not (= subdata '_))
-          (f subdata subsch nsv interim fns spirit)
+          (f subdata subsch nsv interim fns datasource)
 
-          (= (:type spirit) "query")
+          (= (:type datasource) "query")
           (assoc-in {} (rep-key subsch) '#{_})
 
           :else

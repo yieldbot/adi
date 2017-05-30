@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.common.symbol
+(ns spirit.datomic.process.normalise.common.symbol
   (:require [hara.event :refer [raise]]))
   
 (defn wrap-single-symbol
@@ -11,11 +11,11 @@
   => {:account {:type '?hello}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns spirit]
+  (fn [subdata [attr] nsv interim fns datasource]
     (cond (not (symbol? subdata))
-          (f subdata [attr] nsv interim fns spirit)
+          (f subdata [attr] nsv interim fns datasource)
 
-          (and (= (:type spirit) "datoms")
+          (and (= (:type datasource) "datoms")
                (not= (:type attr) :ref))
           (raise [:normalise :ref-only
                   {:nsv nsv :key-path (:key-path interim)}]

@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.common.alias
+(ns spirit.datomic.process.normalise.common.alias
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.string.path :as path]
             [hara.data.complex :as complex]
@@ -57,7 +57,7 @@
   "
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns spirit]
+  (fn [tdata tsch nsv interim fns datasource]
     (let [ks (keys tdata)
           aliases (find-aliases tsch ks)
           _       (if (and (= :type "datoms")
@@ -65,5 +65,5 @@
                     (raise [:normalise :no-alias
                             {:data tdata :nsv nsv :key-path (:key-path interim)}]
                            (str "WRAP_ALIAS: Aliases cannot be specified on datoms")))
-          ntdata (reduce #(resolve-alias tsch %1 %2 (-> spirit :options :no-alias-gen)) tdata aliases)]
-      (f ntdata tsch nsv interim fns spirit))))
+          ntdata (reduce #(resolve-alias tsch %1 %2 (-> datasource :options :no-alias-gen)) tdata aliases)]
+      (f ntdata tsch nsv interim fns datasource))))

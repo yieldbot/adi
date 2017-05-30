@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.pipeline.validate
+(ns spirit.datomic.process.normalise.pipeline.validate
   (:require [hara.event :refer [raise]]
             [hara.function.args :refer [op]]))
 
@@ -18,10 +18,10 @@
   => {:account {:name \"Bob\"}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns spirit]
+  (fn [subdata [attr] nsv interim fns datasource]
     (let [subvalidate (:validate interim)]
       (cond (fn? subvalidate)
-            (let [res (op subvalidate subdata spirit)
+            (let [res (op subvalidate subdata datasource)
                   nsubdata (cond (or (true? res) (nil? res))
                                  subdata
 
@@ -32,7 +32,7 @@
                                          :key-path (:key-path interim)
                                          :validator subvalidate
                                          :error res}]))]
-              (f nsubdata [attr] nsv interim fns spirit))
+              (f nsubdata [attr] nsv interim fns datasource))
 
             :else
-            (f subdata [attr] nsv interim fns spirit)))))
+            (f subdata [attr] nsv interim fns datasource)))))

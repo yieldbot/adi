@@ -1,12 +1,12 @@
-(ns spirit.process.pack.analyse
+(ns spirit.datomic.process.pack.analyse
   (:require [hara.common.checks :refer [hash-map? long?]]
             [hara.common.error :refer [error suppress]]
             [hara.string.path :as path]
             [hara.data.map :refer [assoc-if assoc-in-if assoc-nil]]
-            [spirit.schema.meta :as meta]
-            [spirit.data.checks :refer [db-id?]]
-            [spirit.data.common :refer [iid]]
-            [spirit.data.coerce :as coerce]
+            [spirit.datomic.schema.base :as base]
+            [spirit.datomic.data.checks :refer [db-id?]]
+            [spirit.datomic.data :refer [iid]]
+            [spirit.common.coerce :as coerce]
             [clojure.set :as set]
             [hara.event :refer [raise]]))
 
@@ -79,7 +79,7 @@
 (defn wrap-attr-type-check [f]
   (fn [v [attr] nsv tsch fns]
     (let [t (:type attr)
-          chk (meta/type-checks t)
+          chk (base/type-checks t)
           nv  (cond (or (= v '_)
                         (symbol? v)
                         (list? v)
@@ -144,16 +144,16 @@
                id)
           _  (when (long? id)
               (if (:ban-ids fns)
-                (raise [:normalise :id-banned
+                (raise [:analyse :id-banned
                         {:id id :data tdata :nsv nsv}]
                        (str "WRAP_ID: All ids are banned for " nsv)))
               (if (:in-body fns)
                 (if (:ban-body-ids fns)
-                  (raise [:normalise :body-id-banned
+                  (raise [:analyse :body-id-banned
                           {:id id :data tdata :nsv nsv}]
                          (str "WRAP_ID: All body ids are banned for " nsv)))
                 (if (:ban-top-id fns)
-                  (raise [:normalise :top-id-banned
+                  (raise [:analyse :top-id-banned
                           {:id id :data tdata}]
                          (str "WRAP_ID: Top level ids are banned.")))))
           output (f (dissoc tdata :db) sch nsv tsch (assoc-nil fns :in-body true :id id))]
@@ -215,42 +215,42 @@
   => {:account/name \"Chris\", :account/age 10}
   "
   {:added "0.3"}
-  [tdata spirit]
-  (let [tsch (-> spirit :schema :tree)
+  [tdata datasource]
+  (let [tsch (-> datasource :schema :tree)
         fns  {:analyse
               (let [f (-> analyse-loop
                           wrap-plus)
-                    f (if (and (not= "query" (:type spirit))
-                               (or (-> spirit :options :schema-defaults)
-                                   (-> spirit :options :schema-required)))
+                    f (if (and (not= "query" (:type datasource))
+                               (or (-> datasource :options :schema-defaults)
+                                   (-> datasource :options :schema-required)))
                         (wrap-nss f) f)
                     f (wrap-id f)]
                 f)
 
               :analyse-attr
               (let [f analyse-attr
-                    f (if (-> spirit :options :schema-restrict) (wrap-attr-restrict f) f)]
+                    f (if (-> datasource :options :schema-restrict) (wrap-attr-restrict f) f)]
                 f)
 
               :analyse-single
               (let [f analyse-attr-single
                     f (wrap-single-expressions f)
-                    f (if (-> spirit :options :skip-typesafety)
+                    f (if (-> datasource :options :skip-typesafety)
                         f (wrap-attr-type-check f))]
                 f)
 
-              :type            (-> spirit :type)
-              :schema-ignore   (-> spirit :options :schema-ignore)
-              :auto-ids        (-> spirit :options :auto-ids)
-              :ban-ids         (-> spirit :options :ban-ids)
-              :ban-top-id      (-> spirit :options :ban-top-id)
-              :ban-body-ids    (-> spirit :options :ban-body-ids)
-              :ban-expressions (-> spirit :options :ban-expressions)
-              :ban-underscores (-> spirit :options :ban-underscores)}]
+              :type            (-> datasource :type)
+              :schema-ignore   (-> datasource :options :schema-ignore)
+              :auto-ids        (-> datasource :options :auto-ids)
+              :ban-ids         (-> datasource :options :ban-ids)
+              :ban-top-id      (-> datasource :options :ban-top-id)
+              :ban-body-ids    (-> datasource :options :ban-body-ids)
+              :ban-expressions (-> datasource :options :ban-expressions)
+              :ban-underscores (-> datasource :options :ban-underscores)}]
     ((:analyse fns) tdata tsch [] tsch fns)))
 
 
-(defn analyse [spirit]
-  (let [data (-> spirit :process :normalised)
-        ndata (analyse-raw data spirit)]
-    (assoc-in spirit [:process :analysed] ndata)))
+(defn analyse [datasource]
+  (let [data (-> datasource :process :normalised)
+        ndata (analyse-raw data datasource)]
+    (assoc-in datasource [:process :analysed] ndata)))

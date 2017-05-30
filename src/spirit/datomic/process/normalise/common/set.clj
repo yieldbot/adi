@@ -1,11 +1,11 @@
-(ns spirit.process.normalise.common.set
+(ns spirit.datomic.process.normalise.common.set
   (:require [hara.event :refer [raise]]))
 
-(defn is-query [spirit]
-  (= (:type spirit) "query"))
+(defn is-query [datasource]
+  (= (:type datasource) "query"))
 
-(defn is-set [attr spirit]
-  (or (is-query spirit)
+(defn is-set [attr datasource]
+  (or (is-query datasource)
       (= (:cardinality attr) :many)))
 
 (defn wrap-attr-set
@@ -22,19 +22,19 @@
   => {:account {:user #{\"bob\" \"andy\"}}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns spirit]
+  (fn [subdata [attr] nsv interim fns datasource]
     (let [subdata
-          (cond (and (is-set attr spirit)
+          (cond (and (is-set attr datasource)
                      (not (set? subdata)))
                 #{subdata}
 
-                (and (not (is-set attr spirit))
+                (and (not (is-set attr datasource))
                      (set? subdata))
                 (raise [:normalise :wrong-input {:data subdata :nsv nsv :key-path (:key-path interim)}]
                        (str "WRAP_ATTR_SETS: " subdata " should not be a set"))
 
-                (is-set attr spirit)
+                (is-set attr datasource)
                 (set subdata)
 
                 :else subdata)]
-      (f subdata [attr] nsv interim fns spirit))))
+      (f subdata [attr] nsv interim fns datasource))))

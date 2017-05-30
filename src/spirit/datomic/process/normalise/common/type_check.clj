@@ -1,6 +1,6 @@
-(ns spirit.process.normalise.common.type-check
-  (:require [spirit.schema.meta :as meta]
-            [spirit.data.coerce :refer [coerce]]
+(ns spirit.datomic.process.normalise.common.type-check
+  (:require [spirit.datomic.schema.base :as base]
+            [spirit.common.coerce :refer [coerce]]
             [hara.event :refer [raise]]))
 
 (defn wrap-single-type-check
@@ -21,7 +21,7 @@
   [f]
   (fn [subdata [attr] nsv interim fns spirit]
     (let [t (:type attr)
-          chk (meta/type-checks t)]
+          chk (base/type-checks t)]
       (cond
        (chk subdata) (f subdata [attr] nsv interim fns spirit)
 

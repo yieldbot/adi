@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.common.list
+(ns spirit.datomic.process.normalise.common.list
   (:require [hara.event :refer [raise]]))
 
 (defn wrap-single-list
@@ -10,13 +10,13 @@
   => {:account {:age '(< ? 1)}}"
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim fns spirit]
+  (fn [subdata [attr] nsv interim fns datasource]
     (if (list? subdata)
-      (cond (-> spirit :options :ban-expressions)
+      (cond (-> datasource :options :ban-expressions)
             (raise [:normalise :not-allowed {:data subdata :nsv nsv :key-path (:key-path interim)
-                                                  :options (:options spirit)}]
+                                                  :options (:options datasource)}]
                (str "WRAP_SINGLE_LIST: " subdata " not allowed"))
 
           :else
-          ((:normalise-expression fns) subdata [attr] nsv interim spirit))
-      (f subdata [attr] nsv interim fns spirit))))
+          ((:normalise-expression fns) subdata [attr] nsv interim datasource))
+      (f subdata [attr] nsv interim fns datasource))))

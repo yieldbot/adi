@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.pipeline.expression
+(ns spirit.datomic.process.normalise.pipeline.expression
   (:require [hara.common.error :refer [error suppress]]
             [hara.common.checks :refer [hash-map?]]
             [hara.event :refer [raise]]))
@@ -48,10 +48,10 @@
    "
   {:added "0.3"}
   [f]
-  (fn [subdata [attr] nsv interim spirit]
+  (fn [subdata [attr] nsv interim datasource]
     (let [subexpression (:expression interim)]
       (cond (hash-map? subexpression)
-            (f subdata [attr] nsv interim spirit)
+            (f subdata [attr] nsv interim datasource)
 
             (and (not (nil? subexpression))
                  (check-expr subexpression subdata)) subdata

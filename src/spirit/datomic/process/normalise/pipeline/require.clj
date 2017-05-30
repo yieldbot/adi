@@ -1,4 +1,4 @@
-(ns spirit.process.normalise.pipeline.require
+(ns spirit.datomic.process.normalise.pipeline.require
   (:require [hara.common.checks :refer [hash-map?]]
             [hara.event :refer [raise]]
             [hara.function.args :refer [op]]))
@@ -19,27 +19,27 @@
   => (raises-issue {:nsv [:account :name]
                     :no-required true})"
   {:added "0.3"}
-  [req require-key tdata nsv tsch spirit]
+  [req require-key tdata nsv tsch datasource]
   (if-let [[k v] (first req)]
     (cond (= v :checked)
           (do (if (not (get tdata k))
                 (raise [:normalise require-key {:nsv (conj nsv k) :data tdata}]
                        (str "PROCESS_REQUIRE: key " (conj nsv k) " is not present")))
-              (recur (next req) require-key tdata nsv tsch spirit))
+              (recur (next req) require-key tdata nsv tsch datasource))
 
           (fn? v)
           (let [subdata (get tdata k)
-                flag (op v subdata spirit)]
+                flag (op v subdata datasource)]
             (do (if (and (or (= flag :checked)
                              (true? flag))
                          (nil? subdata))
                   (raise [:normalise require-key {:nsv (conj nsv k) :data tdata}]
                          (str "PROCESS_REQUIRE: key " (conj nsv k) " is not present")))
-                (recur (next req) require-key tdata nsv tsch spirit)))
+                (recur (next req) require-key tdata nsv tsch datasource)))
           
           (and (-> tsch (get k) vector?)
                (-> tsch (get k) first :type (= :ref)))
-          (recur (next req) require-key tdata nsv tsch spirit)
+          (recur (next req) require-key tdata nsv tsch datasource)
 
           :else
           (let [subdata (get tdata k)]
@@ -48,8 +48,8 @@
                          (str "PROCESS_REQUIRE: key " (conj nsv k) " is not present"))
 
                   (hash-map? subdata)
-                  (process-require v require-key (get tdata k) (conj nsv k) (get tsch k) spirit))
-            (recur (next req) require-key tdata nsv tsch spirit)))
+                  (process-require v require-key (get tdata k) (conj nsv k) (get tsch k) datasource))
+            (recur (next req) require-key tdata nsv tsch datasource)))
     tdata))
 
 (defn wrap-model-pre-require
@@ -71,14 +71,14 @@
                     :no-required true})"
   {:added "0.3"}
   [f]
-  (fn [tdata tsch nsv interim fns spirit]
+  (fn [tdata tsch nsv interim fns datasource]
     (let [req (:pre-require interim)]
-      (process-require req :no-required tdata nsv tsch spirit)
-      (f tdata tsch nsv interim fns spirit))))
+      (process-require req :no-required tdata nsv tsch datasource)
+      (f tdata tsch nsv interim fns datasource))))
 
 (defn wrap-model-post-require 
   [f]
-  (fn [tdata tsch nsv interim fns spirit]
+  (fn [tdata tsch nsv interim fns datasource]
     (let [req (:post-require interim)
-          output (f tdata tsch nsv interim fns spirit)]
-      (process-require req :no-required output nsv tsch spirit))))
+          output (f tdata tsch nsv interim fns datasource)]
+      (process-require req :no-required output nsv tsch datasource))))

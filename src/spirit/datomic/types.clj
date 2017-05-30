@@ -57,14 +57,14 @@
   component/IComponent
     
   (-start [datomic]
-    (let [uri  (construct-uri datomic)
+    (let [uri  (or (:uri datomic) (construct-uri datomic))
           conn (connect uri)]
-      (assoc datomic :connection conn :uri uri)))
+      (assoc datomic :connection conn)))
   
   (-stop  [datomic]
     (if-let [conn (:connection datomic)]
       (datomic/release conn))
-    (dissoc datomic :connection :uri)))
+    (dissoc datomic :connection)))
 
 (defmethod print-method Datomic
   [v w]

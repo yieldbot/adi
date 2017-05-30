@@ -1,9 +1,9 @@
-(ns spirit.process.normalise.base
+(ns spirit.datomic.process.normalise.base
   (:require [hara.common.checks :refer [hash-map? long?]]
             [hara.data.path :as data]
             [hara.string.path :as path]
             [hara.data.map :refer [assoc-if]]
-            [spirit.data.checks :refer [db-id?]]
+            [spirit.datomic.data.checks :as checks]
             [hara.event :refer [raise]]))
 
 (def tree-directives
@@ -35,24 +35,24 @@
           (apply dissoc m (seq options))
           options))
 
-(defn normalise-loop [tdata tsch nsv interim fns spirit]
+(defn normalise-loop [tdata tsch nsv interim fns datasource]
   (reduce-kv (fn [output k subdata]
                (let [subsch (get tsch k)
                      pinterim (submaps interim tree-directives k)]
                 (cond (nil? subsch)
                       (assoc-if output k
                                 ((:normalise-nil fns)
-                                 subdata nil (conj nsv k) pinterim spirit))
+                                 subdata nil (conj nsv k) pinterim datasource))
 
                       (hash-map? subsch)
                       (assoc-if output k
                                 ((:normalise-branch fns)
-                                 subdata subsch (conj nsv k) pinterim fns spirit))
+                                 subdata subsch (conj nsv k) pinterim fns datasource))
 
                       (vector? subsch)
                       (assoc-if output k
                                 ((:normalise-attr fns)
-                                 subdata subsch (conj nsv k) pinterim fns spirit))
+                                 subdata subsch (conj nsv k) pinterim fns datasource))
                       :else
                       (let [nnsv (conj nsv k)]
                         (raise [:normalise :wrong-input {:data subdata :nsv nnsv :key-path (:key-path interim)}]
@@ -60,29 +60,29 @@
                       )))
              {} tdata))
 
-(defn normalise-nil [subdata _ nsv interim spirit]
+(defn normalise-nil [subdata _ nsv interim datasource]
   (raise [:normalise :no-schema {:nsv nsv :key-path (:key-path interim) :ref-path (:ref-path interim)}]
          (str "NORMALISE_NIL: " nsv " is not in the schema.")))
 
-(defn normalise-attr [subdata [attr] nsv interim fns spirit]
+(defn normalise-attr [subdata [attr] nsv interim fns datasource]
   (cond (set? subdata)
-        (-> (map #((:normalise-single fns) % [attr] nsv interim fns spirit) subdata)
+        (-> (map #((:normalise-single fns) % [attr] nsv interim fns datasource) subdata)
             (set)
             (disj nil))
 
         :else
-        ((:normalise-single fns) subdata [attr] nsv interim fns spirit)))
+        ((:normalise-single fns) subdata [attr] nsv interim fns datasource)))
 
-(defn normalise-single [subdata [attr] nsv interim fns spirit]
+(defn normalise-single [subdata [attr] nsv interim fns datasource]
   (if (= (:type attr) :ref)
     (cond (hash-map? subdata)
           (let [nnsv (path/split (-> attr :ref :ns))]
             ((:normalise fns)
              (data/treeify-keys-nested subdata)
-             (get-in spirit (concat [:schema :tree] nnsv))
-             nnsv interim fns spirit))
+             (get-in datasource (concat [:schema :tree] nnsv))
+             nnsv interim fns datasource))
 
-          (or (long? subdata) (db-id? subdata))
+          (or (long? subdata) (checks/db-id? subdata))
           subdata
 
           :else
@@ -90,7 +90,7 @@
             (str "NORMALISE_SINGLE: In " nsv "," subdata " should be either a hashmaps or ids, not ")))
     subdata))
 
-(defn normalise-expression [subdata [attr] nsv interim spirit] subdata)
+(defn normalise-expression [subdata [attr] nsv interim datasource] subdata)
 
 (defn normalise-wrap [fns wrappers]
   (reduce-kv (fn [out k f]
@@ -116,10 +116,10 @@
                     :value \"world\"}
              :value \"hello\"}}"
   {:added "0.3"}
-  ([data spirit & [wrappers]]
+  ([data datasource & [wrappers]]
    (let [tdata (data/treeify-keys-nested data)
-         tsch (-> spirit :schema :tree)
-         interim (:pipeline spirit)
+         tsch (-> datasource :schema :tree)
+         interim (:pipeline datasource)
          fns {:normalise normalise-loop
               :normalise-nil normalise-nil
               :normalise-branch normalise-loop
@@ -127,4 +127,4 @@
               :normalise-expression normalise-expression
               :normalise-single normalise-single}
          fns (normalise-wrap fns wrappers)]
-     ((:normalise fns) tdata tsch [] interim fns spirit))))
+     ((:normalise fns) tdata tsch [] interim fns datasource))))

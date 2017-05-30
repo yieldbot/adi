@@ -1,4 +1,4 @@
-(ns spirit.data.common
+(ns spirit.datomic.data
   (:require [datomic.api :as datomic]
             [clojure.edn :as edn]
             [hara.common.checks :refer [long?]]
