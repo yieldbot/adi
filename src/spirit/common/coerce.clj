@@ -1,7 +1,10 @@
 (ns spirit.common.coerce
   (:require [clojure.edn :as edn]
             [hara.event :refer [raise]]
-            [hara.common :refer [error long? hash-map?]]
+            [hara.common
+             [error :refer [error]]
+             [checks :refer [long? hash-map?]]
+             [primitives :refer [uri uuid]]]
             [hara.data.nested :refer [merge-nested]])
   (:import (java.text ParseException)))
 
@@ -54,8 +57,12 @@
 (def Strings
   #{java.util.UUID java.net.URI})
 
-(defn- parse-date [s]
-  (try (.parse date-format-js s) (catch ParseException _ (.parse date-format-json s))))
+(defn parse-date [s]
+  (case (count s)
+    20 (.parse date-format-json s)
+    24 (.parse date-format-js s)
+    (raise [:coerce :parse-date-string {:data s}]
+           (str "PARSE-DATE: Cannot parse string to date: " s))))
 
 (def from-string-chart
   {:keyword (fn [v] (keyword v))
@@ -64,15 +71,9 @@
    :long    (fn [v] (Long/parseLong v))
    :float   (fn [v] (Float/parseFloat v))
    :double  (fn [v] (Double/parseDouble v))
-<<<<<<< HEAD:candidates/spirit/datomic/data/coerce.clj
-   :instant (fn [v] (.parse date-format-json v))
+   :instant (fn [v] (parse-date v))
    :uuid    (fn [v] (uuid v))
    :uri     (fn [v] (uri v))
-=======
-   :instant (fn [v] (parse-date v))
-   :uuid    (fn [v] (hara.common/uuid v))
-   :uri     (fn [v] (hara.common/uri v))
->>>>>>> 8992dc9c568c684318d8fee95ebb59f42885f450:src/adi/data/coerce.clj
    :enum    (fn [v] (read-enum v))
    :ref     (fn [v] (read-ref v))})
 

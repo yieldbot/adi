@@ -1,8 +1,7 @@
 (ns documentation.spirit-walkthrough.schoolyard
   (:use hara.test)
-  (:require [spirit.core :as spirit]
-            [spirit.test.checkers :refer :all]
-            [datomic.api :as datomic]))
+  (:require [spirit.datomic :as datomic]
+            [datomic.api :as raw]))
 
 [[:chapter {:title "Schoolyard"}]]
 
@@ -41,7 +40,7 @@ model. This is actually much like the Bookstore example with a couple more field
 (facts
   "Once again, the spirit datastore is created:"
 
-  (def ds (spirit/connect! "datomic:mem://spirit-example-step-5" schema-5 true true))
+  (def ds (datomic/connect! "datomic:mem://spirit-example-step-5" schema-5 true true))
 
   (comment
     (println ds)
@@ -139,7 +138,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "Okay... our data is defined... and..."
 
-  (spirit/insert! ds class-data)
+  (datomic/insert! ds class-data)
 
   "**BAM!!** We are now ready to do some Analysis"
 
@@ -147,7 +146,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "By now, you should be familiar with this query:"
 
-  (spirit/select ds {:student/name "Harry"})
+  (datomic/select ds {:student/name "Harry"})
   => #{{:student {:name "Harry", :siblings 2}}}
 
   "What we want to explore is how this query relates to the Datomic API. So lets
@@ -155,7 +154,7 @@ model. This is actually much like the Bookstore example with a couple more field
   are gettin back:"
 
   (comment
-    (spirit/select ds {:student/name "Harry"} :first :return :ids)
+    (datomic/select ds {:student/name "Harry"} :first :return :ids)
     => 17592186045426)
 
   "Lets now do a raw datomic query."
@@ -177,7 +176,7 @@ model. This is actually much like the Bookstore example with a couple more field
   query for Harry's id:"
 
   (comment
-    (spirit/query ds '[:find ?x :where
+    (datomic/query ds '[:find ?x :where
                     [?x :student/name "Harry"]]
                []  :first :return :ids)
     => 17592186045426)
@@ -185,7 +184,7 @@ model. This is actually much like the Bookstore example with a couple more field
   "And again, the same query with `Harry` passed in as a parameter:"
 
   (comment
-    (spirit/query ds '[:find ?x
+    (datomic/query ds '[:find ?x
                     :in $ ?name
                     :where
                     [?x :student/name ?name]]
@@ -194,7 +193,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "Lets do a `query` for all the students in maths:"
 
-  (->> (spirit/query ds
+  (->> (datomic/query ds
                   '[:find ?x :in $ ?class :where
                     [?x :student/classes ?c]
                     [?c :class/type ?class]]
@@ -204,7 +203,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "Here is the equivalent result using `select`"
 
-  (->> (spirit/select ds {:student {:classes/type :maths}})
+  (->> (datomic/select ds {:student {:classes/type :maths}})
        (mapv #(-> % :student :name)))
   => ["Bobby" "Francis" "David" "Kelly"]
 
@@ -213,7 +212,7 @@ model. This is actually much like the Bookstore example with a couple more field
   "Now the cool thing is that `select` actually generates a datalog query first and then runs it against datomic. We can access the datalog query via the `:raw` option:"
 
   (comment
-    (spirit/select  ds {:student {:classes/type :maths}} :raw)
+    (datomic/select  ds {:student {:classes/type :maths}} :raw)
 
     => #{[:find ?self :where
           [?self :student/classes ?e25242]
@@ -221,7 +220,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "So very complex queries can be built up"
 
-  (spirit/select ds {:student {:classes/teacher {:name '(?fulltext "Blair")}
+  (datomic/select ds {:student {:classes/teacher {:name '(?fulltext "Blair")}
                             :siblings '(> 2)}})
   => #{{:student {:name "Charlie", :siblings 3}}
        {:student {:name "David", :siblings 5}}}
@@ -230,7 +229,7 @@ model. This is actually much like the Bookstore example with a couple more field
   "Lets check out what the generated datalog query is:"
 
   (comment
-    (spirit/select ds {:student {:classes/teacher {:name '(?fulltext "Blair")}
+    (datomic/select ds {:student {:classes/teacher {:name '(?fulltext "Blair")}
                               :siblings '(> 1)}} :raw)
     => #{[:find ?self :where
           [?self :student/siblings ?e_28962]
@@ -242,7 +241,7 @@ model. This is actually much like the Bookstore example with a couple more field
 
   "As can be seen by this example, the `spirit` query is much much more succinct. We can now take the output and stick it into `query` to get the same result as before:"
 
-  (spirit/query ds '[:find ?self :where
+  (datomic/query ds '[:find ?self :where
                   [?self :student/siblings ?e_28962]
                   [(> ?e_28962 2)]
                   [?self :student/classes ?e28960]
@@ -258,34 +257,34 @@ model. This is actually much like the Bookstore example with a couple more field
   [[:section {:title "Expressivity"}]]
 
   "Find all classes that are taught by Mr Anderson:"
-  (spirit/select ds {:class/teacher {:name "Mr. Anderson"}})
+  (datomic/select ds {:class/teacher {:name "Mr. Anderson"}})
   => #{{:class {:type :english, :name "English A", :accelerated true}}
        {:class {:type :english, :name "English B", :accelerated false}}
        {:class {:type :maths, :name "Maths", :accelerated true}}}
 
 
   "Find the teacher that teaches a student called `Harry` with a pet bird"
-  (->> (spirit/select ds {:teacher {:teaches {:students/name "Harry"}
+  (->> (datomic/select ds {:teacher {:teaches {:students/name "Harry"}
                                  :pets :bird}})
        (mapv #(-> % :teacher :name)))
   => ["Mr. Blair"]
 
   "Find all students taught by `Mr. Blair`:"
   (->>
-   (spirit/select ds {:student/classes {:teacher/name "Mr. Blair"}})
+   (datomic/select ds {:student/classes {:teacher/name "Mr. Blair"}})
    (mapv #(-> % :student :name)))
   => ["Charlie" "Anna" "David" "Harry" "Erin" "Kelly"]
 
   "Find all the students that have class with teachers with a pet fish"
   (->>
-   (spirit/select ds {:student/classes {:teacher/pets :fish}})
+   (datomic/select ds {:student/classes {:teacher/pets :fish}})
    (mapv #(-> % :student :name)))
   => ["Charlie" "Jack" "Anna" "David" "Harry" "Erin" "Kelly"]
 
   "Not that you'd ever want to write a query like this but you can. Find the class with the teacher that teaches a student that takes the class taken by `Mr. Carpenter`."
 
   (->>
-   (spirit/select ds {:class/teacher
+   (datomic/select ds {:class/teacher
                    {:teaches/students
                     {:classes/teacher {:name "Mr. Carpenter"}}}})
    (mapv #(-> % :class :name)))

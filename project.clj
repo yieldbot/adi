@@ -26,10 +26,10 @@
                     {:input "test/documentation/home_spirit.clj"
                      :title "spirit"
                      :subtitle "data. simplified."}
-                    "datomic"
+                    "spirit-datomic"
                     {:input "test/documentation/spirit_datomic.clj"
                      :title "datomic"
-                     :subtitle "API Reference"}}}
+                     :subtitle "spirit.datomic API Reference"}}}
   
   :distribute {:jars  :dependencies
                :files [{:type :clojure

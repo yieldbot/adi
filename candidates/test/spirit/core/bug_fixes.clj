@@ -1,6 +1,6 @@
 (ns spirit.core.bug-fixes
   (:use hara.test)
-  (:require [spirit.core :as spirit]
+  (:require [spirit.datomic :as datomic]
             [spirit.test.checkers :refer :all]
             [datomic.api :as datomic]))
 
@@ -17,15 +17,15 @@
                                    :rval :students}   ;; Same with students
                            :cardinality :many}]}})
 
-(do (def ds (spirit/connect! "datomic:mem://spirit-bug-fix" schema true true))
+(do (def ds (datomic/connect! "datomic:mem://spirit-bug-fix" schema true true))
 
-    (spirit/insert! ds {:db/id [[:JACK]]
+    (datomic/insert! ds {:db/id [[:JACK]]
                      :student {:name "Jack"
                                :classes #{{:+/db/id [[:ENGLISHB]]
                                            :subject :english}}}}))
 
-(spirit/select ds #{{:student/name "Jack"}})
-(spirit/insert! ds [{:db/id [[:MATHS]]
+(datomic/select ds #{{:student/name "Jack"}})
+(datomic/insert! ds [{:db/id [[:MATHS]]
                   :class {:subject  :maths}}
 
                  {:db/id [[:JACK]]
@@ -34,8 +34,8 @@
                                        {:subject :english}}}}])
 
 
-(do (def ds (spirit/connect! "datomic:mem://spirit-bug-fix" schema true true))
-    (spirit/insert! ds {:db/id [[:CARPENTER]]
+(do (def ds (datomic/connect! "datomic:mem://spirit-bug-fix" schema true true))
+    (datomic/insert! ds {:db/id [[:CARPENTER]]
                      :teacher {:name "Mr. Carpenter"                   ;; This is Mr Carpenter
                                :teaches #{{:+ {:db/id [[:SPORTS]]}      ;; He teaches sports
                                            :subject :sports

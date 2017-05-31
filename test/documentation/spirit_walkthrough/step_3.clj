@@ -1,8 +1,7 @@
 (ns documentation.spirit-walkthrough.step-3
   (:use hara.test)
-  (:require [spirit.core :as spirit]
-            [spirit.test.checkers :refer :all]
-            [datomic.api :as datomic]))
+  (:require [spirit.datomic :as datomic]
+            [datomic.api :as raw]))
 
 [[:chapter {:title "Step Three"}]]
 
@@ -34,7 +33,7 @@ namespace:"
 (facts
   "Lets connect and print out the datastore:"
 
-  (def ds (spirit/connect! "datomic:mem://spirit-example-step-3" schema-3 true true))
+  (def ds (datomic/connect! "datomic:mem://spirit-example-step-3" schema-3 true true))
 
   (comment
     (println ds)
@@ -54,8 +53,8 @@ namespace:"
   The <*> means that there is multiple cardinality associated with the attribute. Having done that, lets
   add some data to our datastore:"
 
-  (spirit/insert! ds {:account {:user "spirit1" :password "hello1"}})
-  (spirit/insert! ds {:account {:user "spirit2" :password "hello2"
+  (datomic/insert! ds {:account {:user "spirit1" :password "hello1"}})
+  (datomic/insert! ds {:account {:user "spirit2" :password "hello2"
                              :books #{{:name "The Count of Monte Cristo"
                                        :author "Alexander Dumas"}
                                       {:name "Tom Sawyer"
@@ -68,13 +67,13 @@ namespace:"
 
   "We start off by listing all the accounts:"
 
-  (spirit/select ds :account)
+  (datomic/select ds :account)
   => #{{:account {:user "spirit1" :password "hello1" :credits 0 :type :free}}
        {:account {:user "spirit2" :password "hello2" :credits 0 :type :free}}}
 
   "We can use `:pull` to specify a model to pull."
 
-  (spirit/select ds :account
+  (datomic/select ds :account
               :pull {:account {:books :checked}})
   => #{{:account {:credits 0 :type :free :password "hello1" :user "spirit1"}}
        {:account {:books #{{:author "Mark Twain" :name "Tom Sawyer"}
@@ -84,7 +83,7 @@ namespace:"
 
   "Using :id instead of :checked will pull book ids. This is very useful for copying references"
 
-  (spirit/select ds :account
+  (datomic/select ds :account
               :pull {:account {:books :id}})
   => #{{:account {:credits 0, :type :free, :password "hello1", :user "spirit1"}}
        {:account {:credits 0, :type :free, :password "hello2", :user "spirit2"
@@ -97,7 +96,7 @@ namespace:"
   the data model on the way out only. We can look at a case where both are the same. In the case below, using
   :access or :pull does not matter and will yield the same result:"
 
-  (spirit/select ds :account
+  (datomic/select ds :account
               :access {:account {:books {:author :unchecked}
                                  :credits :unchecked
                                  :type :unchecked}})
@@ -111,7 +110,7 @@ namespace:"
 
   "In the case where they differ, this is the result of using the `:pull` option:"
 
-  (spirit/select ds {:account {:books/author "Victor Hugo"}}
+  (datomic/select ds {:account {:books/author "Victor Hugo"}}
               :first
               :pull {:account {:books {:author :unchecked}
                                  :credits :unchecked
@@ -127,7 +126,7 @@ namespace:"
   the `:account/book/author` path is `:unchecked`, the operation raises an exception to
   say that a query like this is not allowed:"
 
-  (spirit/select ds {:account {:books/author "Victor Hugo"}}
+  (datomic/select ds {:account {:books/author "Victor Hugo"}}
               :first
               :access {:account {:books {:author :unchecked}
                                  :credits :unchecked
@@ -142,7 +141,7 @@ namespace:"
 
   "To fix this problem limiting searches to the `:account/books` path we can use both `:access`
   and `:pull` models for fine-tuning control over how our data is accessed:"
-  (spirit/select ds {:account {:books/author "Victor Hugo"}}
+  (datomic/select ds {:account {:books/author "Victor Hugo"}}
               :first
               :access {:account {:books :checked}}
               :pull {:account {:books {:author :unchecked}
@@ -160,20 +159,20 @@ namespace:"
   using copying these `:db/id` keys around. Instead of pulling data, we can use the :pull-ids option to
   pull a set of entity ids associated with the search:"
 
-  (spirit/select ds :account :return :ids)
+  (datomic/select ds :account :return :ids)
   => #{17592186045421 17592186045423}
 
   "Having this is super nice because we can just use these like pointers. We can add `The Book and the Sword`
   to our datastore and link them to both our user accounts straight away:"
 
-  (let [account-ids (spirit/select ds :account :return :ids)]
-    (spirit/insert! ds [{:book {:name "The Book and the Sword"
+  (let [account-ids (datomic/select ds :account :return :ids)]
+    (datomic/insert! ds [{:book {:name "The Book and the Sword"
                              :author "Louis Cha"
                              :accounts account-ids}}]))
 
   "Now a search on all the books that `spirit` has yields one result:"
 
-  (spirit/select ds {:book {:accounts/user "spirit1"}})
+  (datomic/select ds {:book {:accounts/user "spirit1"}})
   => #{{:book {:name "The Book and the Sword" :author "Louis Cha"}}}
 
   [[:section {:title "Playground"}]]
@@ -185,13 +184,13 @@ namespace:"
   "Inserts can use both forward and backward references. In this case, we are adding a book with a bunch
   of accounts:"
 
-  (spirit/insert! ds {:book {:name "Charlie and the Chocolate Factory"
+  (datomic/insert! ds {:book {:name "Charlie and the Chocolate Factory"
                           :author "Roald Dahl"
                           :accounts #{{:user "spirit3" :password "hello3" :credits 100}
                                       {:user "spirit4" :password "hello4" :credits 500}
                                       {:user "spirit5" :password "hello5" :credits 500}}}})
 
-  (spirit/select ds {:account {:books/author "Roald Dahl"}}
+  (datomic/select ds {:account {:books/author "Roald Dahl"}}
               :pull {:account {:password :unchecked
                                  :credits :unchecked
                                  :type :unchecked}})
@@ -203,7 +202,7 @@ namespace:"
 
   "Fulltext searches are avaliable on schema attributes defined with :fulltext true:"
 
-  (spirit/select ds {:book/author '(?fulltext "Louis")}
+  (datomic/select ds {:book/author '(?fulltext "Louis")}
               :pull {:book {:accounts :checked}} :first)
   => {:book {:author "Louis Cha" :name "The Book and the Sword"
              :accounts #{{:credits 0 :type :free :password "hello2" :user "spirit2"}
@@ -214,12 +213,12 @@ namespace:"
 
   "Deletes are controlled by models:"
 
-  (spirit/delete-all! ds {:book/author "Roald Dahl"}
+  (datomic/delete-all! ds {:book/author "Roald Dahl"}
                    :access {:book {:accounts :checked}})
-  (spirit/select ds :account)
+  (datomic/select ds :account)
   => #{{:account {:user "spirit2", :password "hello2", :credits 0, :type :free}}
        {:account {:user "spirit1", :password "hello1", :credits 0, :type :free}}}
 
 
-  ;;(spirit/update-in)
+  ;;(datomic/update-in)
   )

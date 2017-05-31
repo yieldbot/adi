@@ -1,9 +1,8 @@
 (ns documentation.spirit-walkthrough.step-2
   (:use hara.test)
-  (:require [spirit.core :as spirit]
-            [spirit.core.select :as select]
-            [spirit.test.checkers :refer :all]
-            [datomic.api :as datomic]))
+  (:require [spirit.datomic :as datomic]
+            [spirit.datomic.core.select :as select]
+            [datomic.api :as raw]))
 
 [[:chapter {:title "Step Two"}]]
 
@@ -42,12 +41,12 @@ them allowed values `#{:admin :free :paid}`"
 a correspondence between a nested hashmap and a flat hashmap having keys representing data-paths. `spirit` takes
 advantage of this correspondence to give allow users more semantic freedom of how to represent their data:"
 
-  (def ds (spirit/connect! "datomic:mem://spirit-examples-step-2" schema-2 true true))
+  (def ds (datomic/connect! "datomic:mem://spirit-examples-step-2" schema-2 true true))
 
-  (spirit/insert! ds {:account {:user "spirit1"
+  (datomic/insert! ds {:account {:user "spirit1"
                              :password "hello1"}
                    :account/type :paid})
-  (spirit/insert! ds [{:account {:password "hello2"
+  (datomic/insert! ds [{:account {:password "hello2"
                               :type :account.type/admin}
                     :account/user "spirit2"}
                    {:account {:user "spirit3"
@@ -56,19 +55,19 @@ advantage of this correspondence to give allow users more semantic freedom of ho
 
   "Lets take a look at all the `:admin` accounts:"
 
-  (spirit/select ds {:account/type :admin})
+  (datomic/select ds {:account/type :admin})
   => #{{:account {:user "spirit2", :password "hello2", :credits 0, :type :admin}}}
 
   "We can make `spirit1` into an :admin and then do another listing:"
 
-  (spirit/update! ds {:account/user "spirit1"} {:account/type :admin})
-  (spirit/select ds {:account/type :admin})
+  (datomic/update! ds {:account/user "spirit1"} {:account/type :admin})
+  (datomic/select ds {:account/type :admin})
   => #{{:account {:user "spirit1", :password "hello1", :credits 0, :type :admin}}
        {:account {:user "spirit2", :password "hello2", :credits 0, :type :admin}}}
 
   "If we attempt to add an value of `:account.type/<value>` that is not listed, an exception will be thrown:"
 
-  (spirit/insert! ds {:account {:user "spirit4"
+  (datomic/insert! ds {:account {:user "spirit4"
                              :password "hello4"
                              :type :vip}})
   => throws
@@ -77,12 +76,12 @@ advantage of this correspondence to give allow users more semantic freedom of ho
 
   "There are many ways of selecting data. We have already seen the basics:"
 
-  (spirit/select ds {:account/credits 1000} :first)
+  (datomic/select ds {:account/credits 1000} :first)
   => {:account {:user "spirit3", :password "hello3", :credits 1000, :type :free}}
 
   "Adding a `:pull` model will filter out selection options:"
 
-  (spirit/select ds {:account/type :free} :first
+  (datomic/select ds {:account/type :free} :first
               :pull {:account {:credits :unchecked
                                  :type :unchecked}})
   => {:account {:user "spirit3", :password "hello3"}}
@@ -91,13 +90,13 @@ advantage of this correspondence to give allow users more semantic freedom of ho
   acts as the `spirit` equivalent of using an actual predicate `#(> % 10)`. If there is no `?`, it is
   assumed that the first argument is `?`.  Note that all the three queries below give the same results:"
 
-  (spirit/select ds {:account/credits '(> 10)} :first)
+  (datomic/select ds {:account/credits '(> 10)} :first)
   => {:account {:user "spirit3", :password "hello3", :credits 1000, :type :free}}
 
-  (spirit/select ds {:account/credits '(> ? 10)} :first)
+  (datomic/select ds {:account/credits '(> ? 10)} :first)
   => {:account {:user "spirit3", :password "hello3", :credits 1000, :type :free}}
 
-  (spirit/select ds {:account/credits '(< 10 ?)} :first)
+  (datomic/select ds {:account/credits '(< 10 ?)} :first)
   => {:account {:user "spirit3", :password "hello3", :credits 1000, :type :free}})
 
 
@@ -106,11 +105,11 @@ advantage of this correspondence to give allow users more semantic freedom of ho
 
   "Java expressions can also be used because these functions are executed at the transactor end:"
 
-  (spirit/select ds {:account/user '(.contains "2")} :first)
+  (datomic/select ds {:account/user '(.contains "2")} :first)
   => {:account {:user "spirit2", :password "hello2", :credits 0, :type :admin}}
 
-  (spirit/select ds {:account/user '(.contains ? "2")} :first)
+  (datomic/select ds {:account/user '(.contains ? "2")} :first)
   => {:account {:user "spirit2", :password "hello2", :credits 0, :type :admin}}
 
-  (spirit/select ds {:account/user '(.contains "spirit222" ?)} :first)
+  (datomic/select ds {:account/user '(.contains "spirit222" ?)} :first)
   => {:account {:user "spirit2", :password "hello2", :credits 0, :type :admin}})

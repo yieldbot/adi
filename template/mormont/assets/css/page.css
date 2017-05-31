@@ -40,7 +40,7 @@ header h4{
 }
 
 a {
-  color:#3c3;
+  color: #BC6060;
   font-weight:400;
   text-decoration:none;
 }
@@ -293,7 +293,7 @@ header div.heading {
   }
   
   header.top{
-    position: absolute;
+    /*position: absolute;*/
   }
   
   pre, code {

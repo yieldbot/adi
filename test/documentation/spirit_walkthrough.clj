@@ -13,7 +13,7 @@ All functionality is contained in the `spirit.core` namespace:
 "
 
 (comment
-  (require '[spirit.core :as spirit]))
+  (require '[spirit.datomic :as datomic]))
 
 
 [[:section {:title "Motivation"}]]

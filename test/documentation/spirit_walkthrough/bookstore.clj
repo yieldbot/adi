@@ -1,8 +1,7 @@
 (ns documentation.spirit-walkthrough.bookstore
   (:use hara.test)
-  (:require [spirit.core :as spirit]
-            [spirit.test.checkers :refer :all]
-            [datomic.api :as datomic]))
+  (:require [spirit.datomic :as datomic]
+            [datomic.api :as raw]))
 
 [[:chapter {:title "Bookstore"}]]
 
@@ -41,9 +40,9 @@ through an `Inventory`, which keeps how many books there are in a store:"
 
   "Once again, the spirit datastore is created and the seed stores created"
 
-  (def ds (spirit/connect! "datomic:mem://spirit-example-step-4" schema-4 true true))
+  (def ds (datomic/connect! "datomic:mem://spirit-example-step-4" schema-4 true true))
 
-  (spirit/insert! ds [{:address {:country "USA"
+  (datomic/insert! ds [{:address {:country "USA"
                               :stores #{{:name "Canyon Books"}
                                         {:name "Capital Books"}}}}
                    {:db/id [[:AUS]]
@@ -53,19 +52,19 @@ through an `Inventory`, which keeps how many books there are in a store:"
 
   "We can see our stores from Australia:"
 
-  (spirit/select ds {:store {:address/country "Australia"}})
+  (datomic/select ds {:store {:address/country "Australia"}})
   => #{{:store {:name "Koala Books"}}}
 
   "As well as the USA:"
 
-  (spirit/select ds {:store {:address/country "USA"}})
+  (datomic/select ds {:store {:address/country "USA"}})
   => #{{:store {:name "Canyon Books"}} {:store {:name "Capital Books"}}}
 
   [[:section {:title "Updating Data"}]]
 
   "We can now start adding some books to our Australian store:"
 
-  (spirit/update! ds {:store {:address/country "Australia"}}
+  (datomic/update! ds {:store {:address/country "Australia"}}
                {:store/inventories #{{:count 10
                                       :cover :hard
                                       :book {:name "The Count of Monte Cristo"
@@ -82,19 +81,19 @@ through an `Inventory`, which keeps how many books there are in a store:"
   "Query for the inventory containing a book in our network starting with `\"Les\"`. Notice the
   use of the `:first` keyword, this will return a single result as opposed to a set of results:"
 
-  (spirit/select ds {:inventory {:book/name '(?fulltext "Les")}} :first)
+  (datomic/select ds {:inventory {:book/name '(?fulltext "Les")}} :first)
   => {:inventory {:count 3, :cover :soft}}
 
   "`update-in!` is a very useful function as it can be used to set values across references.
   In this case, we set the inventory count of `\"Tom Sawyer\"` in `\"Koala Books\"` to `4`:"
 
-  (spirit/update-in! ds {:store/name "Koala Books"}
+  (datomic/update-in! ds {:store/name "Koala Books"}
                   [:store/inventories {:book/name "Tom Sawyer"}]
                   {:count 4})
 
   "We can look at the inventory of a specific book and store by specifying more search keys:"
 
-  (spirit/select ds {:inventory {:book/name "Tom Sawyer"
+  (datomic/select ds {:inventory {:book/name "Tom Sawyer"
                               :store/name "Koala Books"}} :first)
   => {:inventory {:count 4, :cover :hard}}
 
@@ -102,7 +101,7 @@ through an `Inventory`, which keeps how many books there are in a store:"
   This is done by providing an `:access <MODEL>` pair of args. In this case, we specify that
   linked refs in `:inventories` and `:stores` are also returned:"
 
-  (spirit/select ds :book :access {:book {:inventories {:store :checked}}})
+  (datomic/select ds :book :access {:book {:inventories {:store :checked}}})
   => #{{:book {:author "Mark Twain" :name "Tom Sawyer"
                :inventories #{{:store {:name "Koala Books"}
                                :count 4 :cover :hard}}}}
@@ -117,28 +116,28 @@ through an `Inventory`, which keeps how many books there are in a store:"
 
   "Lets test out some other functions, starting with `retract!`. Retract takes a set of
    keys to remove from an entity:"
-  (spirit/retract! ds {:inventory {:book/name "Tom Sawyer"
+  (datomic/retract! ds {:inventory {:book/name "Tom Sawyer"
                                 :store/name "Koala Books"}}
                 #{:inventory/cover})
 
   "The result of the retract is that the cover information is missing when we do a search:"
-  (spirit/select ds {:inventory {:book/name "Tom Sawyer"
+  (datomic/select ds {:inventory {:book/name "Tom Sawyer"
                               :store/name "Koala Books"}} :first)
   => {:inventory {:count 4}}
 
   "We can update the cover information using `update-in!`:"
-  (spirit/update-in! ds {:book/name "Tom Sawyer"}
+  (datomic/update-in! ds {:book/name "Tom Sawyer"}
                   [:book/inventories {:store/name "Koala Books"}]
                   {:cover :soft})
-  (spirit/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
+  (datomic/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
   => {:inventory {:count 4, :cover :soft}}
 
   "Oops. we made a mistake. The cover can also be changed using `update!`
   using slightly different semantics:"
-  (spirit/update! ds {:inventory {:book/name "Tom Sawyer"
+  (datomic/update! ds {:inventory {:book/name "Tom Sawyer"
                                :store/name "Koala Books"}}
                {:inventory/cover :hard})
-  (spirit/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
+  (datomic/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
   => {:inventory {:count 4, :cover :hard}}
 
   "The choice of using `update!` and  `update-in!` is purely in its communication:
@@ -147,10 +146,10 @@ through an `Inventory`, which keeps how many books there are in a store:"
   - `update-in!`: Start off by finding a book with `:book/name` of `\"Tom Sawyer\"`. Then follow the entity accessible through `:book/inventories` which must be linked to a store with the name `\"Koala Books\"`. Then make the update of `:cover` to `:hard`."
 
   "Another way to reach the inventory entity is to start by finding the store, then following the `:store/stock` link. This time, we are changing the `:inventory/count` value to `3`:"
-  (spirit/update-in! ds {:store/name "Koala Books"}
+  (datomic/update-in! ds {:store/name "Koala Books"}
                   [:store/inventories {:book/name "Tom Sawyer"}]
                   {:count 3})
-  (spirit/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
+  (datomic/select ds {:inventory {:book/name "Tom Sawyer"}} :first)
   => {:inventory {:count 3, :cover :hard}}
 
   [[:section {:title "Expanding the Business"}]]
@@ -158,14 +157,14 @@ through an `Inventory`, which keeps how many books there are in a store:"
   "Lets replicate the stock at `Koala Books` to `Capital Books`. So basically, we are creating inventory
   records that have a link to the already existing books. It is very simple to do using spirit:"
 
-  (let [koala-inventories (spirit/select ds {:inventory {:store/name "Koala Books"}}
+  (let [koala-inventories (datomic/select ds {:inventory {:store/name "Koala Books"}}
                                       :pull {:inventory {:book :id}})]
-    (spirit/update! ds {:store/name "Capital Books"}
+    (datomic/update! ds {:store/name "Capital Books"}
                  {:store/inventories (set (map :inventory koala-inventories))}))
 
   "Now, lets look at where we can find `Tom Sawyer` in our stores:"
 
-  (spirit/select ds {:book/name "Tom Sawyer"} :pull {:book {:inventories {:store :checked}}} :first)
+  (datomic/select ds {:book/name "Tom Sawyer"} :pull {:book {:inventories {:store :checked}}} :first)
   => {:book {:author "Mark Twain", :name "Tom Sawyer",
              :inventories #{{:cover :hard, :count 3, :store {:name "Koala Books"}}
                             {:cover :hard, :count 3, :store {:name "Capital Books"}}}}}
@@ -173,12 +172,12 @@ through an `Inventory`, which keeps how many books there are in a store:"
   "A fire burnt all the copies of the `Count of Monte Cristo` from `Koala Books`. Instead of
   setting the count to `0`, we can use `delete!` to get rid of the inventory entity entirely"
 
-  (spirit/delete! ds {:inventory {:store/name "Koala Books"
+  (datomic/delete! ds {:inventory {:store/name "Koala Books"
                                :book/name '(?fulltext "Count")}})
 
   "We see that now there is only one inventory record:"
 
-  (spirit/select ds {:book/name '(?fulltext "Count")}
+  (datomic/select ds {:book/name '(?fulltext "Count")}
               :pull {:book {:inventories {:store :checked}}} :first)
   => {:book {:author "Alexander Dumas", :name "The Count of Monte Cristo",
              :inventories #{{:cover :hard, :count 10, :store {:name "Capital Books"}}}}}
@@ -186,9 +185,9 @@ through an `Inventory`, which keeps how many books there are in a store:"
   "The copies of `Tom Sawyer` exceeded expectations and sold out. We will delete the
   inventory record but this time using `delete-in!`:"
 
-  (spirit/delete-in! ds {:store/name "Capital Books"}
+  (datomic/delete-in! ds {:store/name "Capital Books"}
                   [:store/inventories {:book/name "Tom Sawyer"}])
-  (spirit/select ds {:book/name "Tom Sawyer"}
+  (datomic/select ds {:book/name "Tom Sawyer"}
               :pull {:book {:inventories {:store :checked}}} :first)
   => {:book {:author "Mark Twain", :name "Tom Sawyer",
              :inventories #{{:cover :hard, :count 3, :store {:name "Koala Books"}}}}}
@@ -199,20 +198,22 @@ through an `Inventory`, which keeps how many books there are in a store:"
   transfered to `Canyon Books`. In order to perform the whole lot in one transaction, the
   macro `sync->` is used:")
 
-(let [inventory-ids (spirit/select ds {:inventory {:store/name "Capital Books"}}
-                                :return :ids)]
-  (spirit/sync-> ds
-              (spirit/update! {:store/name "Canyon Books"}
-                           {:store/inventories inventory-ids})
-              (spirit/delete! {:store/name "Capital Books"})))
+(let [inventory-ids (datomic/select ds
+                                    {:inventory {:store/name "Capital Books"}}
+                                    :return :ids)]
+  (datomic/sync-> ds
+                  (datomic/update! {:store/name "Canyon Books"}
+                                   {:store/inventories inventory-ids})
+                  (datomic/delete! {:store/name "Capital Books"})))
 
 "Now we can see that `Capital Books` is no more:"
 
-(spirit/select ds :store :pull {:store {:inventories {:cover :unchecked
-                                                   :book {:author :unchecked}}}})
-=> #{{:store {:name "Koala Books"
-              :inventories #{{:book {:name "Les Miserables"} :count 3}
-                             {:book {:name "Tom Sawyer"} :count 3}}}}
-{:store {:name "Canyon Books"
-         :inventories #{{:book {:name "The Count of Monte Cristo"} :count 10}
-                        {:book {:name "Les Miserables"} :count 3}}}}}
+(fact
+  (datomic/select ds :store :pull {:store {:inventories {:cover :unchecked
+                                                         :book {:author :unchecked}}}})
+  => #{{:store {:name "Koala Books"
+                :inventories #{{:book {:name "Les Miserables"} :count 3}
+                               {:book {:name "Tom Sawyer"} :count 3}}}}
+       {:store {:name "Canyon Books"
+                :inventories #{{:book {:name "The Count of Monte Cristo"} :count 10}
+                               {:book {:name "Les Miserables"} :count 3}}}}})
