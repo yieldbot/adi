@@ -1,6 +1,6 @@
-(ns documentation.datomic.options
+(ns documentation.spirit-datomic.options
   (:use hara.test)
-  (:require [spirit.core :as spirit]))
+  (:require [spirit.datomic :as datomic]))
 
 "For demonstration of search options, we define a schema"
 
@@ -19,26 +19,26 @@
 
 "The datastore is created:"
 
-(def school-ds (spirit/connect! "datomic:mem://datomic-options-school-store" schema-school true true))
+(def school-ds (datomic/connect! "datomic:mem://datomic-options-school-store" schema-school true true))
 
 "Data is put into the system:"
 
-(spirit/insert! school-ds
-             [{:db/id (spirit/iid :science)
+(datomic/insert! school-ds
+             [{:db/id (datomic/iid :science)
                :class {:subject "Science"
                        :teacher {:name "Mr Michaels"
                                  :age 39}}}
-              {:db/id (spirit/iid :math)
+              {:db/id (datomic/iid :math)
                :class {:subject "Math"
                        :teacher {:name "Mr Nolan"
                                  :age 26}}}
               {:student {:name "Charlie"
-                         :classes #{(spirit/iid :science)}}}
+                         :classes #{(datomic/iid :science)}}}
               {:student {:name "Bob"
-                         :classes #{(spirit/iid :math)}}}
+                         :classes #{(datomic/iid :math)}}}
               {:student {:name "Anne"
-                         :classes #{(spirit/iid :science)
-                                    (spirit/iid :math)}}}])
+                         :classes #{(datomic/iid :science)
+                                    (datomic/iid :math)}}}])
 
 "And we are ready to go!"
 
@@ -47,25 +47,25 @@
 "Instead of returning a set of values, returns the first element of the results. Useful when only one value is returned:"
 
 (fact
-  (spirit/select school-ds {:student/name "Anne"} {:options {:first :true}})
+  (datomic/select school-ds {:student/name "Anne"} {:options {:first :true}})
   => {:student {:name "Anne"}})
 
 "The shorthand can be used:"
 
 (fact
-  (spirit/select school-ds {:student/name "Anne"} :first)
+  (datomic/select school-ds {:student/name "Anne"} :first)
   => {:student {:name "Anne"}})
 
 "Also works when there is more than one possible value:"
 
 (fact
-  (spirit/select school-ds :student)
+  (datomic/select school-ds :student)
   => #{{:student {:name "Bob"}} {:student {:name "Anne"}} {:student {:name "Charlie"}}})
 
 "Because `Charlie` was put in first, we expect that his name comes up first:"
 
 (fact
-  (spirit/select school-ds :student :first)
+  (datomic/select school-ds :student :first)
   => {:student {:name "Charlie"}})
 
 [[:section {:title ":ids"}]]
@@ -73,14 +73,14 @@
 "Returns the datomic ids for the piece of data:"
 
 (fact
-  (spirit/select school-ds {:student/name "Anne"} {:options {:ids :true}})
+  (datomic/select school-ds {:student/name "Anne"} {:options {:ids :true}})
 
   => #{{:student {:name "Anne"}, :db {:id 17592186045424}}})
 
 "`:ids` work fine with `:pull`, `:access` and data related options"
 
 (fact
- (spirit/select school-ds {:student/name "Anne"}
+ (datomic/select school-ds {:student/name "Anne"}
              :ids
              :pull {:student {:classes {:teacher :checked}}})
   
@@ -102,7 +102,7 @@
 "works with `:pull` to specify how refs should be returned:"
 
 (fact
- (spirit/select school-ds {:student/name "Anne"} :blank)
+ (datomic/select school-ds {:student/name "Anne"} :blank)
  => #{{}})
 
 [[:subsection {:title "default setting"}]]
@@ -110,13 +110,13 @@
 "For default behaviour on queries, this option can be set as default on initialisation:"
 
 (def blank-ds
-  (spirit/connect! {:uri "datomic:mem://datomic-options-school-store"
-                 :schema schema-school
-                 :options {:blank true}}))
+  (datomic/connect! {:uri "datomic:mem://datomic-options-school-store"
+                     :schema schema-school
+                     :options {:blank true}}))
 
 
 (fact
-  (spirit/select blank-ds {:student/name "Anne"})
+  (datomic/select blank-ds {:student/name "Anne"})
   => #{{}})
 
 [[:subsection {:title "pull behaviour"}]]
@@ -124,12 +124,12 @@
 "Once set, the results will only be what the model governed by `:pull` allows:"
 
 (fact
- (spirit/select blank-ds {:student/name "Anne"}
-             :pull {:student {:name :checked}})
- => #{{:student {:name "Anne"}}})
+  (datomic/select blank-ds {:student/name "Anne"}
+                  :pull {:student {:name :checked}})
+  => #{{:student {:name "Anne"}}})
 
 (fact
- (spirit/select blank-ds {:student/classes {:teacher/age 39}}
+ (datomic/select blank-ds {:student/classes {:teacher/age 39}}
              :pull {:student {:name :checked}})
  => #{{:student {:name "Anne"}}
       {:student {:name "Charlie"}}})
@@ -138,13 +138,13 @@
 
 "`:access` will also work the same as `:pull` but with query restrictions"
 (fact
-  (spirit/select blank-ds {:student/name "Anne"}
+  (datomic/select blank-ds {:student/name "Anne"}
               :first
               :access {:student {:name :checked}})
   => {:student {:name "Anne"}})
 
 (fact
-  (spirit/select blank-ds {:student/classes {:teacher/age 39}}
+  (datomic/select blank-ds {:student/classes {:teacher/age 39}}
               :access {:student {:name :checked}})
   => (throws))
 
@@ -153,7 +153,7 @@
 "when a key in a ref is checked, it will return only the data for that particular key"
 
 (fact
-  (spirit/select school-ds {:student/name "Anne"}
+  (datomic/select school-ds {:student/name "Anne"}
               :blank
               :pull {:student {:classes {:teacher {:name :checked}}}})
   => #{{:student {:classes #{{:teacher {:name "Mr Michaels"}}
@@ -162,7 +162,7 @@
 "when the ref itself is checked, it will return all non ref data"
 
 (fact
- (spirit/select school-ds {:student/name "Anne"}
+ (datomic/select school-ds {:student/name "Anne"}
              {:options {:blank true}
               :pull {:student {:classes {:teacher :checked}}}})
  => #{{:student {:classes #{{:teacher {:name "Mr Michaels", :age 39}}
@@ -174,14 +174,15 @@
 "expressions can be used to select"
 
 (fact
- (spirit/select school-ds {:student/name '(.startsWith ? "A")})
- => #{{:student {:name "Anne"}}})
+ (datomic/select school-ds {:student/name '(.startsWith ? "A")})
+  => #{{:student {:name "Anne"}}})
 
 "At times, especially when directly exposing the interface to the outside, it may be a good idea to disable this functionality:"
 
 (fact
-  (spirit/select school-ds {:student/name '(.startsWith ? "A")}
-              :ban-expressions)
+  (datomic/select school-ds
+                  {:student/name '(.startsWith ? "A")}
+                  :ban-expressions)
   => (throws))
 
 [[:section {:title ":ban-top-id"}]]
@@ -189,19 +190,19 @@
 "When there are no restrictions, ids can be used as direct input:"
 
 (fact
-  (spirit/select school-ds 17592186045424)
+  (datomic/select school-ds 17592186045424)
   => #{{:student {:name "Anne"}}})
 
 "This option disables selection of entity from the very top"
 
 (fact
-  (spirit/select school-ds 17592186045424 :ban-top-id)
+  (datomic/select school-ds 17592186045424 :ban-top-id)
   => (throws))
 
 "However, this does not prevent selection of related data:"
 
 (fact
-  (spirit/select school-ds {:class/students 17592186045424} :ban-top-id)
+  (datomic/select school-ds {:class/students 17592186045424} :ban-top-id)
   => #{{:class {:subject "Math"}} {:class {:subject "Science"}}})
 
 [[:section {:title ":ban-body-ids"}]]
@@ -209,13 +210,13 @@
 "The opposite of `:ban-top-id`. This option disables selection of entity from the query:"
 
 (fact
-  (spirit/select school-ds 17592186045424 :ban-body-ids)
+  (datomic/select school-ds 17592186045424 :ban-body-ids)
   #{{:student {:name "Anne"}}})
 
 "And when numbers are not in the body, an exception is thrown:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:class/students 17592186045424} :ban-body-ids)
   => (throws))
 
@@ -224,13 +225,13 @@
 "The combination of both options. Throws whever it sees an id:"
 
 (fact
-  (spirit/select school-ds 17592186045424 :ban-ids)
+  (datomic/select school-ds 17592186045424 :ban-ids)
   => (throws))
 
 "And when numbers are not in the body, an exception is thrown:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:class/students 17592186045424} :ban-ids)
   => (throws))
 
@@ -238,29 +239,29 @@
 
 "Returns the actual input that would be given to datomic:"
 
-(spirit/select school-ds
+(datomic/select school-ds
             {:class/students 17592186045424} :raw)
 ;;=> [:find ?self :where [17592186045424 :student/classes ?self]]
 
 "Works for both queries and datoms:"
 
 (comment
-  (spirit/insert! school-ds
-               [{:db/id (spirit/iid :science)
+  (datomic/insert! school-ds
+               [{:db/id (datomic/iid :science)
                  :class {:subject "Science"
                          :teacher {:name "Mr Michaels"
                                    :age 39}}}
-                {:db/id (spirit/iid :math)
+                {:db/id (datomic/iid :math)
                  :class {:subject "Math"
                          :teacher {:name "Mr Nolan"
                                    :age 26}}}
                 {:student {:name "Charlie"
-                           :classes #{(spirit/iid :science)}}}
+                           :classes #{(datomic/iid :science)}}}
                 {:student {:name "Bob"
-                           :classes #{(spirit/iid :math)}}}
+                           :classes #{(datomic/iid :math)}}}
                 {:student {:name "Anne"
-                           :classes #{(spirit/iid :science)
-                                      (spirit/iid :math)}}}]
+                           :classes #{(datomic/iid :science)
+                                      (datomic/iid :math)}}}]
                :raw)
   ;;=> [{:db/id #spirit[:science]
   ;;     :class/subject "Science"}
@@ -286,7 +287,7 @@
 "Returns the `spirit` datastructure used for the query, useful for debugging. This map has all the acculmulated data as the query/insert moves through the spirit data pipeline"
 
 (comment
-  (spirit/select school-ds {:class/students 17592186045424} :spirit)
+  (datomic/select school-ds {:class/students 17592186045424} :spirit)
   ;;=> #spirit{:tempids {:status :ready, :val #{}},
   ;;        :schema #schema{:student {:name :string,
   ;;                                  :classes :&class<*>},

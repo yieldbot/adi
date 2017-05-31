@@ -40,6 +40,10 @@
   [{:keys [host port name]}]
   (str "datomic:dev://" host ":" port "/" name))
 
+(defmethod construct-uri nil
+  [{:keys [uri]}]
+  uri)
+
 (defn connect [uri]
   (try (datomic/connect uri)
        (catch clojure.lang.ExceptionInfo e
@@ -84,8 +88,7 @@
 
 (defn install-schema [{:keys [schema connection] :as datomic}]
   (let [schema  (create-schema schema)
-        datoms  (create-datoms schema)
-        _ (prn datoms)]
+        datoms  (create-datoms schema)]
     (datomic/transact connection datoms)
     (assoc datomic :schema schema)))
 

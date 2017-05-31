@@ -1,6 +1,6 @@
-(ns documentation.datomic.reserved.schema
+(ns documentation.spirit-datomic.reserved.schema
   (:use hara.test)
-  (:require [spirit.core :as spirit]))
+  (:require [spirit.datomic :as datomic]))
 
 [[:section {:title ":schema"}]]
 
@@ -15,17 +15,18 @@
 
 "A connection is created using the schema:"
 
-(def book-ds (spirit/connect! "datomic:mem://datomic-schema-book" schema-book true true))
+(def book-ds (datomic/connect! "datomic:mem://datomic-schema-book" schema-book true true))
 
 "A single book is entered:"
 
-(spirit/insert! book-ds {:book {:name "The Magicians"
+(datomic/insert! book-ds {:book {:name "The Magicians"
                              :author "Lev Grossman"}})
 
 "And then accessed:"
 
-(spirit/select book-ds :book)
-=> #{{:book {:name "The Magicians", :author "Lev Grossman"}}}
+(fact
+  (datomic/select book-ds :book)
+  => #{{:book {:name "The Magicians", :author "Lev Grossman"}}})
 
 "We see that both the name and the author of the book is returned."
 
@@ -33,12 +34,13 @@
 
 "However, lets define a partial schema:"
 
-(def name-schema (spirit/schema {:book {:name  [{:required true}]}}))
+(def name-schema (datomic/schema {:book {:name  [{:required true}]}}))
 
 "And make a call to select, passing in the `:schema` entry"
 
-(spirit/select book-ds :book :schema name-schema)
-=> #{{:book {:name "The Magicians"}}}
+(fact
+  (datomic/select book-ds :book :schema name-schema)
+  => #{{:book {:name "The Magicians"}}})
 
 "It can be seen that only the book name is returned."
 
@@ -47,13 +49,13 @@
 "By passing in different schemas, an application can allow for isolation of various functionalities as well have as basic protection of data. It can be seen how the two schemas behave. Below shows a normal search on :book/author:"
 
 (fact
-  (spirit/select book-ds :book/author)
+  (datomic/select book-ds :book/author)
   => #{{:book {:name "The Magicians", :author "Lev Grossman"}}})
 
 "Using the abridged schema, an exception is thrown:"
 
 (fact
-  (spirit/select book-ds :book/author :schema name-schema)
+  (datomic/select book-ds :book/author :schema name-schema)
   => (throws))
 
 
@@ -74,11 +76,11 @@
     :store  {:name    [{:required true
                         :fulltext true}]}})
 
-(def store-ds (spirit/connect! "datomic:mem://datomic-schema-store" schema-store true true))
+(def store-ds (datomic/connect! "datomic:mem://datomic-schema-store" schema-store true true))
 
 "A store is created with inventory:"
 
-(spirit/insert! store-ds
+(datomic/insert! store-ds
              {:store {:name "Happy Books"
                       :inventory #{{:count 10
                                     :book {:name "The Magicians"
@@ -92,7 +94,7 @@
 "The default behaviour for `:pull` is to grab all attributes from an entity that are not references:"
 
 (fact
-  (spirit/select store-ds :store)
+  (datomic/select store-ds :store)
   => #{{:store {:name "Happy Books"}}})
 
 [[:subsection {:title ":checked and :unchecked"}]]
@@ -100,7 +102,7 @@
 "However, this can be customised by using `:checked` and `:unchecked`"
 
 (fact
-  (spirit/select store-ds :store
+  (datomic/select store-ds :store
               :pull {:store {:name :unchecked
                              :inventory :checked}})
   => #{{:store {:inventory #{{:count 8} {:count 10}}}}})
@@ -110,20 +112,19 @@
 "The pull model can be nested and allows very quick customisation of data. Using `:id` restricts refs to return the internal id:"
 
 (fact
-  (spirit/select store-ds :store
+  (datomic/select store-ds :store
               :pull {:store {:inventory {:book :id}}}
               :first)
-  => (contains {:store
-                (contains {:name "Happy Books", :inventory
-                           (contains [(contains {:count 8, :book number?})
-                                      (contains {:count 10, :book number?})])})}))
+  => {:store {:name "Happy Books",
+              :inventory #{{:count 8, :book 17592186045422}
+                           {:count 10, :book 17592186045420}}}})
 
 [[:subsection {:title "forward walk"}]]
 
 "Using `{}` for defining the `:pull` model for a ref is the same as using `:checked`"
 
 (fact
-  (spirit/select store-ds {:store/name "Happy Books"}
+  (datomic/select store-ds {:store/name "Happy Books"}
               :pull {:store {:inventory {:book {}}}})
   => #{{:store {:name "Happy Books",
                  :inventory #{{:count 10
@@ -138,7 +139,7 @@
 "`:pull` also works for reverse lookups, having the ability to walk the schema in the opposite direction:"
 
 (fact
-  (spirit/select store-ds {:book/name '(?fulltext "Magic")}
+  (datomic/select store-ds {:book/name '(?fulltext "Magic")}
               :pull {:book {:inventories {:store :checked}}})
   => #{{:book {:name "The Color of Magic",
                :author "Terry Pratchett",
@@ -155,11 +156,11 @@
                        :ref {:ns :node
                              :rval :previous}}]}})
 
-(def node-ds (spirit/connect! "datomic:mem://datomic-schema-nodes" schema-nodes true true))
+(def node-ds (datomic/connect! "datomic:mem://datomic-schema-nodes" schema-nodes true true))
 
 "A set of maps are inserted:"
 
-(spirit/insert! node-ds {:node {:name "A"
+(datomic/insert! node-ds {:node {:name "A"
                              :next {:name "B"
                                     :next {:name "C"
                                            :next {:name "D"}}}}})
@@ -168,13 +169,13 @@
 "We can now perform selection:"
 
 (fact
-  (spirit/select node-ds {:node/name "B"})
+  (datomic/select node-ds {:node/name "B"})
   => #{{:node {:name "B"}}})
 
 "when `:yield` is flagged on a ref, the `:pull` model yields to what was previously defined:"
 
 (fact
-  (spirit/select node-ds {:node/name "B"}
+  (datomic/select node-ds {:node/name "B"}
               :pull {:node {:next :yield}})
   => #{{:node {:name "B", :next {:name "C", :next {:name "D"}}}}})
 
@@ -183,14 +184,14 @@
 "The option is great for arbitrarily linked data. Additionally, the data model can be walked both forwards and backwards"
 
 (fact
-  (spirit/select node-ds {:node/name "D"}
+  (datomic/select node-ds {:node/name "D"}
               :pull {:node {:previous :yield}})
   => #{{:node {:name "D", :previous #{{:name "C", :previous #{{:name "B", :previous #{{:name "A"}}}}}}}}})
 
 "A mix of `:yield` and `:checked` makes for some interesting datastructures"
 
 (fact
-  (spirit/select node-ds {:node/name "C"}
+  (datomic/select node-ds {:node/name "C"}
               :pull {:node {:next :yield
                             :previous :checked}})
   => #{{:node {:name "C", :next {:name "D",
@@ -202,7 +203,7 @@
 "`:access` provides restrictions on input and an outline on how data should be returned. The following is how it is typically used:"
 
 (fact
-  (spirit/select node-ds {:node {:name "C"}}
+  (datomic/select node-ds {:node {:name "C"}}
               :access {:node :checked})
   => #{{:node {:name "C"}}})
 
@@ -211,21 +212,21 @@
 "When the selector oversteps what is deemed acceptable, an exception is thrown:"
 
 (fact
-  (spirit/select node-ds {:node {:next {:name "C"}}}
+  (datomic/select node-ds {:node {:next {:name "C"}}}
               :access {:node :checked})
   => (throws))
 
 "The model is able to follow the data and the returned values:"
 
 (fact
-  (spirit/select node-ds {:node {:next {:name "C"}}}
+  (datomic/select node-ds {:node {:next {:name "C"}}}
               :access {:node {:next :checked}})
   => #{{:node {:name "B", :next {:name "C"}}}})
 
 "Reverse lookups are also supported"
 
 (fact
-  (spirit/select node-ds {:node {:previous {:name "C"}}}
+  (datomic/select node-ds {:node {:previous {:name "C"}}}
               :access {:node {:previous :checked}})
   => #{{:node {:name "D", :previous #{{:name "C"}}}}})
 
@@ -234,7 +235,7 @@
 "`:access` and `:pull` can be used to work together to limit data:"
 
 (fact
-  (spirit/select node-ds {:node {:next {:name "C"}}}
+  (datomic/select node-ds {:node {:next {:name "C"}}}
               :access {:node {:next :checked}}
               :pull   {:node :checked})
   => #{{:node {:name "B"}}})
@@ -242,7 +243,7 @@
 "or to expand the data that is returned:"
 
 (fact
-  (spirit/select node-ds {:node {:next {:name "C"}}}
+  (datomic/select node-ds {:node {:next {:name "C"}}}
               :access {:node {:next :checked}}
               :pull   {:node {:next {:next :checked}}})
   => #{{:node {:name "B",

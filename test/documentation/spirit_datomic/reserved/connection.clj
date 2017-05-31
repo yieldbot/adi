@@ -1,7 +1,7 @@
-(ns documentation.datomic.reserved.connection
+(ns documentation.spirit-datomic.reserved.connection
   (:use hara.test)
-  (:require [spirit.core :as spirit]
-            [datomic.api :as datomic]))
+  (:require [spirit.datomic :as datomic]
+            [datomic.api :as raw]))
 
 [[:section {:title ":connection"}]]
 
@@ -15,24 +15,26 @@
           :author  [{:fulltext true}]}})
 
 
-(def ds-1 (spirit/connect! "datomic:mem://datomic-connection-1" schema-connection true true))
+(def ds-1 (datomic/connect! "datomic:mem://datomic-connection-1" schema-connection true true))
 
-(println ds-1)
-;;=> #spirit{:connection #connection{1000 #inst "2016-03-15T12:47:10.039-00:00"},
-;;        :schema     #schema{:book {:name :string, :author :string}}}
+(comment
+  (println ds-1)
+  ;;=> #spirit{:connection #connection{1000 #inst "2016-03-15T12:47:10.039-00:00"},
+  ;;        :schema     #schema{:book {:name :string, :author :string}}}
+)
 
 [[:subsection {:title "more datastores"}]]
 
 "`:connection` is a reserved keyword in options. We can show how this works by creating two more datastores:"
 
-(def ds-2 (spirit/connect! "datomic:mem://datomic-connection-2" schema-connection true true))
+(def ds-2 (datomic/connect! "datomic:mem://datomic-connection-2" schema-connection true true))
 
-(def ds-3 (spirit/connect! "datomic:mem://datomic-connection-3" schema-connection true true))
+(def ds-3 (datomic/connect! "datomic:mem://datomic-connection-3" schema-connection true true))
 
 "Passing a value for `:connection` will change the connection object that is used. This shouldn't be used very frequently but the feature is there to be exploited. To highlight this, a standard call to `insert!` is made:"
 
 (fact
-  (spirit/insert! ds-1 {:book/name "Orpheus"})
+  (datomic/insert! ds-1 {:book/name "Orpheus"})
   => (contains {:book {:name "Orpheus"}, :db map?}))
 
 [[:subsection {:title "key/value input"}]]
@@ -40,7 +42,7 @@
 "Lets see the different ways that the `:connection` entry can be overwritten, first via key/value pair:"
 
 (fact
-  (spirit/insert! ds-1 {:book/name "Ulysses"} :connection (:connection ds-2))
+  (datomic/insert! ds-1 {:book/name "Ulysses"} :connection (:connection ds-2))
   => (contains {:book {:name "Ulysses"}, :db map?}))
 
 [[:subsection {:title "map input"}]]
@@ -48,7 +50,7 @@
 "The arguments can also be passed in as part of a map:"
 
 (fact
-  (spirit/insert! ds-1  {:book/name "Eurydice"} {:connection (:connection ds-3)})
+  (datomic/insert! ds-1  {:book/name "Eurydice"} {:connection (:connection ds-3)})
   => (contains {:book {:name "Eurydice"}, :db map?}))
 
 [[:subsection {:title "different sinks"}]]
@@ -56,14 +58,14 @@
 "It can be seen that each datastore has a book of their own:"
 
 (facts
- (spirit/select ds-1 :book)
+ (datomic/select ds-1 :book)
   => #{{:book {:name "Orpheus"}}}
 
 
-  (spirit/select ds-2 :book)
+  (datomic/select ds-2 :book)
   => #{{:book {:name "Ulysses"}}}
 
-  (spirit/select ds-3 :book)
+  (datomic/select ds-3 :book)
   => #{{:book {:name "Eurydice"}}})
 
 [[:subsection {:title "update example"}]]
@@ -71,8 +73,8 @@
 "Examples below show overwriting of `:connection` for top level operations such as `update!`"
 
 (fact 
-  (spirit/update! ds-1 :book {:book/name "Medea"} (select-keys ds-3 [:connection]))
-  (spirit/select ds-3 :book)
+  (datomic/update! ds-1 :book {:book/name "Medea"} (select-keys ds-3 [:connection]))
+  (datomic/select ds-3 :book)
   => #{{:book {:name "Medea"}}})
 
 [[:subsection {:title "delete example"}]]
@@ -80,8 +82,8 @@
 "An example for `delete!` has alse beeen shown:"
 
 (fact
-  (spirit/delete! (assoc ds-1 :connection (:connection ds-3)) :book)
-  (spirit/select ds-3 :book)
+  (datomic/delete! (assoc ds-1 :connection (:connection ds-3)) :book)
+  (datomic/select ds-3 :book)
   => #{})
 
 [[:section {:title ":db"}]]
@@ -89,7 +91,7 @@
 "For searches (`select`), instead of specifying a `:connection` entry, a `:db` entry can be passed. The following are equivalent calls:"
 
 (fact
-  (spirit/select ds-1 :book)
+  (datomic/select ds-1 :book)
   => #{{:book {:name "Orpheus"}}})
 
 [[:subsection {:title "key/value input"}]]
@@ -97,7 +99,7 @@
 "`:db` passed in as args"
 
 (fact
-  (spirit/select ds-1 :book :db (datomic/db (:connection ds-1)))
+  (datomic/select ds-1 :book :db (raw/db (:connection ds-1)))
   => #{{:book {:name "Orpheus"}}})
 
 [[:subsection {:title "map input"}]]
@@ -105,7 +107,7 @@
 "`:db` passed in as a map"
 
 (fact
-  (spirit/select ds-1 :book {:db (datomic/db (:connection ds-1))})
+  (datomic/select ds-1 :book {:db (raw/db (:connection ds-1))})
   => #{{:book {:name "Orpheus"}}})
 
 [[:subsection {:title "overwriting"}]]
@@ -113,7 +115,7 @@
 "Like `:connection`, the entry for `:db` can be something completely unrelated to the original `:db` object, in this case, we are searching on `ds-2`:"
 
 (fact
-  (spirit/select ds-1 :book {:db (datomic/db (:connection ds-2))})
+  (datomic/select ds-1 :book {:db (raw/db (:connection ds-2))})
   => #{{:book {:name "Ulysses"}}})
 
 
@@ -124,7 +126,7 @@
 "[datomic](http://www.datomic.com/) allows searching of the database at any point in time. This functionality is accessible through the `:at` keyword. We can see this in action:"
 
 (fact
-  (spirit/select ds-1 :book :at 0)
+  (datomic/select ds-1 :book :at 0)
   => #{})
 
 [[:subsection {:title "syntactic sugar"}]]
@@ -132,9 +134,9 @@
 "`:at` makes the intent more clear. The previous statement is equivalent to:"
 
 (fact
-  (spirit/select ds-1 :book {:db (-> (:connection ds-1)
-                                  (datomic/db) 
-                                  (datomic/as-of 0))})
+  (datomic/select ds-1 :book {:db (-> (:connection ds-1)
+                                  (raw/db) 
+                                  (raw/as-of 0))})
   => #{})
 
 [[:subsection {:title "transaction id"}]]
@@ -142,15 +144,15 @@
 "We can query the datastore after the first transaction has occured, by using an id of `1001` to access the datastore."
 
 (fact
-  (spirit/select ds-1 :book :at 1001)
+  (datomic/select ds-1 :book :at 1001)
   => #{{:book {:name "Orpheus"}}})
 
 "Again, this is equivalent to:"
 
 (fact
-  (spirit/select ds-1 :book {:db (-> (:connection ds-1)
-                                  (datomic/db) 
-                                  (datomic/as-of 1001))})
+  (datomic/select ds-1 :book {:db (-> (:connection ds-1)
+                                  (raw/db) 
+                                  (raw/as-of 1001))})
   => #{{:book {:name "Orpheus"}}})
 
 [[:subsection {:title "transaction time"}]]
@@ -161,10 +163,10 @@
   (:connection ds-1)
   ;;=> #connection{1001 #inst "2016-03-15T19:13:37.085-00:00"}
 
-  (spirit/select ds-1 :book :at #inst "2016-03-15T19:13:00.000-00:00")
+  (datomic/select ds-1 :book :at #inst "2016-03-15T19:13:00.000-00:00")
   ;;=> #{}
 
-  (spirit/select ds-1 :book :at #inst "2016-03-15T19:14:00.000-00:00")
+  (datomic/select ds-1 :book :at #inst "2016-03-15T19:14:00.000-00:00")
   ;;=> #{{:book {:name "Orpheus"}}}
   )
 
@@ -173,14 +175,14 @@
 "The `:at` entry can be used in conjunction with `:db`:"
 
 (fact
-  (spirit/select ds-1 :book {:db (datomic/db (:connection ds-2))
+  (datomic/select ds-1 :book {:db (raw/db (:connection ds-2))
                           :at 0})
   => #{})
 
 "as well as `:connection`:"
 
 (fact
-  (spirit/select ds-1 :book {:connection (:connection ds-2)
+  (datomic/select ds-1 :book {:connection (:connection ds-2)
                           :at 1001})
   => #{{:book {:name "Ulysses"}}})
 
@@ -198,7 +200,7 @@
 "Returns the set of datomic ids that matches the query;"
 
 (fact
-  (spirit/select ds-1 :book :return :ids)
+  (datomic/select ds-1 :book :return :ids)
   => #{17592186045418})
 
 [[:subsection {:title ":entities"}]]
@@ -206,7 +208,7 @@
 "Returns the set of datomic entities that matches the query;"
 
 (fact
-  (-> (spirit/select ds-1 :book :return :entities)
+  (-> (datomic/select ds-1 :book :return :entities)
       first
       :db/id)
   => 17592186045418)
@@ -216,7 +218,7 @@
 "The default option, returns actual data that can be governed by entries in `:pull` and `:pipeline`"
 
 (fact
-  (spirit/select ds-1 :book :return :data)
+  (datomic/select ds-1 :book :return :data)
   => #{{:book {:name "Orpheus"}}})
 
 
@@ -234,7 +236,7 @@
 "This is the default option and takes the longest time. Ensures that that generated temporary ids are resolved and that the data can be used in further transactions:"
 
 (comment
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :resolve})
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :resolve})
   ;;=> {:book {:name "The Magic School Bus"},
   ;;    :db {:id 17592186045432}}
   )
@@ -244,7 +246,7 @@
 "Waits for the result of the transaction to come back before returning the results:"
 
 (comment
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :datomic})
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :datomic})
   ;;=> {:db-before #db{1007 #inst "2016-03-16T12:23:35.761-00:00"},
   ;;    :db-after #db{1009 #inst "2016-03-16T12:25:42.566-00:00"},
   ;;    :tx-data [#datom[13194139534321 50 #inst "2016-03-16T12:25:42.566-00:00" 13194139534321 true]
@@ -257,7 +259,7 @@
 "Wraps datomic's `transact` call to return a promise:"
 
 (comment
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :promise})
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :promise})
   ;;=> #promise
   ;;    {:status :ready,
   ;;     :val {:db-before #db{1005 #inst "2016-03-16T12:23:15.992-00:00"},
@@ -272,7 +274,7 @@
 "Wraps datomic's `transact-async` call to return a promise:"
 
 (comment
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :async})
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} {:transact :async})
   ;;=> #promise
   ;;    {:status :ready,
   ;;     :val {:db-before #db{1005 #inst "2016-03-16T08:53:44.894-00:00"},
@@ -290,19 +292,19 @@
 "The first call to `insert!` looks just like any other call:"
 
 (fact
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true)
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true)
   => {:book {:name "The Magic School Bus"}, :db {:id 17592186045420}})
 
 "But notice that on the next call, the :db/id stays the same:"
 
 (fact
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true)
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true)
   => {:book {:name "The Magic School Bus"}, :db {:id 17592186045420}})
 
 "We can pass `:spirit` in as an additional parameter to retrieve the entire datastructure for the call:"
 
 (comment
-  (spirit/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true :spirit)
+  (datomic/insert! ds-1 {:book/name "The Magic School Bus"} :simulate true :spirit)
   ;; =>#spirit{:tempids ...
   ;;        :schema #schema{:book {:name :string, :author :string}},
   ;;        :pipeline nil,
@@ -325,5 +327,5 @@
 "A call to select shows that the book entry has not been added:"
 
 (fact
-  (spirit/select ds-1 :book)
+  (datomic/select ds-1 :book)
   => #{{:book {:name "Orpheus"}}})

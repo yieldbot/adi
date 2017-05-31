@@ -1,6 +1,6 @@
-(ns documentation.datomic
+(ns documentation.spirit-datomic
   (:use hara.test)
-  (:require [spirit.core :as spirit]))
+  (:require [spirit.datomic :as datomic]))
 
 [[:chapter {:title "Introduction"}]]
 
@@ -11,17 +11,17 @@
 "
 Add to `project.clj` dependencies:
 
-    [im.chit/spirit \"{{PROJECT.version}}\"]
+    [im.chit/spirit.datomic \"{{PROJECT.version}}\"]
 
-All functionality is contained in the `spirit.core` namespace:
+All functionality is contained in the `spirit.datomic` namespace:
 "
 
 (comment
-  (require '[spirit.core :as spirit]))
+  (require '[spirit.datomic :as datomic]))
 
 [[:section {:title "Outline"}]]
 
-"[spirit](https://www.github.com/zcaudate/spirit) provides the following advantages
+"[spirit.datomic](https://www.github.com/zcaudate/spirit) provides the following advantages
 
 - Using the schema as a 'type' system to process incoming data.
 - Relations mapped to nested object structures (using a graph-like notion)
@@ -53,31 +53,31 @@ All functionality is contained in the `spirit.core` namespace:
 
 "`connect!` creates a connection to a datomic datastore:"
 
-(def api-ds (spirit/connect! "datomic:mem://datomic-api" schema-api true true))
+(def api-ds (datomic/connect! "datomic:mem://datomic-api" schema-api true true))
 
 [[:section {:title "insert!"}]]
 
 "`insert!` puts data into the datastore:"
 
-(spirit/insert! api-ds
-             [{:account {:user "Anne"
-                         :books #{{:name "Watership Down"}}}}
-              {:account {:user "Bob"
-                         :books #{{:name "Canterbury Tales"}}}}])
+(datomic/insert! api-ds
+                 [{:account {:user "Anne"
+                             :books #{{:name "Watership Down"}}}}
+                  {:account {:user "Bob"
+                             :books #{{:name "Canterbury Tales"}}}}])
 
 [[:section {:title "select"}]]
 
 "`select` retrieves from the datastore by category:"
 
 (fact
-  (spirit/select api-ds :book)
+  (datomic/select api-ds :book)
   => #{{:book {:name "Watership Down"}}
        {:book {:name "Canterbury Tales"}}})
 
 "or by the spirit query syntax:"
 
 (fact
-  (spirit/select api-ds {:book/name '_})
+  (datomic/select api-ds {:book/name '_})
   => #{{:book {:name "Watership Down"}}
        {:book {:name "Canterbury Tales"}}})
 
@@ -86,7 +86,7 @@ All functionality is contained in the `spirit.core` namespace:
 "`query` retrieves results using a datomic style query"
 
 (fact 
-  (spirit/query api-ds '[:find ?self :where
+  (datomic/query api-ds '[:find ?self :where
                     [?self :book/name _]]
              [])
   => #{{:book {:name "Watership Down"}}
@@ -97,11 +97,11 @@ All functionality is contained in the `spirit.core` namespace:
 "`update!` will take a query and update all datoms that match with additional values:"
 
 (fact
-  (spirit/update! api-ds
+  (datomic/update! api-ds
                {:book/name "Watership Down"}
                {:book/author "Richard Adams"})
 
-  (spirit/select api-ds {:book/name "Watership Down"})
+  (datomic/select api-ds {:book/name "Watership Down"})
   => #{{:book {:name "Watership Down", :author "Richard Adams"}}})
 
 [[:section {:title "retract!"}]]
@@ -109,11 +109,11 @@ All functionality is contained in the `spirit.core` namespace:
 "`retract!` will take a query and retract keys in all datoms that match"
 
 (fact
-  (spirit/retract! api-ds
+  (datomic/retract! api-ds
                 {:book/name "Watership Down"}
                 [:book/author])
 
-  (spirit/select api-ds {:book/name "Watership Down"})
+  (datomic/select api-ds {:book/name "Watership Down"})
   => #{{:book {:name "Watership Down"}}})
 
 [[:section {:title "update-in!"}]]
@@ -121,12 +121,12 @@ All functionality is contained in the `spirit.core` namespace:
 "`update-in!` will take a query and update all datoms through the access path"
 
 (fact
-  (spirit/update-in! api-ds
+  (datomic/update-in! api-ds
                   {:account/user "Anne"}
                   [:account/books {:name "Watership Down"}]
                   {:author "Richard Adams"})
 
-  (spirit/select api-ds {:book/name "Watership Down"})
+  (datomic/select api-ds {:book/name "Watership Down"})
   => #{{:book {:name "Watership Down", :author "Richard Adams"}}})
 
 [[:section {:title "retract-in!"}]]
@@ -134,12 +134,12 @@ All functionality is contained in the `spirit.core` namespace:
 "`retract-in!` will take a query and retracts all keys through the access path"
 
 (fact
-  (spirit/retract-in! api-ds
+  (datomic/retract-in! api-ds
                   {:account/user "Anne"}
                   [:account/books {:name "Watership Down"}]
                   [:author])
 
-  (spirit/select api-ds {:book/name "Watership Down"})
+  (datomic/select api-ds {:book/name "Watership Down"})
   => #{{:book {:name "Watership Down"}}})
 
 
@@ -148,13 +148,13 @@ All functionality is contained in the `spirit.core` namespace:
 "`transact!` takes datomic datoms for update:"
 
 (fact
-  (spirit/transact! api-ds
-                 [{:db/id (spirit/iid :charlie)
+  (datomic/transact! api-ds
+                 [{:db/id (datomic/iid :charlie)
                    :account/user "Charlie"}])
   ;;=> [{:db {:id 17592186045423}
   ;;     :account {:user "Charlie"} }]
 
-  (spirit/select api-ds :account)
+  (datomic/select api-ds :account)
   => #{{:account {:user "Anne"}} {:account {:user "Bob"}} {:account {:user "Charlie"}}})
 
 [[:section {:title "delete!"}]]
@@ -162,11 +162,11 @@ All functionality is contained in the `spirit.core` namespace:
 "`delete!` removes entities from the datastore:"
 
 (fact
-  (spirit/delete! api-ds {:account/user "Charlie"})
+  (datomic/delete! api-ds {:account/user "Charlie"})
   ;;=> #{{:db {:id 17592186045427}
   ;;      :account {:user "Charlie"}}}
 
-  (spirit/select api-ds :account)
+  (datomic/select api-ds :account)
   => #{{:account {:user "Anne"}} {:account {:user "Bob"}}})
 
 [[:section {:title "delete-in!"}]]
@@ -174,28 +174,32 @@ All functionality is contained in the `spirit.core` namespace:
 "`delete-in!` will take a query and deletes all entities from the access path:"
 
 (fact
-  (spirit/delete-in! api-ds {:account/user "Bob"}
-                  [:account/books {:name '_}])
+  (datomic/delete-in! api-ds {:account/user "Bob"}
+                      [:account/books {:name '_}])
   ;;=> #{{:db {:id 17592186045421}
   ;;      :book {:name "Canterbury Tales"}}}
 
   
-  (spirit/select api-ds :book)
+  (datomic/select api-ds :book)
   => #{{:book {:name "Watership Down"}}})
+
+(datomic/select api-ds :book :debug)
+
+;;(datomic/insert! api-ds {:account {:user "Chris"}} :debug)
 
 [[:section {:title "delete-all!"}]]
 
 "`delete-all!` will takes a query and deletes all entities govered by the access model:"
 
 (fact
-  (spirit/delete-all! api-ds {:account/user "Anne"}
-                   :access {:account {:books :checked}})
+  (datomic/delete-all! api-ds {:account/user "Anne"}
+                       :access {:account {:books :checked}})
   ;;=> #{{:db {:id 17592186045418}}}
   ;;      :account  {:user "Anne",
   ;;                 :books #{{:name "Watership Down",
   ;;                           :+ {:db {:id 17592186045419}}}}}, 
   
-   (spirit/select api-ds :book)
+  (datomic/select api-ds :book)
   => #{})
 
 [[:section {:title "Parameters"}]]
@@ -253,19 +257,19 @@ Schema related entries:
 
 [[:chapter {:title "Schema"}]]
 
-[[:file {:src "test/documentation/datomic/schema.clj"}]]
+[[:file {:src "test/documentation/spirit_datomic/schema.clj"}]]
 
 [[:chapter {:title "Connection Params"}]]
 
-[[:file {:src "test/documentation/datomic/reserved/connection.clj"}]]
+[[:file {:src "test/documentation/spirit_datomic/reserved/connection.clj"}]]
 
 [[:chapter {:title "Schema Params"}]]
 
-[[:file {:src "test/documentation/datomic/reserved/schema.clj"}]]
+[[:file {:src "test/documentation/spirit_datomic/reserved/schema.clj"}]]
 
 [[:chapter {:title "Options"}]]
 
-[[:file {:src "test/documentation/datomic/options.clj"}]]
+[[:file {:src "test/documentation/spirit_datomic/options.clj"}]]
 
 [[:chapter {:title "Pipeline"}]]
 
@@ -273,4 +277,4 @@ Schema related entries:
 
 [[:image {:src "img/spirit-pipeline.png" :width "250px"}]]
 
-[[:file {:src "test/documentation/datomic/reserved/pipeline.clj"}]]
+[[:file {:src "test/documentation/spirit_datomic/reserved/pipeline.clj"}]]

@@ -26,30 +26,26 @@
                     {:input "test/documentation/home_spirit.clj"
                      :title "spirit"
                      :subtitle "data. simplified."}
-                    #_"datomic"
-                    #_{:input "test/documentation/datomic.clj"
+                    "datomic"
+                    {:input "test/documentation/spirit_datomic.clj"
                      :title "datomic"
-                     :subtitle "Datomic API Reference"}}}
+                     :subtitle "API Reference"}}}
   
   :distribute {:jars  :dependencies
                :files [{:type :clojure
                         :levels 1
                         :path "src"}]}
   
-  :profiles {:dev {:dependencies [[com.datomic/datomic-pro "0.9.5561"]
-                                  [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
-                                  [org.clojure/java.jdbc "0.7.0-alpha3"]
-                                  [org.postgresql/postgresql "42.1.1"]
+  :profiles {:dev {:dependencies [[com.datomic/datomic-free "0.9.5561"]
+                                  ;[com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
+                                  ;[org.clojure/java.jdbc "0.7.0-alpha3"]
+                                  ;[org.postgresql/postgresql "42.1.1"]
                                   [im.chit/lucid.publish "1.3.10"]
-                                  [im.chit/lucid.unit "1.3.10"]
+                                  [im.chit/lucid.unit    "1.3.10"]
                                   [im.chit/lucid.package "1.3.10"]
                                   [im.chit/lucid.package "1.3.10"]
                                   
                                   [im.chit/hara.test  "2.5.6"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
-                                  [cheshire "5.2.0"]]}}
-
-  :repositories {"my.datomic.com" {:url "https://my.datomic.com/repo"
-                                   :username "z@caudate.me",
-                                   :password "cb4fe259-c2c4-48eb-a25f-719a1899a03e"}})
+                                  [cheshire "5.2.0"]]}})

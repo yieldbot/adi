@@ -1,6 +1,6 @@
-(ns documentation.datomic.schema
+(ns documentation.spirit-datomic.schema
   (:use hara.test)
-  (:require [spirit.core :as spirit]))
+  (:require [spirit.datomic :as datomic]))
 
 [[:section {:title "Basics"}]]
 
@@ -96,16 +96,16 @@ Additional
 "An example can be seen below where account has references to books and books also has references to account by pluralizing:"
 
 (comment
-  (spirit/schema {:account {:book [{:type :ref
+  (datomic/schema {:account {:book [{:type :ref
                                  :ref {:ns :book}}]}
-               :book {:name [{}]}})
+                   :book {:name [{}]}})
   ;;=> #schema{:account {:book :&book}, :book {:name :string, :accounts :&account<*>}}
   )
 
 "The reverse reference can be explicitly be set via `:rval`:"
 
 (comment
-  (spirit/schema {:account {:book [{:type :ref
+  (datomic/schema {:account {:book [{:type :ref
                                  :ref {:ns :book
                                        :rval :users}}]}
                :book {:name [{}]}})
@@ -115,7 +115,7 @@ Additional
 "The reference can refer to it's own namespace:"
 
 (comment
-  (spirit/schema {:node/next [{:type :ref
+  (datomic/schema {:node/next [{:type :ref
                             :ref {:ns :node
                                   :rval :previous}}]})
   ;;=> #schema{:node {:next :&node, :previous :&node<*>}}
@@ -124,7 +124,7 @@ Additional
 "Reference to it's own without an `:rval` adds `_of` when generating the reference reference:"
 
 (comment
-  (spirit/schema {:node/link   [{:type :ref
+  (datomic/schema {:node/link   [{:type :ref
                               :ref {:ns :node}}]
                :node/parent [{:type :ref
                               :ref {:ns :node}}]})
@@ -137,7 +137,7 @@ Additional
 "Multiple references to the same namespace can also be differentiated automatically:"
 
 (comment
-  (spirit/schema {:account {:like [{:type :ref
+  (datomic/schema {:account {:like [{:type :ref
                                  :ref {:ns :book}}]
                          :dislike [{:type :ref
                                  :ref {:ns :book}}]}
@@ -183,7 +183,7 @@ Additional
 "Specifies a documentation string for the attribute"
 
 (comment
-  (spirit/schema {:node/link   [{:type :ref
+  (datomic/schema {:node/link   [{:type :ref
                               :doc "The link to the next node"
                               :ref {:ns :node}}]})
   ;;=> #schema{:node {:link :&node, :link_of :&node<*>}}

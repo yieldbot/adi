@@ -215,12 +215,12 @@
 
 (defn delete-all! [datasource data opts]
   (let [sdatasource (select/select datasource data
-                            (-> opts
-                                (merge-nested {:options {:first false
-                                                         :raw false
-                                                         :debug true}
-                                               :return :entities})
-                                (update-in [:pipeline] dissoc :pull)))
+                                   (-> opts
+                                       (merge-nested {:options {:first false
+                                                                :raw false
+                                                                :debug true}
+                                                      :return :entities})
+                                       (update-in [:pipeline] dissoc :pull)))
         entities (-> sdatasource :result :entities)
         ret-model (if-let [imodel (-> sdatasource :pipeline :allow)]
                     (model/model-unpack imodel (-> sdatasource :schema :tree))

@@ -1,16 +1,14 @@
-(ns documentation.datomic.reserved.pipeline
+(ns documentation.spirit-datomic.reserved.pipeline
   (:use hara.test)
-  (:require [spirit.core :as spirit]
-            [documentation.datomic.options :refer :all]))
-
-
+  (:require [spirit.datomic :as datomic]
+            [documentation.spirit-datomic.options :refer :all]))
 
 [[:section {:title ":pre-process"}]]
 
 "Manipulation of the datastructure before going into the pipeline. Takes one function the first the data structure"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Charlie"}
               {:pipeline {:pre-process
                           (fn [x]
@@ -20,7 +18,7 @@
 "Different options can be passed into the datastore through a second optional param: the datastore object:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Charlie"}
               {:pipeline {:pre-process
                           (fn [x spirit]
@@ -34,7 +32,7 @@
 "Checks to see if data in a certain field is availiable:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Charlie"}
               {:pipeline {:pre-require
                           {:student {:name :checked}}}})
@@ -43,7 +41,7 @@
 "If it is not, then the operation throws an error:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/classes {:subject "Math"}}
               {:pipeline {:pre-require
                           {:student {:name :checked}}}})
@@ -52,7 +50,7 @@
 "The fields are accessed in a nested fashion:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/classes {:subject "Math"}}
               {:pipeline {:pre-require
                           {:student
@@ -65,7 +63,7 @@
 "Removes an entry in the map. For example, it is currently the case that a search for student named Charlie that takes Math class does not yield any results:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:name "Charlie"
                          :classes {:subject "Math"}}})
   => #{})
@@ -73,7 +71,7 @@
 "However, we can mask the data, in this case, taking out the value for `:student/name` to only search for students that are taking Math class."
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:name "Charlie"
                          :classes {:subject "Math"}}}
               {:pipeline {:pre-mask
@@ -84,7 +82,7 @@
 "This example shows the class subject being masked:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:name "Charlie"
                          :classes {:subject "Math"}}}
               {:pipeline {:pre-mask
@@ -103,7 +101,7 @@
 "Takes one or two arguments, like `pre-process`:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:name "Charlie"
                          :classes {:subject "SCIENCE"}}}
               {:pipeline {:pre-transform
@@ -115,7 +113,7 @@
 "A more explicit version where capitalise is passed in is shown:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:name "Charlie"
                          :classes {:subject "SCIENCE"}}}
               {:fn capitalise
@@ -132,7 +130,7 @@
 "Makes sure that if a value is empty, then it will be filled either by a value"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {}
               {:pipeline {:fill-empty
                           {:student {:classes
@@ -142,7 +140,7 @@
 "Or a function:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {}
               {:params {:subject "Science"}
                :pipeline {:fill-empty
@@ -155,7 +153,7 @@
 "Again, like previous pipeline segments values can be passed in:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {}
               {:params {:subject "Science"}
                :pipeline {:fill-empty
@@ -171,7 +169,7 @@
 "Makes sure that additional values are added, in this case, we have imposed an additional restriction that the student should be taking Math as well as Science:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          {:subject "Science"}}}
               {:pipeline {:fill-assoc
@@ -182,7 +180,7 @@
 "Use of a function is also valid:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          {:subject "Science"}}}
               {:pipeline {:fill-assoc
@@ -194,7 +192,7 @@
 "Note that this will not work:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          {:subject "Science"}}}
               {:pipeline {:fill-assoc
@@ -206,7 +204,7 @@
 "This is because of the generated search query. As can be seen, for the previous case, the query generates a statement where we need to find a subject that has both `Science` and `Math` as names (which is impossible)"
 
 (comment
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          {:subject #{"Math" "Science"}}}}
               :raw)
@@ -218,7 +216,7 @@
 "Whereas the correct way, is to say that the student takes two different classes, whose names are `Math` for the first and `Science` for the second:"
 
 (comment
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          #{{:subject "Science"}
                            {:subject "Math"}}}}
@@ -234,7 +232,7 @@
 "Sometimes, there is data that is not in the schema, resulting in an exception being thrown:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:rating 10
                          :classes {:subject "Science"}}})
   => (throws))
@@ -242,7 +240,7 @@
 "Having `:ignore` params makes sure that the extra entries do not raise any issues"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:rating 10
                          :classes
                          #{{:subject "Science"}}}}
@@ -255,7 +253,7 @@
 "Allows only entries that have been specified:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          #{{:subject "Science"}}}}
               {:pipeline {:allow
@@ -267,7 +265,7 @@
 "If there is a search on entries that are not allowed, an exception will be thrown:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Anne"}
               {:pipeline {:allow
                           {:student
@@ -277,7 +275,7 @@
 "When the map is empty, everything is restricted:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes
                          #{{:subject "Science"}}}}
               {:pipeline {:allow {}}})
@@ -288,7 +286,7 @@
 "Validates the map using a function of two parameters:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Anne"}
               {:validate {:name "Anne"}
                :pipeline {:validate
@@ -302,7 +300,7 @@
 "If the validation fails, an exception is thrown:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Anne"}
               {:pipeline {:validate
                           {:student
@@ -314,7 +312,7 @@
 "Same as the `pre` and `post` transforms, just another place in the pipeline where a generic function can be used:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "anne"}
               {:pipeline {:convert
                           {:student {:name capitalise}}}})
@@ -323,7 +321,7 @@
 "Works with one or two arguments:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "anne"}
               {:fn capitalise
                :pipeline {:convert
@@ -337,7 +335,7 @@
 "Same as `:pre-require` but happens later in the pipeline:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes {:subject "Math"}}}
               {:pipeline {:fill-assoc
                           {:student {:name "Bob"}}
@@ -348,7 +346,7 @@
 "It can be seen that if the above statement was replaced with `:pre-require`, an exception would be thrown because `:fill-assoc` occurs after `:post-require` but before `:post-require`. Since that particular stage has not been run, the require check shows an empty entry:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes {:subject "Math"}}}
               {:pipeline {:fill-assoc
                           {:student {:name "Bob"}}
@@ -362,7 +360,7 @@
 "Like `:pre-mask`, but occurs after the validation and fill stages:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes {:subject "Math"}}}
               {:pipeline {:fill-assoc {:student {:name "Bob"}}
                           :post-mask
@@ -373,7 +371,7 @@
 "Compared to what happens when using `:pre-mask`:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes {:subject "Math"}}}
               {:pipeline {:fill-assoc {:student {:name "Bob"}}
                           :pre-mask
@@ -385,7 +383,7 @@
 "Like `:pre-transform` but later in the pipeline:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes {:subject "Math"}}}
               {:pipeline {:fill-assoc {:student {:name "BOB"}}
                           :post-transform
@@ -395,7 +393,7 @@
 "Compared with a similar call to `:pre-transform`:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student {:classes {:subject "Math"}}}
               {:pipeline {:fill-assoc {:student {:name "BOB"}}
                           :pre-transform
@@ -407,7 +405,7 @@
 "Final function that is called on the datastructure at the end of the pipeline:"
 
 (fact
-  (spirit/select school-ds
+  (datomic/select school-ds
               {:student/name "Charlie"}
               {:pipeline
                {:post-process

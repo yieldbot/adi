@@ -1,1 +1,0 @@
-{spirit spirit.datomic.data/iid-reader}

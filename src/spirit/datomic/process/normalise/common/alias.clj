@@ -61,7 +61,7 @@
     (let [ks (keys tdata)
           aliases (find-aliases tsch ks)
           _       (if (and (= (:command datasource) :datoms)
-                           (not (empty? alias)))
+                           (not (empty? aliases)))
                     (raise [:normalise :no-alias
                             {:data tdata :nsv nsv :key-path (:key-path interim)}]
                            (str "WRAP_ALIAS: Aliases cannot be specified on datoms")))

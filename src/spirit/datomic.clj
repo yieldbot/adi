@@ -53,13 +53,19 @@
     :raw
     :debug})
 
-(defn connect! [uri schema & [reset? install-schema?]]
-  (let [opts  (cond (string? uri) {:uri uri}
-                    (map? uri) uri)
-        schema (schema/schema schema base/all-auto-defaults)]
-    (-> (types/datomic (assoc opts :schema schema))
-        (component/start {:hooks {:pre-start (if reset? [:delete-database])
-                                  :post-start (if install-schema? [:install-schema])}}))))
+(defn connect!
+  ([{:keys [uri schema reset? install-schema?] :as args}]
+   (let [opts (dissoc args :uri :schema :reset? :install-schema?)]
+     (connect! uri schema reset? install-schema? opts)))
+  ([uri schema & [reset? install-schema? opts]]
+   (let [m (cond (string? uri) {:uri uri}
+                 (map? uri) uri)
+         schema (schema/schema schema base/all-auto-defaults)]
+     (-> (merge m opts)
+         (assoc :schema schema)
+         (types/datomic)
+         (component/start {:hooks {:pre-start (if reset? [:delete-database])
+                                   :post-start (if install-schema? [:install-schema])}})))))
 
 (defn disconnect! [datasource]
   (component/stop datasource))
@@ -133,20 +139,3 @@
         forms (filter identity (map #(create-data-form % sourcesym) trns))]
     `(let [~sourcesym  (prepare/prepare ~datasource (assoc ~opts :transact :datomic) nil)]
        (transact! ~sourcesym (concat ~@forms)))))
-
-
-(comment
-  (def ds (connect! {:type     :datomic
-                     :protocol :mem
-                     :name "spirit-test"}
-                    {:account {:user [{:required true}]}}
-                    true true))
-  
-  (insert! ds {:account/user "Hello"} :raw)
-  
-  (insert! ds {:account {:user "Heeuello"}} :debug)
-  
-  (insert! ds [{:account/user "A"} {:account/user "B"} {:account/user "C"}])
-  
-  (select ds :account :ids)
-  )
