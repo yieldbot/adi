@@ -25,7 +25,7 @@
                        {:schema (schema/schema examples/account-orders-items-image)}
                        {:normalise [wrap-ref-path wrap-plus]})
 
-  => (raises-issue {:ref-path
+  => (throws-info {:ref-path
                     [{:account {:orders {:+ {:account {:WRONG \"Chris\"}}}}}
                      {:account {:WRONG \"Chris\"}}]})"
   {:added "0.3"}
@@ -40,7 +40,7 @@
                        {:normalise [wrap-plus]
                         :normalise-branch [wrap-key-path]
                         :normalise-attr [wrap-key-path]})
-  =>  (raises-issue {:key-path [:account :orders :+ :account]})"
+  =>  (throws-info {:key-path [:account :orders :+ :account]})"
   {:added "0.3"}
   [f]
   (fn [tdata tsch nsv interim fns datasource]

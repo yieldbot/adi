@@ -16,7 +16,7 @@
                        {:schema (schema/schema examples/account-name-age-sex)
                         :pipeline {:pre-require {:account {:name :checked}}}}
                        *wrappers*)
-  => (raises-issue {:nsv [:account :name]
+  => (throws-info {:nsv [:account :name]
                     :no-required true})"
   {:added "0.3"}
   [req require-key tdata nsv tsch datasource]
@@ -66,7 +66,7 @@
               {:schema (schema/schema examples/account-orders-items-image)
                :pipeline {:pre-require {:account {:orders {:number :checked}}}}}
               *wrappers*)
-  => (raises-issue {:data {:items {:name \"stuff\"}}
+  => (throws-info {:data {:items {:name \"stuff\"}}
                     :nsv [:order :number]
                     :no-required true})"
   {:added "0.3"}

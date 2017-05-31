@@ -93,13 +93,13 @@
   has to contain at least one integer:"
 
   (spirit/insert! ds {:account {:user "spirit" :password "hello"}})
-  => (raises-issue {:failed-restriction true})
+  => (throws-info {:failed-restriction true})
 
   "Any data that lies outside of the schema will also cause the insert to fail. This can be disabled
   through using access models but for now, we will let the insert fail on insertion of an `:account/type` field"
 
   (spirit/insert! ds {:account {:user "spirit" :password "hello1" :type :vip}})
-  => (raises-issue {:nsv [:account :type] :no-schema true})
+  => (throws-info {:nsv [:account :type] :no-schema true})
 
   "Field uniqueness is something that datomic supports natively. We can trigger a failed
   transaction by attempting to insert another user named `billy` into the system:"

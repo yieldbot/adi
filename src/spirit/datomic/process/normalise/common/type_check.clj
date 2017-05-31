@@ -8,7 +8,7 @@
   (normalise/normalise {:account {:age \"10\"}}
                        {:schema (schema/schema examples/account-name-age-sex)}
                        {:normalise-single [wrap-single-type-check]})
-  => (raises-issue {:type :long,
+  => (throws-info {:type :long,
                     :data \"10\",
                     :wrong-type true})
 
@@ -20,15 +20,17 @@
   {:added "0.3"}
   [f]
   (fn [subdata [attr] nsv interim fns spirit]
+    
     (let [t (:type attr)
           chk (base/type-checks t)]
+      (base/type-checks :long)
       (cond
-       (chk subdata) (f subdata [attr] nsv interim fns spirit)
+        (chk subdata) (f subdata [attr] nsv interim fns spirit)
 
-       (-> spirit :options :use-coerce)
-       (f (coerce subdata t) [attr] nsv interim fns spirit)
-
-       :else
-       (raise [:normalise :wrong-type
-               {:data subdata :nsv nsv :key-path (:key-path interim) :type t}]
+        (-> spirit :options :use-coerce)
+        (f (coerce subdata t) [attr] nsv interim fns spirit)
+        
+        :else
+        (raise [:normalise :wrong-type
+                {:data subdata :nsv nsv :key-path (:key-path interim) :type t}]
                (str "WRAP_SINGLE_TYPE_CHECK: " subdata " in " nsv " is not of type " t))))))

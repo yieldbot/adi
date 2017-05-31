@@ -133,7 +133,7 @@ namespace:"
                                  :credits :unchecked
                                  :type :unchecked}})
 
-  => (raises-issue {:key-path [:account :books :author]
+  => (throws-info {:key-path [:account :books :author]
                     :nsv [:book :author]
                     :data "Victor Hugo"
                     :not-allowed true})

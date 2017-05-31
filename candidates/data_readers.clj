@@ -1,1 +1,1 @@
-{spirit spirit.data.common/iid-reader}
+{spirit spirit.datomic.data/iid-reader}

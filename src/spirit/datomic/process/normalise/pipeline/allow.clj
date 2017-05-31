@@ -9,7 +9,7 @@
                        {:schema (schema/schema examples/account-name-age-sex)
                         :pipeline {:allow {}}}
                        *wrappers*)
-  => (raises-issue {:data {:name \"Chris\"}
+  => (throws-info {:data {:name \"Chris\"}
                     :key-path [:account]
                     :normalise true
                     :not-allowed true

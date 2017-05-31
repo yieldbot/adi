@@ -9,7 +9,7 @@
   => [:user]
 
   (rep-key (:order examples/account-orders-items-image))
-  => (raises-issue {:needs-require-key true})"
+  => (throws-info {:needs-require-key true})"
   {:added "0.3"}
   ([tsch]
      (rep-key tsch []))

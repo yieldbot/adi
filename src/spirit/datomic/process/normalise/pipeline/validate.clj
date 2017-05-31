@@ -9,7 +9,7 @@
                      {:schema (schema/schema examples/account-name-age-sex)
                       :pipeline {:validate {:account {:name number?}}}}
                      *wrappers*)
-  => (raises-issue {:not-validated true :nsv [:account :name]})
+  => (throws-info {:not-validated true :nsv [:account :name]})
 
   (normalise/normalise {:account/name \"Bob\"}
                        {:schema (schema/schema examples/account-name-age-sex)
