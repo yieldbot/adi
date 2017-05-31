@@ -1,0 +1,105 @@
+<html>
+  <head>
+    <meta content=\"chrome=1\" http-equiv=\"X-UA-Compatible\" />
+    <meta charset=\"utf-8\" /><meta content=\"width=device-width, initial-scale=1, user-scalable=no\" name=\"viewport\" />
+    <link rel="icon" href="favicon.ico?v=2" type="image/x-icon" />
+    <title>spirit - data. simplified.</title>
+    <script src="js/highlight.min.js"></script>
+    <script src="js/gumshoe.min.js"></script>
+    <script src="js/smooth-scroll.min.js"></script>
+
+    <link rel="stylesheet" href="css/page.css">
+    <link rel="stylesheet" href="css/api.css">
+    <link rel="stylesheet" href="css/code.css">
+    <link rel="stylesheet" href="css/highlight.css">
+  </head>
+    
+  <body>
+    <header class="top">
+      <ul><li><a href="index.html">home</a></li><li><a href="datomic.html">datomic</a></li></ul>
+    </header>
+    <header>      
+      <div class="heading">
+        <h1>spirit</h1>
+        <h3>data. simplified.</h3>
+        <hr/>
+        <div class=\"info\">
+          <h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5>
+          <h5>Date: 31 May 2017</h5>
+          <h5>Repository: <a href="https://www.github.com/zcaudate/spirit">https://www.github.com/zcaudate/spirit</a></h5>
+          <h5>Version: 0.5.1</h5>
+        </div>
+        <br/>
+        <hr/>
+      </div>
+
+      <h4><a href="#overview">1 &nbsp; Overview</a></h4><h5>&nbsp;&nbsp;<i><a href="#introduction">1.1 &nbsp; Introduction</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#installation">1.2 &nbsp; Installation</a></i></h5><h4><a href="#walkthrough">2 &nbsp; Walkthrough</a></h4>
+      <!--nav data-gumshoe-header>
+        <ul data-gumshoe>
+          <a data-scroll class="top" href="#page-top">TOP</a>
+        </ul>
+      </nav-->
+      <br/>
+      <br/>
+    </header>
+    
+    <div class="content">
+      <section>
+        <div class="heading">
+          <h1>spirit</h1>
+          <h3>data. simplified.</h3>
+          <hr/>
+          <div class=\"info\">
+            <h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5>
+            <h5>Date: 31 May 2017</h5>
+            <h5>Repository: <a href="https://www.github.com/zcaudate/spirit">https://www.github.com/zcaudate/spirit</a></h5>
+            <h5>Version: 0.5.1</h5>
+          </div>
+          <br/>
+          <hr/>
+        </div>
+        <div><span id="overview"></span><h2><b>1 &nbsp;&nbsp; Overview</b></h2></div><div><span id="introduction"></span><h3>1.1 &nbsp;&nbsp; Introduction</h3></div><div><p><a href='https://www.github.com/zcaudate/spirit'>spirit</a> makes working with data easy. As a result, <a href='https://www.github.com/zcaudate/spirit'>spirit</a> makes creating complex applications easy. Created around <a href='http://www.datomic.com/'>datomic</a> by enabling simplification of its API, spirit was especially designed to model data and the complexities around relationships.</p><p>The key to understanding any application lies with understanding how data flows through the system. Therefore, the database schema is central to any complex piece of software. <a href='https://www.github.com/zcaudate/spirit'>spirit</a> takes this one step further by capturing not only the schema, but also how data is transformed between different datastores. In this way, a common thread is established between all stores of data (document database, relational database, document search) within an application, reducing complexity and mental load through having a single source of truth.</p></div><div><span id="installation"></span><h3>1.2 &nbsp;&nbsp; Installation</h3></div><div><p>Add to <code>project.clj</code> dependencies:</p><pre><code>&#91;im.chit/spirit &quot;0.5.1&quot;&#93;</code></pre></div><div><span id="walkthrough"></span><h2><b>2 &nbsp;&nbsp; Walkthrough</b></h2></div>
+      </section>
+    </div>
+  </body>
+  
+  <script type="text/javascript">
+    if (true) {
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-31320512-2', 'caudate.me');
+      ga('send', 'pageview');
+    }
+  </script>
+  
+  <script type="text/javascript">
+    var metas = document.getElementsByTagName('meta');
+    var i;
+    if (navigator.userAgent.match(/iPhone/i)) {
+      for (i=0; i<metas.length; i++) {
+        if (metas[i].name == "viewport") {
+          metas[i].content = "width=device-width, minimum-scale=1.0, maximum-scale=1.0";
+        }
+      }
+      document.addEventListener("gesturestart", gestureStart, false);
+    }
+    function gestureStart() {
+      for (i=0; i<metas.length; i++) {
+        if (metas[i].name == "viewport") {
+          metas[i].content = "width=device-width, minimum-scale=0.25, maximum-scale=1.6";
+        }
+      }
+    }
+  </script>
+  
+  <script type="text/javascript">
+    
+    //smoothScroll.init();
+    //gumshoe.init();
+    
+    hljs.registerLanguage("clojure",function(e){var t={"builtin-name":"def defonce cond apply if-not if-let if not not= = < > <= >= == + / * - rem quot neg? pos? delay? symbol? keyword? true? false? integer? empty? coll? list? set? ifn? fn? associative? sequential? sorted? counted? reversible? number? decimal? class? distinct? isa? float? rational? reduced? ratio? odd? even? char? seq? vector? string? map? nil? contains? zero? instance? not-every? not-any? libspec? -> ->> .. . inc compare do dotimes mapcat take remove take-while drop letfn drop-last take-last drop-while while intern condp case reduced cycle split-at split-with repeat replicate iterate range merge zipmap declare line-seq sort comparator sort-by dorun doall nthnext nthrest partition eval doseq await await-for let agent atom send send-off release-pending-sends add-watch mapv filterv remove-watch agent-error restart-agent set-error-handler error-handler set-error-mode! error-mode shutdown-agents quote var fn loop recur throw try monitor-enter monitor-exit defmacro defn defn- macroexpand macroexpand-1 for dosync and or when when-not when-let comp juxt partial sequence memoize constantly complement identity assert peek pop doto proxy defstruct first rest cons defprotocol cast coll deftype defrecord last butlast sigs reify second ffirst fnext nfirst nnext defmulti defmethod meta with-meta ns in-ns create-ns import refer keys select-keys vals key val rseq name namespace promise into transient persistent! conj! assoc! dissoc! pop! disj! use class type num float double short byte boolean bigint biginteger bigdec print-method print-dup throw-if printf format load compile get-in update-in pr pr-on newline flush read slurp read-line subvec with-open memfn time re-find re-groups rand-int rand mod locking assert-valid-fdecl alias resolve ref deref refset swap! reset! set-validator! compare-and-set! alter-meta! reset-meta! commute get-validator alter ref-set ref-history-count ref-min-history ref-max-history ensure sync io! new next conj set! to-array future future-call into-array aset gen-class reduce map filter find empty hash-map hash-set sorted-map sorted-map-by sorted-set sorted-set-by vec vector seq flatten reverse assoc dissoc list disj get union difference intersection extend extend-type extend-protocol int nth delay count concat chunk chunk-buffer chunk-append chunk-first chunk-rest max min dec unchecked-inc-int unchecked-inc unchecked-dec-inc unchecked-dec unchecked-negate unchecked-add-int unchecked-add unchecked-subtract-int unchecked-subtract chunk-next chunk-cons chunked-seq? prn vary-meta lazy-seq spread list* str find-keyword keyword symbol gensym force rationalize"},r="a-zA-Z_\\-!.?+*=<>&#'",n="["+r+"]["+r+"0-9/;:]*",a="[-+]?\\d+(\\.\\d+)?",o={b:n,r:0},s={cN:"number",b:a,r:0},i=e.inherit(e.QSM,{i:null}),c=e.C(";","$",{r:0}),d={cN:"literal",b:/\b(true|false|nil)\b/},l={b:"[\\[\\{]",e:"[\\]\\}]"},m={cN:"comment",b:"\\^"+n},p=e.C("\\^\\{","\\}"),u={cN:"symbol",b:"[:]{1,2}"+n},f={b:"\\(",e:"\\)"},h={eW:!0,r:0},y={k:t,l:n,cN:"name",b:n,starts:h},b=[f,i,m,p,c,u,l,s,d,o];return f.c=[e.C("comment",""),y,h],h.c=b,l.c=b,{aliases:["clj"],i:/\S/,c:[f,i,m,p,c,u,l,s,d]}});
+    hljs.initHighlightingOnLoad();
+  </script>
+  </html>
