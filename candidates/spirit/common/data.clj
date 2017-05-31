@@ -1,2 +1,0 @@
-(ns spirit.common.data)
-
