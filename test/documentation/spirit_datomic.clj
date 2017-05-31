@@ -6,13 +6,9 @@
 
 "[spirit](https://www.github.com/zcaudate/spirit) provides a simple, intuitive data layer to access datomic using a document-based syntax, as well as a data-processing pipeline for fine-grain manipulation and access of data."
 
-[[:section {:title "Installation"}]]
+[[:section {:title "Required"}]]
 
 "
-Add to `project.clj` dependencies:
-
-    [im.chit/spirit.datomic \"{{PROJECT.version}}\"]
-
 All functionality is contained in the `spirit.datomic` namespace:
 "
 
