@@ -11,8 +11,10 @@
                  [im.chit/hara.event     "2.5.6"]
                  [im.chit/hara.function  "2.5.6"]
                  [im.chit/hara.string    "2.5.6"]
-                 [inflections "0.9.14"]]
-  
+                 [inflections "0.9.14"]
+                 [clj-http-lite "0.3.0"]
+                 [cheshire "5.6.1"]
+                 [com.rabbitmq/amqp-client "4.1.0"]]  
   :publish {:theme  "mormont"
             
             :template {:site   "spirit"
@@ -29,7 +31,11 @@
                     "spirit-datomic"
                     {:input "test/documentation/spirit_datomic.clj"
                      :title "datomic"
-                     :subtitle "spirit.datomic API Reference"}}}
+                     :subtitle "spirit.datomic API Reference"}
+                    "spirit-rabbitmq"
+                    {:input "test/documentation/spirit_rabbitmq.clj"
+                     :title "rabbitmq"
+                     :subtitle "spirit.rabbitmq API Reference"}}}
   
   :distribute {:jars  :dependencies
                :files [{:type :clojure

@@ -1,6 +1,6 @@
 (ns spirit.common.schema.ref
   (:require [spirit.common.schema.find :as find]
-            [spirit.common.keys :as keys]
+            [spirit.common.data.keys :as keys]
             [hara.string.path :as path]
             [hara.common.error :refer [error]]
             [inflections.core :as inf]))

@@ -1,4 +1,4 @@
-(ns spirit.common.coerce
+(ns spirit.common.data.coerce
   (:require [clojure.edn :as edn]
             [hara.event :refer [raise]]
             [hara.common

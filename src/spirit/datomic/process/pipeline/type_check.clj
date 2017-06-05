@@ -1,5 +1,5 @@
 (ns spirit.datomic.process.pipeline.common.type-check
-  (:require [spirit.common.coerce :refer [coerce]]
+  (:require [spirit.common.data.coerce :refer [coerce]]
             [spirit.common.schema.base :as base]
             [spirit.datomic.schema.base]
             [hara.event :refer [raise]]))
