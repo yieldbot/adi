@@ -15,7 +15,7 @@
              [link :as link]
              [depack :as depack]]
             [spirit.datomic.process
-             [normalise :as normalise]
+             [pipeline :as pipeline]
              [pack :as pack]
              [unpack :as unpack]
              [emit :as emit]]
@@ -26,7 +26,7 @@
 (defn gen-datoms [datasource]
   (-> datasource
       (assoc :command :datoms)
-      (normalise/normalise)
+      (pipeline/normalise)
       (pack/pack)
       (emit/emit)))
 

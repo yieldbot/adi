@@ -7,7 +7,7 @@
             [spirit.datomic.core
              [prepare :as prepare]]
             [spirit.datomic.process
-             [normalise :as normalise]
+             [pipeline :as pipeline]
              [pack :as pack]
              [emit :as emit]
              [unpack :as unpack]]
@@ -77,7 +77,7 @@
                  :schema-restrict
                  :schema-defaults)
       (assoc :command :query)
-      (normalise/normalise)
+      (pipeline/normalise)
       (pack/pack)
       (emit/emit)))
 

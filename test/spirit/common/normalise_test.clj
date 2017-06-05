@@ -1,16 +1,16 @@
-(ns spirit.common.normalise-test
+(ns spirit.common.pipeline-test
   (:use hara.test)
-  (:require [spirit.common.normalise :refer :all]
+  (:require [spirit.common.pipeline :refer :all]
             [spirit.common.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.common.normalise/submaps :added "0.3"}
+^{:refer spirit.common.pipeline/submaps :added "0.3"}
 (fact "creates a submap based upon a lookup subkey"
   (submaps {:allow  {:account :check}
             :ignore {:account :check}} #{:allow :ignore} :account)
   => {:allow :check, :ignore :check})
 
-^{:refer spirit.common.normalise/normalise :added "0.3"}
+^{:refer spirit.common.pipeline/normalise :added "0.3"}
 (fact "base normalise function for testing purposes"
 
   (normalise {:account/name "Chris"
@@ -29,7 +29,7 @@
              :value "hello"}})
 
 
-^{:refer spirit.common.normalise/wrap-plus :added "0.3"}
+^{:refer spirit.common.pipeline/wrap-plus :added "0.3"}
 (fact "Allows additional attributes (besides the link :ns) to be added to the entity"
   (normalise {:account {:orders {:+ {:account {:user "Chris"}}}}}
              {:schema (schema/schema examples/account-orders-items-image)}
@@ -41,7 +41,7 @@
              {})
   => (throws))
 
-^{:refer spirit.common.normalise/wrap-ref-path :added "0.3"}
+^{:refer spirit.common.pipeline/wrap-ref-path :added "0.3"}
 (fact "Used for tracing the entities through `normalise`"
   (normalise {:account {:orders {:+ {:account {:WRONG "Chris"}}}}}
              {:schema (schema/schema examples/account-orders-items-image)}
@@ -51,7 +51,7 @@
                     [{:account {:orders {:+ {:account {:WRONG "Chris"}}}}}
                      {:account {:WRONG "Chris"}}]}))
 
-^{:refer spirit.common.normalise/wrap-key-path :added "0.3"}
+^{:refer spirit.common.pipeline/wrap-key-path :added "0.3"}
 (fact "Used for tracing the keys through `normalise`"
   (normalise {:account {:orders {:+ {:account {:WRONG "Chris"}}}}}
              {:schema (schema/schema examples/account-orders-items-image)}
