@@ -55,4 +55,6 @@
   (filter (fn [m] (-> m :auto))
           (map defaults datomic-meta)))
 
-
+(defmethod common/type-checks :datomic
+  [_ k]
+  (type-checks k))

@@ -1,5 +1,5 @@
 (ns spirit.common.schema.base
-  (:require [hara.common.checks :refer [boolean?]]))
+  (:require [hara.common.checks :refer [boolean? long? double?]]))
 
 (def base-meta
   {:ident        {:required true
@@ -72,3 +72,14 @@
   ([meta]
    (filter (fn [m] (-> m :default nil? not))
            (map defaults meta))))
+
+(defmulti type-checks (fn [t k] t))
+
+(defmethod type-checks :default
+  [_ k]
+  (get {:string string?
+        :boolean boolean?
+        :long long?
+        :float float?
+        :double double?}
+       k))

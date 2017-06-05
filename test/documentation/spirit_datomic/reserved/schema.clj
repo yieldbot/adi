@@ -20,7 +20,7 @@
 "A single book is entered:"
 
 (datomic/insert! book-ds {:book {:name "The Magicians"
-                             :author "Lev Grossman"}})
+                                 :author "Lev Grossman"}})
 
 "And then accessed:"
 
@@ -82,12 +82,12 @@
 
 (datomic/insert! store-ds
              {:store {:name "Happy Books"
-                      :inventory #{{:count 10
+                      :inventory [{:count 10
                                     :book {:name "The Magicians"
                                            :author "Lev Grossman"}}
-                                   {:count 8
-                                    :book {:name "The Color of Magic"
-                                           :author "Terry Pratchett"}}}}})
+                                  {:count 8
+                                   :book {:name "The Color of Magic"
+                                          :author "Terry Pratchett"}}]}})
 
 [[:subsection {:title "defaults"}]]
 
@@ -115,9 +115,9 @@
   (datomic/select store-ds :store
               :pull {:store {:inventory {:book :id}}}
               :first)
-  => {:store {:name "Happy Books",
-              :inventory #{{:count 8, :book 17592186045422}
-                           {:count 10, :book 17592186045420}}}})
+  => (contains-in {:store {:name "Happy Books",
+                           :inventory #{{:count 8, :book number?}
+                                        {:count 10, :book number?}}}}))
 
 [[:subsection {:title "forward walk"}]]
 

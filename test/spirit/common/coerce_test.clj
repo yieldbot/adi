@@ -15,7 +15,7 @@
 
   (coerce  "2017-05-25T17:29:46.000Z" :instant)
   => (java.util.Date. 117 4 25 17 29 46)
-
+  
   (coerce "2017-05-25T17:29:46Z" :instant)
   => (java.util.Date. 117 4 25 17 29 46)
 
