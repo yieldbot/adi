@@ -2,8 +2,8 @@
   (:require [spirit.rabbitmq.http
              [api :as api]
              [request :as request]]
-            [spirit.rabbitmq.common :as common]
-            [spirit.rabbitmq.protocol :as interface]
+            [spirit.common.queue :as common]
+            [spirit.protocol.iqueue :as interface]
             [hara.component :as component])
   (:import java.net.URLEncoder))
 

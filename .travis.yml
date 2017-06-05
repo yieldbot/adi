@@ -3,6 +3,6 @@ lein: lein2
 script: lein2 test
 jdk: oraclejdk8
 services:
-  - cassandra
-  - elasticsearch
   - rabbitmq
+#  - cassandra
+#  - elasticsearch

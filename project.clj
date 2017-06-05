@@ -1,16 +1,16 @@
-(defproject im.chit/spirit "0.5.1"
+(defproject im.chit/spirit "0.5.2"
   :description "data. simplified"
   :url "https://www.github.com/zcaudate/spirit"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
   :aliases {"test" ["run" "-m" "hara.test" "exit"]}
   :dependencies [[org.clojure/clojure    "1.8.0"]
-                 [im.chit/hara.common    "2.5.6"]
-                 [im.chit/hara.component "2.5.6"]
-                 [im.chit/hara.data      "2.5.6"]
-                 [im.chit/hara.event     "2.5.6"]
-                 [im.chit/hara.function  "2.5.6"]
-                 [im.chit/hara.string    "2.5.6"]
+                 [im.chit/hara.common    "2.5.7"]
+                 [im.chit/hara.component "2.5.7"]
+                 [im.chit/hara.data      "2.5.7"]
+                 [im.chit/hara.event     "2.5.7"]
+                 [im.chit/hara.function  "2.5.7"]
+                 [im.chit/hara.string    "2.5.7"]
                  [inflections "0.9.14"]
                  [clj-http-lite "0.3.0"]
                  [cheshire "5.6.1"]
@@ -50,7 +50,7 @@
                                   [im.chit/lucid.unit    "1.3.10"]
                                   [im.chit/lucid.package "1.3.10"]
                                   [im.chit/lucid.package "1.3.10"]
-                                  [im.chit/hara.test  "2.5.6"]
+                                  [im.chit/hara.test  "2.5.7"]
                                   [clj-time "0.11.0"]
                                   [me.raynes/fs "1.4.6"]
                                   [cheshire "5.2.0"]]}})
