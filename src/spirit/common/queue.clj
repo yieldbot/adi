@@ -142,7 +142,7 @@
 
   Object
   (toString [mq]
-    (str "#" (queue/routing mq {:short {}})))
+    (str "#" (routing mq {:short {}})))
 
   interface/IQueue
   (-list-queues     [mq]
@@ -154,7 +154,7 @@
   
   (-add-queue       [mq name opts]
     (swap! state update-in [:queues] assoc name
-           (atom {:meta (merge queue/*default-queue-options* opts)}))
+           (atom {:meta (merge *default-queue-options* opts)}))
     mq)
   
   (-delete-queue    [mq name]
@@ -170,7 +170,7 @@
   
   (-add-exchange    [mq name opts]
     (swap! state update-in [:exchanges] assoc name
-           (atom {:meta (merge queue/*default-exchange-options* opts)}))
+           (atom {:meta (merge *default-exchange-options* opts)}))
     mq)
   
   (-delete-exchange [mq name]
@@ -193,7 +193,7 @@
   (-bind-exchange   [mq source dest opts]
     (let [source-atm (get-in @state [:exchanges source])
           dest-atm   (get-in @state [:exchanges dest])
-          bind-opts  (merge queue/*default-binding-options*
+          bind-opts  (merge *default-binding-options*
                             opts
                             {:type :exchange :source source :dest dest})]
       (add-watch source-atm (:id opts)
@@ -207,7 +207,7 @@
   (-bind-queue      [mq source dest opts]
     (let [source-atm (get-in @state [:exchanges source])
           dest-atm   (get-in @state [:queues dest])
-          bind-opts  (merge queue/*default-binding-options*
+          bind-opts  (merge *default-binding-options*
                             opts
                             {:type :queue :source source :dest dest})]
       (add-watch source-atm (:id opts)
