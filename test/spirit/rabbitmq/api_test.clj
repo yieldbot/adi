@@ -1,6 +1,6 @@
-(ns spirit.rabbitmq.http.api-test
+(ns spirit.rabbitmq.api-test
   (:use hara.test)
-  (:require [spirit.rabbitmq.http.api :refer :all]))
+  (:require [spirit.rabbitmq.api :refer :all]))
 
 ^{:refer spirit.rabbitmq.http.api/classify-args :added "0.5"}
 (fact "classify-args for generating api string"

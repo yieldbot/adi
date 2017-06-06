@@ -1,5 +1,5 @@
-(ns spirit.rabbitmq.http.api
-  (:require [spirit.rabbitmq.http.request :as request]
+(ns spirit.rabbitmq.api
+  (:require [spirit.rabbitmq.request :as request]
             [clojure.string :as string])
   (:refer-clojure :exclude [methods]))
 
@@ -27,34 +27,34 @@
    "channels/{%1:name}"           {:methods #{:get}}
 
    "consumers"                    {:methods #{:get}}
-   "consumers/{vhost}"            {:methods #{:get}}
+   "consumers/{vhost-encode}"            {:methods #{:get}}
 
    "exchanges"                    {:methods #{:get}}
-   "exchanges/{vhost}"            {:methods #{:get}}
-   "exchanges/{vhost}/{%1:name}"       {:methods #{:get :post :delete}}
-   "exchanges/{vhost}/{%1:name}/bindings/source"        {:methods #{:get}}
-   "exchanges/{vhost}/{%1:name}/bindings/destination"   {:methods #{:get}}
-   "exchanges/{vhost}/{%1:name}/publish"                {:methods #{:post}}
+   "exchanges/{vhost-encode}"            {:methods #{:get}}
+   "exchanges/{vhost-encode}/{%1:name}"       {:methods #{:get :post :delete}}
+   "exchanges/{vhost-encode}/{%1:name}/bindings/source"        {:methods #{:get}}
+   "exchanges/{vhost-encode}/{%1:name}/bindings/destination"   {:methods #{:get}}
+   "exchanges/{vhost-encode}/{%1:name}/publish"                {:methods #{:post}}
    
    "queues"                       {:methods #{:get}}
-   "queues/{vhost}"               {:methods #{:get}}
+   "queues/{vhost-encode}"               {:methods #{:get}}
 
    ;; :put {"auto_delete":false,"durable":true,"arguments":{},"node":"rabbit@smacmullen"}
    ;; :delete :query-params if-empty=true/if-unused=true
-   "queues/{vhost}/{%1:name}"          {:methods #{:get :put :delete}} 
+   "queues/{vhost-encode}/{%1:name}"          {:methods #{:get :put :delete}} 
 
-   "queues/{vhost}/{%1:name}/bindings"    {:methods #{:get}}
-   "queues/{vhost}/{%1:name}/contents"    {:methods #{:delete}}
-   "queues/{vhost}/{%1:name}/actions"     {:methods #{:post}}  ;; {"action":"sync"}
-   "queues/{vhost}/{%1:name}/get"         {:methods #{:post}}  ;; {"count":5,"requeue":true,"encoding":"auto","truncate":50000}
+   "queues/{vhost-encode}/{%1:name}/bindings"    {:methods #{:get}}
+   "queues/{vhost-encode}/{%1:name}/contents"    {:methods #{:delete}}
+   "queues/{vhost-encode}/{%1:name}/actions"     {:methods #{:post}}  ;; {"action":"sync"}
+   "queues/{vhost-encode}/{%1:name}/get"         {:methods #{:post}}  ;; {"count":5,"requeue":true,"encoding":"auto","truncate":50000}
 
    "bindings"                               {:methods #{:get}}
-   "bindings/{vhost}"                       {:methods #{:get}}
-   "bindings/{vhost}/e/{%1:source}/q/{%2:dest}"         {:methods #{:get :post}}
-   "bindings/{vhost}/e/{%1:source}/q/{%2:dest}/props"   {:methods #{:get :delete}}
+   "bindings/{vhost-encode}"                       {:methods #{:get}}
+   "bindings/{vhost-encode}/e/{%1:source}/q/{%2:dest}"         {:methods #{:get :post}}
+   "bindings/{vhost-encode}/e/{%1:source}/q/{%2:dest}/props"   {:methods #{:get :delete}}
    
-   "bindings/{vhost}/e/{%1:source}/e/{%2:dest}"         {:methods #{:get :post}}
-   "bindings/{vhost}/e/{%1:source}/e/{%2:dest}/props"   {:methods #{:get :delete}}
+   "bindings/{vhost-encode}/e/{%1:source}/e/{%2:dest}"         {:methods #{:get :post}}
+   "bindings/{vhost-encode}/e/{%1:source}/e/{%2:dest}/props"   {:methods #{:get :delete}}
    
    "vhosts"                                  {:methods #{:get}}
    "vhosts/{%1:vhost}"                       {:methods #{:get :put :delete}}
@@ -66,76 +66,65 @@
    "whoami"                                  {:methods #{:get}}
 
    "permissions"                             {:methods #{:get}}
-   "permissions/{vhost}/{%1:user}"           {:methods #{:get :put :delete}}
+   "permissions/{vhost-encode}/{%1:user}"           {:methods #{:get :put :delete}}
 
    "parameters"                              {:methods #{:get}}
    "parameters/{%1:param}"                   {:methods #{:get}}
-   "parameters/{%1:param}/{vhost}"           {:methods #{:get}}
-   "parameters/{%1:param}/{vhost}/{%2:name}" {:methods #{:get :put :delete}}
+   "parameters/{%1:param}/{vhost-encode}"           {:methods #{:get}}
+   "parameters/{%1:param}/{vhost-encode}/{%2:name}" {:methods #{:get :put :delete}}
 
    "policies"                                {:methods #{:get}}
-   "policies/{vhost}"                     {:methods #{:get}}
-   "policies/{vhost}/{%1:name}"           {:methods #{:get :put :delete}}
+   "policies/{vhost-encode}"                     {:methods #{:get}}
+   "policies/{vhost-encode}/{%1:name}"           {:methods #{:get :put :delete}}
 
-   "aliveness-test/{vhost}"               {:methods #{:get}}})
+   "aliveness-test/{vhost-encode}"               {:methods #{:get}}})
 
-(def methods
-  {:overview        {:link  "overview"}
-   :cluster-name    {:link "cluster-name"
-                     :methods {:setter :put}}
-   :extensions      {:link "extensions"}
-   :definitions     {:link "definitions"
-                     :methods {:setter :post}}
-   
-   :get-node        {:link "nodes/{%1:name}"}
-   :list-nodes      {:link "nodes"}
-
-   :vhost           {:type :form
-                     :link "vhosts/{%1:vhost}"
-                     :methods #{:get :put :delete}}
-   :list-vhosts     {:link "vhosts"}
-   
-   :queue           {:type :form
-                     :link "queues/{vhost}/{%1:name}"
-                     :methods #{:get :put :delete}}
-   :list-queues     {:link "queues/{vhost}"}
-   ;;:all-queues      {:link "queues"}
-   
-   :exchange        {:type :form
-                     :link "exchanges/{vhost}/{%1:name}"
-                     :methods #{:get :put :delete}}
-   :list-exchanges  {:link "exchanges/{vhost}"}
-   ;;:all-exchanges   {:link "exchanges"}
-   
-   :permissions     {:type :form
-                     :link "permissions/{vhost}/{%1:user}"
-                     :methods #{:get :put :delete}}
+(def ^:dynamic *methods*
+  {:overview         {:link  "overview"}
+   :cluster-name     {:link "cluster-name"
+                      :methods {:setter :put}}
+   :extensions       {:link "extensions"}
+   :definitions      {:link "definitions"
+                      :methods {:setter :post}}
+   :get-node         {:link "nodes/{%1:name}"}
+   :list-nodes       {:link "nodes"}
+   :vhost            {:type :form
+                      :link "vhosts/{%1:vhost-encode}"
+                      :methods #{:get :put :delete}}
+   :list-vhosts      {:link "vhosts"}
+   :queue            {:type :form
+                      :link "queues/{vhost-encode}/{%1:name}"
+                      :methods #{:get :put :delete}}
+   :list-queues      {:link "queues/{vhost-encode}"}
+   :exchange         {:type :form
+                      :link "exchanges/{vhost-encode}/{%1:name}"
+                      :methods #{:get :put :delete}}
+   :list-exchanges   {:link "exchanges/{vhost-encode}"}
+   :permissions      {:type :form
+                      :link "permissions/{vhost-encode}/{%1:user}"
+                      :methods #{:get :put :delete}}
    :list-permissions {:link "permissions"}
-
-   :bind-exchange   {:link "bindings/{vhost}/e/{%1:source}/e/{%2:dest}"
-                     :methods {:setter :post}}
-   :bind-queue      {:link "bindings/{vhost}/e/{%1:source}/q/{%2:dest}"
-                     :methods {:setter :post}}
-   :list-bindings   {:link "bindings/{vhost}"}
-   :all-bindings    {:link "bindings"}
-
-   :list-connections {:link "connection"}
-   :connection      {:link "connection/{%1:name}"
-                     :methods #{:get :delete}}
-
-   :channels-in     {:link "connections/{%1:connection}/channels"}
-
+   :bind-exchange    {:link "bindings/{vhost-encode}/e/{%1:source}/e/{%2:dest}"
+                      :methods {:setter :post}}
+   :bind-queue       {:link "bindings/{vhost-encode}/e/{%1:source}/q/{%2:dest}"
+                      :methods {:setter :post}}
+   :list-bindings    {:link "bindings/{vhost-encode}"}
+   :all-bindings     {:link "bindings"}
+   :list-connections {:link "connections"}
+   :connection       {:link "connections/{%1:name}"
+                      :methods #{:get :delete}}
+   :channels-in      {:link "connections/{%1:connection}/channels"}
    :list-channels    {:link "channels"}
-   :get-channel     {:link "channels/{%1:name}"}
-
-   ;;:list-consumers   {:link "consumers"}
-   :list-consumers   {:link "consumers/{vhost}"}
-   
-   :user            {:type :form
-                     :link "users/{%1:name}"
-                     :methods #{:get :put :delete}}  ;; {"password":"secret","tags":"administrator"}
-   :list-users      {:link "users"}
-   :healthcheck     {:link "aliveness-test/{vhost}"}})
+   :get-channel      {:link "channels/{%1:name}"}
+   :list-consumers   {:link "consumers/{vhost-encode}"}
+   :user             {:type :form
+                      :link "users/{%1:name}"
+                      :methods #{:get :put :delete}}  ;; {"password":"secret","tags":"administrator"}
+   :list-users       {:link "users"}
+   :healthcheck      {:link "aliveness-test/{vhost-encode}"}
+   :message          {:type :form
+                      :link "exchanges/{vhost-encode}/{%1:name}/publish"
+                      :methods #{:post}}})
 
 (defn classify-args [s]
     (cond (and (.startsWith s "{")
@@ -216,4 +205,4 @@
                       (create-accessor-form name opts))))
         (seq methods)))
 
-(create-api-functions methods)
+(create-api-functions *methods*)

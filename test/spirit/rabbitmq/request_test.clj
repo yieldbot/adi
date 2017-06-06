@@ -1,13 +1,13 @@
-(ns spirit.rabbitmq.http.request-test
+(ns spirit.rabbitmq.request-test
   (:use hara.test)
-  (:require [spirit.rabbitmq.http.request :refer :all]
-            [spirit.rabbitmq.http :as http]
+  (:require [spirit.rabbitmq.request :refer :all]
+            [spirit.rabbitmq :as rabbitmq]
             [cheshire.core :as json]))
 
 ^{:refer spirit.rabbitmq.http.request/create-url :added "0.5"}
 (fact "creates the management url"
 
-  (create-url http/*default-options* "hello")
+  (create-url rabbitmq/*default-options* "hello")
   => "http://localhost:15672/api/hello")
 
 ^{:refer spirit.rabbitmq.http.request/wrap-parse-json :added "0.5"}
@@ -36,5 +36,5 @@
 ^{:refer spirit.rabbitmq.http.request/request :added "0.5"}
 (fact "creates request for the rabbitmq management api"
 
-  (request http/*default-options* "cluster-name")
+  (request rabbitmq/*default-options* "cluster-name")
   => (contains {:name string?})  )
