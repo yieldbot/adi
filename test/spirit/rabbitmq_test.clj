@@ -111,5 +111,24 @@
                                    "q3" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
 
+^{:refer spirit.rabbitmq/routing-all :added "0.5"}
+(fact "lists all the routing in the mq"
+
+  (routing-all (queue/create {:type :rabbitmq
+                              :refresh true})
+               {})
+  => {"/" {:queues {}, :exchanges {}, :bindings {}}})
+
+^{:refer spirit.rabbitmq/routing-all :added "0.5"}
+(fact "returns the mq network"
+
+  (network (queue/create {:type :rabbitmq
+                          :refresh true}))
+  => (contains-in {:cluster-name string?
+                   :nodes [string?]
+                   :vhosts ["/"]
+                   :connections ()
+                   :channels {}}))
+
 ^{:refer spirit.rabbitmq/install-consumers :added "0.5"}
 (fact "install consumers")

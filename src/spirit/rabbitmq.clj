@@ -22,7 +22,7 @@
 (defn routing-all [rabbitmq opts]
   (let [vhosts  (->> (api/list-vhosts rabbitmq)
                      (mapv :name))]
-    (->> (map #(common/routing rabbitmq % opts) vhosts)
+    (->> (map #(common/routing (assoc rabbitmq :vhost-encode (URLEncoder/encode %))) vhosts)
          (zipmap vhosts))))
 
 (defn network [rabbitmq]
@@ -34,7 +34,7 @@
                          (reduce (fn [out data]
                                    (update-in out [(-> data :connection-details :name)] (fnil conj #{})))
                                  {}))
-        cluster-name (api/cluster-name rabbitmq)
+        cluster-name (:name (api/cluster-name rabbitmq))
         nodes        (->> (api/list-nodes rabbitmq)
                           (mapv :name))]
     {:cluster-name cluster-name

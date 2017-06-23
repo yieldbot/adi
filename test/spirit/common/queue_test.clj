@@ -4,11 +4,11 @@
             [spirit.rabbitmq :as rabbitmq]))
 
 (def routes {:queues    #{"q1" "q2"},
-               :exchanges #{"ex1" "ex2"},
-               :bindings   {"ex1" {:exchanges #{"ex2"},
-                                   :queues #{"q1"}}
-                            "ex2" {:exchanges #{}
-                                   :queues #{"q2"}}}})
+             :exchanges #{"ex1" "ex2"},
+             :bindings   {"ex1" {:exchanges #{"ex2"},
+                                 :queues #{"q1"}}
+                          "ex2" {:exchanges #{}
+                                 :queues #{"q2"}}}})
 
 ^{:refer spirit.common.queue/lengthen-topology :added "0.5"}
 (fact "display routes in full"
