@@ -15,7 +15,7 @@
                  [clj-http-lite "0.3.0"]
                  [cheshire "5.7.1"]
                  [com.draines/postal     "2.0.2"]
-                 [com.rabbitmq/amqp-client "4.1.01]]
+                 [com.rabbitmq/amqp-client "4.1.1"]]
   :java-source-paths ["java"]
   :publish {:theme  "mormont"
             

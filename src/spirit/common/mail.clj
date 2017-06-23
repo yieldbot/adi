@@ -1,7 +1,7 @@
 (ns spirit.common.mail
   (:require [spirit.protocol.imail :as mail]
             [spirit.common.atom :as atom]
-            [spirit.common.mustache :as mustache]))
+            [hara.string.mustache :as mustache]))
 
 (extend-type clojure.lang.Atom
 
