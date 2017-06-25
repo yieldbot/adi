@@ -12,10 +12,10 @@
                  [im.chit/hara.function  "2.5.8"]
                  [im.chit/hara.string    "2.5.8"]
                  [inflections "0.13.0"]
-                 [clj-http-lite "0.3.0"]
-                 [cheshire "5.7.1"]
-                 [com.draines/postal     "2.0.2"]
-                 [com.rabbitmq/amqp-client "4.1.1"]]
+                 [http-kit "2.2.0"]
+                 [bidi "2.1.1"]
+                 [com.taoensso/sente "1.11.0"]
+                 [cheshire "5.7.1"]]
   :java-source-paths ["java"]
   :publish {:theme  "mormont"
             
@@ -46,6 +46,8 @@
   
   :profiles {:dev {:dependencies [[com.datomic/datomic-free "0.9.5561.50"]
                                   [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
+                                  [com.draines/postal     "2.0.2"]
+                                  [com.rabbitmq/amqp-client "4.1.1"]
                                   [im.chit/lucid.publish "1.3.12"]
                                   [im.chit/lucid.unit    "1.3.12"]
                                   [im.chit/lucid.package "1.3.12"]

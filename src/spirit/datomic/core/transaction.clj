@@ -71,33 +71,31 @@
 (defn wrap-transact-options [f]
   (fn [datasource]
     (let [datasource (f datasource)
-          opt-trans (-> datasource :transact)
+          opt-trans  (or (-> datasource :transact) :resolve)
           result (cond (#{:async :promise} opt-trans)
                        (-> datasource :result :promise)
 
-                       :else
+                       (#{:resolve :datomic :datasource} opt-trans)
                        (let [transact (or (-> datasource :result :simulation)
                                           @(-> datasource :result :promise))]
-                         (cond (= :datomic opt-trans) transact
-
-                               (or (nil? opt-trans)
-                                   (= :resolve opt-trans))
-                               (resolve-tempids datasource transact)
-
-                               :else
-                               (error "WRAP_TRANSACT_OPTIONS: #{:datomic :async :promise :resolve(default)}"))))]
+                         (case opt-trans
+                           :datomic transact
+                           :datasource (dissoc datasource :db)
+                           :resolve (resolve-tempids datasource transact)))
+                       
+                       :else
+                       (error "WRAP_TRANSACT_OPTIONS: #{:datomic :async :promise :resolve}"))]
       (assoc-in datasource [:result :transact] result))))
 
 (defn wrap-transact-results [f]
   (fn [datasource]
     (let [datasource (f datasource)
-          opt-trans (-> datasource :transact)]
+          opt-trans  (or (-> datasource :transact) :resolve)]
 
       (cond (-> datasource :options :debug)
             datasource
 
-            (or (nil? opt-trans)
-                (#{:resolve :async :promise :datomic} opt-trans))
+            (#{:resolve :async :promise :datomic :datasource} opt-trans)
             (get-in datasource [:result :transact])
             
             :else
