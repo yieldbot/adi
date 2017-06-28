@@ -33,7 +33,11 @@ namespace:"
 (facts
   "Lets connect and print out the datastore:"
 
-  (def ds (datomic/connect! "datomic:mem://spirit-example-step-3" schema-3 true true))
+  (def ds (datomic/connect!
+           {:uri "datomic:mem://spirit-example-step-3"
+            :schema schema-3
+            :options {:reset-db true
+                      :install-schema true}}))
 
   (comment
     (println ds)

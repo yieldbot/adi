@@ -37,7 +37,11 @@
   about **95%** of all the `CRUD` in an application. The user can perform more complicated or optimised
   queries by dropping back into the `datomic` api if needed:"
 
-  (def ds (datomic/connect! "datomic:mem://spirit-examples-step-1" schema-1 true true))
+  (def ds (datomic/connect!
+           {:uri "datomic:mem://spirit-example-step-1"
+            :schema schema-1
+            :options {:reset-db true
+                      :install-schema true}}))
 
   "The last two arguments are flags for `reset?` and `install-schema?`. To blow away the old datastare
   and construct a brand new one, set both flags as `true`. If connecting to an already existing datastore

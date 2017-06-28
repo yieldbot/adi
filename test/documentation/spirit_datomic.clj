@@ -49,7 +49,10 @@ All functionality is contained in the `spirit.datomic` namespace:
 
 "`connect!` creates a connection to a datomic datastore:"
 
-(def api-ds (datomic/connect! "datomic:mem://datomic-api" schema-api true true))
+(def api-ds (datomic/connect! {:uri "datomic:mem://datomic-api"
+                               :schema schema-api
+                               :options {:install-schema true
+                                         :reset-db true}}))
 
 [[:section {:title "insert!"}]]
 

@@ -40,7 +40,11 @@ through an `Inventory`, which keeps how many books there are in a store:"
 
   "Once again, the spirit datastore is created and the seed stores created"
 
-  (def ds (datomic/connect! "datomic:mem://spirit-example-step-4" schema-4 true true))
+  (def ds (datomic/connect!
+           {:uri "datomic:mem://spirit-example-step-4"
+            :schema schema-4
+            :options {:reset-db true
+                         :install-schema true}}))
 
   (datomic/insert! ds [{:address {:country "USA"
                               :stores #{{:name "Canyon Books"}

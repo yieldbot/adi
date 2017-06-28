@@ -40,7 +40,11 @@ model. This is actually much like the Bookstore example with a couple more field
 (facts
   "Once again, the spirit datastore is created:"
 
-  (def ds (datomic/connect! "datomic:mem://spirit-example-step-5" schema-5 true true))
+  (def ds (datomic/connect!
+           {:uri "datomic:mem://spirit-example-step-5"
+            :schema schema-5
+            :options {:reset-db true
+                      :install-schema true}}))
 
   (comment
     (println ds)

@@ -15,7 +15,11 @@
 
 "A connection is created using the schema:"
 
-(def book-ds (datomic/connect! "datomic:mem://datomic-schema-book" schema-book true true))
+(def book-ds (datomic/connect!
+              {:uri "datomic:mem://datomic-schema-book"
+               :schema schema-book
+               :options {:install-schema true
+                         :reset-db true}}))
 
 "A single book is entered:"
 
@@ -76,7 +80,11 @@
     :store  {:name    [{:required true
                         :fulltext true}]}})
 
-(def store-ds (datomic/connect! "datomic:mem://datomic-schema-store" schema-store true true))
+(def store-ds (datomic/connect!
+               {:uri "datomic:mem://datomic-schema-store"
+                :schema schema-store
+                :options {:install-schema true
+                          :reset-db true}}))
 
 "A store is created with inventory:"
 
@@ -156,7 +164,11 @@
                        :ref {:ns :node
                              :rval :previous}}]}})
 
-(def node-ds (datomic/connect! "datomic:mem://datomic-schema-nodes" schema-nodes true true))
+(def node-ds (datomic/connect!
+              {:uri "datomic:mem://datomic-schema-nodes"
+               :schema schema-nodes
+               :options {:reset-db true
+                         :install-schema true}}))
 
 "A set of maps are inserted:"
 

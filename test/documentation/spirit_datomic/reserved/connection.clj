@@ -15,8 +15,10 @@
           :author  [{:fulltext true}]}})
 
 
-(def ds-1 (datomic/connect! "datomic:mem://datomic-connection-1" schema-connection true true))
-
+(def ds-1 (datomic/connect! {:uri "datomic:mem://datomic-connection-1"
+                             :schema schema-connection
+                             :options {:install-schema true
+                                       :reset-db true}}))
 (comment
   (println ds-1)
   ;;=> #spirit{:connection #connection{1000 #inst "2016-03-15T12:47:10.039-00:00"},
@@ -27,9 +29,17 @@
 
 "`:connection` is a reserved keyword in options. We can show how this works by creating two more datastores:"
 
-(def ds-2 (datomic/connect! "datomic:mem://datomic-connection-2" schema-connection true true))
+(def ds-2 (datomic/connect!
+           {:uri "datomic:mem://datomic-connection-2"
+                             :schema schema-connection
+                             :options {:install-schema true
+                                       :reset-db true}}))
 
-(def ds-3 (datomic/connect! "datomic:mem://datomic-connection-3" schema-connection true true))
+(def ds-3 (datomic/connect!
+           {:uri "datomic:mem://datomic-connection-3"
+            :schema schema-connection
+            :options {:install-schema true
+                      :reset-db true}}))
 
 "Passing a value for `:connection` will change the connection object that is used. This shouldn't be used very frequently but the feature is there to be exploited. To highlight this, a standard call to `insert!` is made:"
 

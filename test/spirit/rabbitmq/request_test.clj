@@ -13,7 +13,7 @@
 ^{:refer spirit.rabbitmq.request/wrap-parse-json :added "0.5"}
 (fact "returns the body as a clojure map"
 
-  ((wrap-parse-json identity)
+  ((wrap-parse-json atom)
    {:status 200
     :body (json/generate-string {:a 1 :b 2})})
   => {:a 1, :b 2})

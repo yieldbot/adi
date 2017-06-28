@@ -2,7 +2,7 @@
   (:require [hara.component :as component]
             [hara.string.case :as case]
             [hara.data.nested :as nested]
-            [clj-http.lite.client :as http]
+            [org.httpkit.client :as http]
             [cheshire.core :as json]))
 
 (def ^:dynamic *default-request-options*
@@ -15,10 +15,10 @@
 
 (defn wrap-parse-json [f]
   (fn [request]
-    (let [res (f request)]
+    (let [res @(f request)]
       (cond (= 200 (:status res))
             (json/parse-string (:body res) (comp case/spear-case keyword))
-
+            
             (= 204 (:status res))
             true
 

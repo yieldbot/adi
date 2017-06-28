@@ -41,7 +41,11 @@ them allowed values `#{:admin :free :paid}`"
 a correspondence between a nested hashmap and a flat hashmap having keys representing data-paths. `spirit` takes
 advantage of this correspondence to give allow users more semantic freedom of how to represent their data:"
 
-  (def ds (datomic/connect! "datomic:mem://spirit-examples-step-2" schema-2 true true))
+  (def ds (datomic/connect!
+           {:uri "datomic:mem://spirit-example-step-2"
+            :schema schema-2
+            :options {:reset-db true
+                      :install-schema true}}))
 
   (datomic/insert! ds {:account {:user "spirit1"
                              :password "hello1"}

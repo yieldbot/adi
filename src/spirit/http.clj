@@ -49,10 +49,8 @@
                                                      default-request-handler)
                                                  k))))]    
     (fn [{:as msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
-      (println "WEBSOCKET RECIEVED:" id ?data)
       (if ?reply-fn
-        (do (println "RESPONSE:" [id (some #(%1 msg) request-handlers)])
-            (?reply-fn [id (some #(%1 msg) request-handlers)]))
+        (?reply-fn [id (some #(%1 msg) request-handlers)])
         (some #(%1 msg) event-handlers)))))
 
 (defn create-websocket [{:keys [packer path scope handlers]}]

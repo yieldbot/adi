@@ -19,7 +19,11 @@
 
 "The datastore is created:"
 
-(def school-ds (datomic/connect! "datomic:mem://datomic-options-school-store" schema-school true true))
+(def school-ds (datomic/connect!
+                {:uri "datomic:mem://datomic-options-school-store"
+                 :schema schema-school
+                 :options {:install-schema true
+                           :reset-db true}}))
 
 "Data is put into the system:"
 
