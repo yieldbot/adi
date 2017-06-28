@@ -59,7 +59,8 @@
   ([rabbit suburl method]
    (request rabbit suburl method {}))
   ([{:keys [username password] :as rabbit} suburl method opts]
-   (let [req (nested/merge-nested {:url (create-url rabbit suburl)
+   (let [req (nested/merge-nested {:headers {"Content-Type" "application/json"}
+                                   :url (create-url rabbit suburl)
                                    :method method
                                    :basic-auth [username password]}
                                   *default-request-options*

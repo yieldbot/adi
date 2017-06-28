@@ -10,9 +10,6 @@
             [ring.util.response :as response]
             [ring.middleware
              [defaults :as defaults]
-             [params :as params]
-             [keyword-params :as keyword-params]
-             [nested-params :as nested-params]
              [resource :as resource]]
             [ring.util.mime-type :as mime]))
 
