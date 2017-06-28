@@ -119,7 +119,7 @@
                {})
   => {"/" {:queues {}, :exchanges {}, :bindings {}}})
 
-^{:refer spirit.rabbitmq/routing-all :added "0.5"}
+^{:refer spirit.rabbitmq/network :added "0.5"}
 (fact "returns the mq network"
 
   (network (queue/create {:type :rabbitmq
@@ -130,5 +130,11 @@
                    :connections ()
                    :channels {}}))
 
+^{:refer spirit.rabbitmq/install-vhost :added "0.5"}
+(fact "installs vhost and adds user permissions")
+
 ^{:refer spirit.rabbitmq/install-consumers :added "0.5"}
 (fact "install consumers")
+
+^{:refer spirit.rabbitmq/rabbit :added "0.5"}
+(fact "creates a rabbitmq instance")

@@ -1,10 +1,87 @@
 (ns spirit.http-test
   (:use hara.test)
   (:require [spirit.http :refer :all]
-            [hara.component :as component]))
+            [hara.component :as component]
+            [org.httpkit.client :as http]))
+
+^{:refer spirit.http/default-event-handler :added "0.5"}
+(fact "default handler for events from client")
+
+^{:refer spirit.http/default-request-handler :added "0.5"}
+(fact "default handler for requests from client")
+
+^{:refer spirit.http/wrap-scope :added "0.5"}
+(fact "adds a scope key to the request")
+
+^{:refer spirit.http/create-websocket-routes :added "0.5"}
+(fact "specified using the 'path' input")
+
+^{:refer spirit.http/create-websocket-handler :added "0.5"}
+(fact "takes in a table of handlers and also the scope"
+  
+  (create-websocket-handler
+   {:debug {:event-handler   :<debug-event>>
+            :request-handler :<debug-request>}
+    :auth  {:event-handler   :<auth-event>
+            :request-handler :<auth-request>}}
+   [:auth :debug]))
+
+^{:refer spirit.http/create-websocket :added "0.5"}
+(fact "creates a websocket given a config"
+  
+  (create-websocket
+   {:path       "/ws"
+    :packer     :edn
+    :scope      [:auth :debug]
+    :handlers   {:debug {}
+                 :auth  {:event-handler   :<auth-event>
+                         :request-handler :<auth-request>}}}))
+
+^{:refer spirit.http/create-application-handler :added "0.5"}
+(fact "creates a set of routes for http consumption"
+ 
+  (create-application-handler
+   "/api"
+   {:debug {:routes   :<debug-routes>>
+            :handler  :<debug>}
+    :auth  {:routes   :<auth-routes>
+            :handler  :<auth>}}
+   [:auth :debug]))
+
+^{:refer spirit.http/create-application :added "0.5"}
+(fact "creates the set of application routes for consumption"
+  
+  (create-application
+   {:scope     [:auth :debug]
+    :handlers  {:debug {}
+                :auth  {:routes  :<auth-routes>
+                        :handler :<auth>}}}))
+
+^{:refer spirit.http/create-routes :added "0.5"}
+(fact "adds both websocket and application routes")
+
+^{:refer spirit.http/wrap-app :added "0.5"}
+(fact "adds defaults to app")
+
+^{:refer spirit.http/application :added "0.5"}
+(comment
+  
+  (def sys (application {:port 8900
+                         :host "local.keynect.io"
+                         :options   {:open-browser true}
+                         :resources {:path "/"}
+                         :files     {:path "/" :root "resources/public"}
+                         :handlers  {:websocket   {:debug {}
+                                                   :auth  {:event-handler :<auth-event>
+                                                           :request-handler :<auth-request>}}
+                                     :application {:debug {}
+                                                   :auth  {:routes  [["login" :on/login]
+                                                                     ["logout" :on/logout]]
+                                                           :handler :<auth-request>}}}})))
 
 
 (comment
+  
   
   (defmulti debug-handler :id)
 
@@ -14,19 +91,7 @@
 
   ((ring/->Files {:dir "resources/public"}))
   
-  (def server  (application {:port 8900
-                             :host "local.keynect.io"
-                             :options   {:open-browser true}
-                             :resources {:path "/"}
-                             :files     {:path "/" :root "resources/root"}
-                             :handlers  {:websocket   {:debug {}
-                                                       :auth  {:event-handler default-event-handler
-                                                               :request-handler default-request-handler}}
-                                         :application {:debug {}
-                                                       :auth  {:routes  [["login" :on/login]
-                                                                         ["logout" :on/logout]]
-                                                               :handler default-request-handler}}}
-                             }))
+  (def server  )
   
   (component/stop server)
   

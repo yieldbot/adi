@@ -56,32 +56,3 @@
       (.setNetworkRecoveryInterval ^long recovery-interval)
       (.setTopologyRecoveryEnabled ^bool topology-recovery))
     (.newConnection cfactory (str "custom:" port))))
-
-(comment
-  (require 'spirit.rabbitmq)
-  (require '[spirit.common.queue :as queue])
-
-  (connect *default-options*)
-  
-  (def keynect (queue/create {:type :rabbitmq :refresh true}))
-  
-  (def conn (connect (merge *default-options* keynect)))
-  
-  (queue/install-routing keynect {:queues #{"q1"}
-                                  :exchanges #{"ex1"}
-                                  :bindings {"ex1" {:queues #{"q1"}}}})
-  
-  (consume chan "q1" true "hello" {:id "ooeueeue" :function prn})
-  (map  (api/list-connections keynect)
-        )
-  
-  
-  (request/request keynect "connections")
-
-  (queue/list-consumers keynect)
-  
-  (def chan (.createChannel conn))
-  
-  (defn install-consumer [key]))
-
-

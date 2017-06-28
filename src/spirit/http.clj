@@ -13,19 +13,30 @@
              [resource :as resource]]
             [ring.util.mime-type :as mime]))
 
-(defn default-event-handler [{:keys [id uid ?data scope] :as msg}]
+(defn default-event-handler
+  "default handler for events from client"
+  {:added "0.5"}
+  [{:keys [id uid ?data scope] :as msg}]
   (println "EVENT RECEIVED:" id uid ?data scope)
   msg)
 
-(defn default-request-handler [{:keys [id uid ?data scope] :as msg}]
+(defn default-request-handler
+  "default handler for requests from client"
+  {:added "0.5"}
+  [{:keys [id uid ?data scope] :as msg}]
   (println "REQUEST RECEIVED:" id ?data scope)
   {:id id :uid uid :scope scope :data {:server-echo-back ?data}})
 
-(defn wrap-scope [handler key]
+(defn wrap-scope
+  "adds a scope key to the request"
+  {:added "0.5"}
+  [handler key]
   (fn [m]
     (handler (assoc m :scope key))))
 
 (defn create-websocket-routes
+  "specified using the 'path' input"
+  {:added "0.5"}
   [ws path]
   (http/routes (http/GET  path
                           req
@@ -34,7 +45,17 @@
                           req
                      ((:ajax-post-fn ws) req))))
 
-(defn create-websocket-handler [handlers scope]
+(defn create-websocket-handler
+  "takes in a table of handlers and also the scope
+   
+   (create-websocket-handler
+    {:debug {:event-handler   :<debug-event>>
+             :request-handler :<debug-request>}
+    :auth  {:event-handler   :<auth-event>
+             :request-handler :<auth-request>}}
+    [:auth :debug])"
+  {:added "0.5"}
+  [handlers scope]
   (let [event-handlers   (->> scope
                               (map (fn [k]
                                      (wrap-scope (or (get-in handlers [k :event-handler])
@@ -50,14 +71,36 @@
         (?reply-fn [id (some #(%1 msg) request-handlers)])
         (some #(%1 msg) event-handlers)))))
 
-(defn create-websocket [{:keys [packer path scope handlers]}]
+(defn create-websocket
+  "creates a websocket given a config
+   
+   (create-websocket
+    {:path       \"/ws\"
+     :packer     :edn
+    :scope      [:auth :debug]
+     :handlers   {:debug {}
+                  :auth  {:event-handler   :<auth-event>
+                          :request-handler :<auth-request>}}})"
+  {:added "0.5"}
+  [{:keys [packer path scope handlers]}]
   (let [ws (websocket/websocket {:packer (or packer :edn)
                                  :handler (create-websocket-handler handlers scope)})
         http-routes (-> (create-websocket-routes ws path)
                         )]
     {:ws ws :ws-routes http-routes}))
 
-(defn create-application-handler [path handler routes]
+(defn create-application-handler
+  "creates a set of routes for http consumption
+  
+   (create-application-handler
+    \"/api\"
+    {:debug {:routes   :<debug-routes>>
+            :handler  :<debug>}
+     :auth  {:routes   :<auth-routes>
+             :handler  :<auth>}}
+    [:auth :debug])"
+  {:added "0.5"}
+  [path handler routes]
   (fn [{:keys [uri body params] :as request}]
     (let [path (if (.startsWith path "/") path (str "/" path))
           path (if (.endsWith path "/") path (str path "/"))
@@ -72,7 +115,16 @@
                                                             (read-string body))
                                                       params))))}))))
 
-(defn create-application [{:keys [packer path scope handlers]}]
+(defn create-application
+  "creates the set of application routes for consumption
+   
+   (create-application
+    {:scope     [:auth :debug]
+     :handlers  {:debug {}
+                :auth  {:routes  :<auth-routes>
+                         :handler :<auth>}}})"
+  {:added "0.5"}
+  [{:keys [packer path scope handlers]}]
     (let [request-handlers (->> scope
                                 (map (fn [k]
                                        (-> (create-application-handler
@@ -86,6 +138,8 @@
         (some #(%1 request) request-handlers))))
 
 (defn create-routes
+  "adds both websocket and application routes"
+  {:added "0.5"}
   [ws-routes app-routes resources files]
   (->> [ws-routes
         app-routes
@@ -97,7 +151,10 @@
        (keep identity)
        (apply http/routes)))
 
-(defn wrap-app [handler]
+(defn wrap-app
+  "adds defaults to app"
+  {:added "0.5"}
+  [handler]
   (let [config (-> defaults/site-defaults
                    (assoc-in
                     [:security :anti-forgery]
@@ -133,6 +190,20 @@
     (component/stop http-server)
     (dissoc app :websocket-channel :http-server)))
 
-(defn application [{:keys [websocket application host routes scope port handlers] :as m}]
+(defn application
+  "(def sys (application {:port 8900
+                         :host \"local.keynect.io\"
+                          :options   {:open-browser true}
+                          :resources {:path \"/\"}
+                          :files     {:path \"/\" :root \"resources/public\"}
+                          :handlers  {:websocket   {:debug {}
+                                                    :auth  {:event-handler :<auth-event>
+                                                            :request-handler :<auth-request>}}
+                                      :application {:debug {}
+                                                    :auth  {:routes  [[\"login\" :on/login]
+                                                                      [\"logout\" :on/logout]]
+                                                            :handler :<auth-request>}}}}))"
+  {:added "0.5"}
+  [{:keys [websocket application host routes scope port handlers] :as m}]
   (-> (map->Application m)
       (component/start)))

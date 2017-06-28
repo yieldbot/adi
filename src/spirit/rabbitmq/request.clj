@@ -10,10 +10,24 @@
    :content-type "application/json"
    :throw-exceptions false})
 
-(defn create-url [{:keys [protocol host management-port]} suburl]
+(defn create-url
+  "creates the management url
+ 
+   (create-url rabbitmq/*default-options* \"hello\")
+   => \"http://localhost:15672/api/hello\""
+  {:added "0.5"}
+  [{:keys [protocol host management-port]} suburl]
   (str protocol "://" host ":" management-port "/api/" suburl))
 
-(defn wrap-parse-json [f]
+(defn wrap-parse-json
+  "returns the body as a clojure map
+ 
+   ((wrap-parse-json atom)
+    {:status 200
+     :body (json/generate-string {:a 1 :b 2})})
+   => {:a 1, :b 2}"
+  {:added "0.5"}
+  [f]
   (fn [request]
     (let [res @(f request)]
       (cond (= 200 (:status res))
@@ -27,7 +41,14 @@
 
             :else res))))
 
-(defn update-nested-keys [m func]
+(defn update-nested-keys
+  "updates keys in the nesting
+   
+   (update-nested-keys {:a {:b {:c 1}}}
+                       #(keyword (str (name %) \"-boo\")))
+   => {:a-boo {:b-boo {:c-boo 1}}}"
+  {:added "0.5"}
+  [m func]
   (cond (map? m)
         (reduce-kv (fn [out k v]
                      (assoc out
@@ -41,7 +62,15 @@
         (coll? m)
         (into (empty m) (map #(update-nested-keys % func) m))))
 
-(defn wrap-generate-json [f]
+(defn wrap-generate-json
+  "returns the body as a json string
+   
+   ((wrap-generate-json identity)
+    {:status 200
+     :body {:a 1 :b 2}})
+   => {:status 200, :body \"{\\\"a\\\":1,\\\"b\\\":2}\"}"
+  {:added "0.5"}
+  [f]
   (fn [request]
     (let [body (:body request)
           body (if body
@@ -54,6 +83,11 @@
       (f request))))
 
 (defn request
+  "creates request for the rabbitmq management api
+ 
+   (request rabbitmq/*default-options* \"cluster-name\")
+   => (contains {:name string?})  "
+  {:added "0.5"}
   ([rabbit suburl]
    (request rabbit suburl :get))
   ([rabbit suburl method]

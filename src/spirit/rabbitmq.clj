@@ -17,15 +17,37 @@
    :vhost "/"})
 
 (def ^:dynamic *default-exchanges*
-  #{"" "amq.direct" "amq.fanout" "amq.headers" "amq.match" "amq.rabbitmq.trace" "amq.rabbitmq.log" "amq.topic"})
+  #{""
+    "amq.direct" "amq.fanout" "amq.headers"
+    "amq.match" "amq.rabbitmq.trace"
+    "amq.rabbitmq.log" "amq.topic"})
 
-(defn routing-all [rabbitmq opts]
+(defn routing-all
+  "lists all the routing in the mq
+ 
+   (routing-all (queue/create {:type :rabbitmq
+                               :refresh true})
+                {})
+   => {\"/\" {:queues {}, :exchanges {}, :bindings {}}}"
+  {:added "0.5"}
+  [rabbitmq opts]
   (let [vhosts  (->> (api/list-vhosts rabbitmq)
                      (mapv :name))]
     (->> (map #(common/routing (assoc rabbitmq :vhost-encode (URLEncoder/encode %))) vhosts)
          (zipmap vhosts))))
 
-(defn network [rabbitmq]
+(defn network
+  "returns the mq network
+ 
+   (network (queue/create {:type :rabbitmq
+                           :refresh true}))
+   => (contains-in {:cluster-name string?
+                    :nodes [string?]
+                    :vhosts [\"/\"]
+                    :connections ()
+                   :channels {}})"
+  {:added "0.5"}
+  [rabbitmq]
   (let [vhosts  (->> (api/list-vhosts rabbitmq)
                      (mapv :name))
         connections (->> (api/list-connections rabbitmq)
@@ -124,6 +146,8 @@
   (.write w (str v)))
 
 (defn install-vhost
+  "installs vhost and adds user permissions"
+  {:added "0.5"}
   [{:keys [vhost username] :as rabbitmq}]
   (let [curr (->> (api/list-vhosts rabbitmq)
                   (map :name)
@@ -134,71 +158,18 @@
                                               :write ".*"
                                               :read ".*"}))))
 
-(defn rabbit
-  ([] (rabbit {}))
-  ([m]
-   (let [m (merge m *default-options*)]
-     (-> (map->RabbitMQ m)
-         (assoc :vhost-encode (URLEncoder/encode (:vhost m)))))))
-
 (defmethod common/create-queue :rabbitmq
   [m]
-  (rabbit m))
+  (let [m (merge m *default-options*)]
+    (-> (map->RabbitMQ m)
+        (assoc :vhost-encode (URLEncoder/encode (:vhost m))))))
 
-(comment
-  (comment
-    (def keynect (common/create {:type :rabbitmq
-                                 :refresh true}))
-    
-    
-    
-  ()
+(defn rabbit
+  "creates a rabbitmq instance"
+  {:added "0.5"}
+  ([] (rabbit {}))
+  ([m]
+   (-> (common/create-queue {:type :rabbitmq})
+       (component/start))))
 
-    (list-users keynect)
-  
-    "bindings/{vhost}/e/{%1:source}/q/{%2:dest}/props"
 
-       HTTP Error
-
-  (classify-args "{vhost}")
-  
-  
-  (link-args "bindings/{vhost}/e/{%1:source}/q/{%2:dest}/props")
-  {:inputs ["bindings" :vhost "e" source "q" dest "props"], :vargs [source dest]}
-  
-  {:inputs ["bindings" :vhost "e" #(nth % (dec 1)) "q" #(nth % (dec 2)) "props"]
-   :vargs '[source dest]})
-  
-  (interface/-list-bindings keynect)
-  
-  {"ex1" {:exchanges {"ex2" [{:routing-key "", :arguments {}, :properties-key "~"}]}
-          :queues    {"q1"  [{:routing-key "", :arguments {}, :properties-key "~"}]}}
-   "ex2" {:queues    {"q2"  [{:routing-key "", :arguments {}, :properties-key "~"}]}}}
-  
-  (def routes {:queues    #{"q1" "q2"},
-               :exchanges #{"ex1" "ex2"},
-               :bindings  {"ex1" {:exchanges #{"ex2"},
-                                  :queues #{"q1"}}
-                           "ex2" {:exchanges #{}
-                                  :queues #{"q2"}}}})
-  
-  (def keynect (rabbit {:username "rabbitmq"
-                        :password "rabbitmq"
-                        :routing routes}))
-
-  (queue/routing keynect)
-  (URLEncoder/encode )
-  
-  (purge-routing keynect)
-  (install-routing keynect)
-  (routing keynect "/" {:short true})
-  
-  (list-vhosts rabbitmq)
-  (install-vhost rabbitmq)
-  (request/request rabbitmq (str "permissions/hello/rabbitmq"))
-  (request/request rabbitmq (str "global-parameters"))
-  (request/request rabbitmq (str "policies"))
-  (request/request rabbitmq (str "whoami"))
-  (request/request rabbitmq (str "users"))
-  (request/request rabbitmq (str "aliveness-test/hello"))
-  (request/request rabbitmq (str "healthchecks/node")))

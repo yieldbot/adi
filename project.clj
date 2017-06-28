@@ -18,7 +18,9 @@
                  [ring "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
                  [com.taoensso/sente "1.11.0"]
-                 [cheshire "5.7.1"]]
+                 [cheshire "5.7.1"]
+                 [com.draines/postal     "2.0.2"]
+                 [com.rabbitmq/amqp-client "4.1.1"]]
   :java-source-paths ["java"]
   :publish {:theme  "mormont"
             
@@ -49,8 +51,6 @@
   
   :profiles {:dev {:dependencies [[com.datomic/datomic-free "0.9.5561.50"]
                                   [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
-                                  [com.draines/postal     "2.0.2"]
-                                  [com.rabbitmq/amqp-client "4.1.1"]
                                   [im.chit/lucid.publish "1.3.12"]
                                   [im.chit/lucid.unit    "1.3.12"]
                                   [im.chit/lucid.package "1.3.12"]
