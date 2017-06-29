@@ -1,6 +1,7 @@
 (ns spirit.common.graph
-  (:require [spirit.protocol.igraph :as graph])
-  (:refer-clojure :exclude [update]))
+  (:require [spirit.protocol.igraph :as graph]
+            [hara.component :as component])
+  (:refer-clojure :exclude [update empty]))
 
 (defn install-schema  [db schema]
   (graph/-install-schema db schema))
@@ -40,6 +41,9 @@
    (retract db selector keys {}))
   ([db selector keys opts]
    (graph/-retract db selector keys opts)))
-   
-(defmulti db :type)
-   
+
+(defmulti create :type)
+
+(defn graph [m]
+  (-> (create m)
+      (component/start)))

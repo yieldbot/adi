@@ -532,11 +532,15 @@
   [v w]
   (.write w (str v)))
 
-(defmulti queue
-  ""
-  :type)
+(defmulti create :type)
 
-(defmethod queue :mock
+(defmethod create :default
   ([m]
    (merge (MockMQ. (atom {}))
           m)))
+
+(defn queue
+  ([] (queue {}))
+  ([m]
+   (-> (create m)
+       (component/start))))

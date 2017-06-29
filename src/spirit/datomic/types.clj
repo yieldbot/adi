@@ -160,6 +160,6 @@
   [v w]
   (.write w (str v)))
 
-(defmethod graph/db :datomic
+(defmethod graph/create :datomic
   [{:keys [datomic] :as m}]
   (map->Datomic m))

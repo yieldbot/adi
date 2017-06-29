@@ -158,7 +158,7 @@
                                               :write ".*"
                                               :read ".*"}))))
 
-(defmethod common/create-queue :rabbitmq
+(defmethod common/create :rabbitmq
   [m]
   (let [m (merge m *default-options*)]
     (-> (map->RabbitMQ m)
@@ -169,7 +169,7 @@
   {:added "0.5"}
   ([] (rabbit {}))
   ([m]
-   (-> (common/create-queue {:type :rabbitmq})
+   (-> (common/create {:type :rabbitmq})
        (component/start))))
 
 

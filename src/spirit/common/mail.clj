@@ -1,6 +1,7 @@
 (ns spirit.common.mail
   (:require [spirit.protocol.imail :as mail]
             [spirit.common.atom :as atom]
+            [hara.component :as component]
             [hara.string.mustache :as mustache]))
 
 (extend-type clojure.lang.Atom
@@ -42,14 +43,14 @@
   [v w]
   (.write w (str v)))
 
-(defmulti mailer :type)
+(defmulti create :type)
 
-(defmethod mailer :atom
+(defmethod create :atom
   [m]
   (atom {:mailbox []
          :settings m}))
 
-(defmethod mailer :mock
+(defmethod create :mock
   [{:keys [file format] :as m
     :or {file "mailer.db"
          format :edn}}]
@@ -58,6 +59,10 @@
                                  {:file file
                                   :initial {}})]
     (map->MockMailer {:state state})))
+
+(defn mailer [m]
+  (-> (create m)
+      (component/start)))
 
 (comment
 

@@ -60,14 +60,14 @@
 ^{:refer spirit.datomic/test-instance :added "0.5"}
 (comment "creates a test in-memory database")
 
-^{:refer spirit.common.graph/db :added "0.5"}
+^{:refer spirit.common.graph/grapd :added "0.5"}
 (fact "interface to graph/db"
   
-  (-> (graph/db {:type :datomic
-                 :protocol :mem
-                 :name "spirit.datomic-test"
-                 :options {:reset-db true}})
-      (component/start)))
+  (graph/graph {:type :datomic
+                :protocol :mem
+                :name "spirit.datomic-test"
+                :options {:reset-db true}})
+  => spirit.datomic.types.Datomic)
 
 ^{:refer spirit.common.graph/-select :added "0.5"}
 (fact "selects from the database"

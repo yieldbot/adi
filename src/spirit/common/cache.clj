@@ -1,5 +1,6 @@
 (ns spirit.common.cache
-  (:require [spirit.protocol.icache :as interface]))
+  (:require [spirit.protocol.icache :as interface]
+            [hara.component :as component]))
 
 (defrecord MockCache [state]
 
@@ -79,3 +80,9 @@
 (defmethod print-method MockCache
   [v w]
   (.write w (str v)))
+
+(defmulti create :type)
+
+(defn cache [m]
+  (-> (create m)
+      (component/start)))

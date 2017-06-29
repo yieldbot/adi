@@ -2,6 +2,7 @@
   (:require [spirit.protocol.ikeystore :as keystore]
             [spirit.common.atom :as atom]
             [clojure.java.io :as io]
+            [hara.component :as component]
             [hara.data.nested :as nested]
             [hara.data.map :as map]))
 
@@ -117,18 +118,22 @@
   (-mutate-in [db arr add-map del-vec]
     (mutate-in state arr)))
 
-(defmulti keystore :type)
+(defmulti create :type)
 
-(defmethod keystore :atom
+(defmethod create :atom
   [{:keys [data]}]
   (atom (or data {})))
 
-(defmethod keystore :mock
+(defmethod create :mock
   [{:keys [file initial reset] :as opts}]
   (let [state (if file
                 (atom/file-backed (atom nil) (assoc opts :file file))
                 (atom {}))]
     (MockKeystore. state opts)))
+
+(defn keystore [m]
+  (-> (create m)
+      (component/start)))
 
 (comment
 
