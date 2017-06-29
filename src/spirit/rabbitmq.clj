@@ -2,8 +2,7 @@
   (:require [spirit.rabbitmq
              [api :as api]
              [request :as request]]
-            [spirit.common.queue :as common]
-            [spirit.protocol.iqueue :as interface]
+            [spirit.common.queue :as queue]
             [hara.component :as component])
   (:import java.net.URLEncoder))
 
@@ -33,7 +32,7 @@
   [rabbitmq opts]
   (let [vhosts  (->> (api/list-vhosts rabbitmq)
                      (mapv :name))]
-    (->> (map #(common/routing (assoc rabbitmq :vhost-encode (URLEncoder/encode %))) vhosts)
+    (->> (map #(queue/routing (assoc rabbitmq :vhost-encode (URLEncoder/encode %))) vhosts)
          (zipmap vhosts))))
 
 (defn network
@@ -68,11 +67,17 @@
 (defrecord RabbitMQ []
   Object
   (toString [mq]
-    (str "#rabbit" (common/routing mq {:short true})))
+    (str "#rabbit" (queue/routing mq {:short true})))
   
   component/IComponent
-  (-start [mq])
-  (-stop [mq])
+  (-start [{:keys [routing consumers refresh] :as mq}]
+    (cond-> mq
+       refresh   (queue/purge-routing)
+       routing   (queue/install-routing routing)
+       consumers (queue/install-consumers consumers)))
+  
+  (-stop [mq]
+    mq)
 
   interface/IQueue
   (-list-queues     [mq]
@@ -158,7 +163,7 @@
                                               :write ".*"
                                               :read ".*"}))))
 
-(defmethod common/create :rabbitmq
+(defmethod queue/create :rabbitmq
   [m]
   (let [m (merge m *default-options*)]
     (-> (map->RabbitMQ m)
@@ -169,7 +174,5 @@
   {:added "0.5"}
   ([] (rabbit {}))
   ([m]
-   (-> (common/create {:type :rabbitmq})
+   (-> (queue/create {:type :rabbitmq})
        (component/start))))
-
-

@@ -1,7 +1,7 @@
 (ns spirit.rabbitmq-test
   (:use hara.test)
-  (:require [spirit.rabbitmq :refer :all]
-            [spirit.common.queue :as queue]))
+  (:require [spirit.common.queue :as queue]
+            [spirit.rabbitmq :refer :all]))
 
 (def routes {:queues    #{"q1" "q2"},
              :exchanges #{"ex1" "ex2"},
@@ -14,7 +14,7 @@
 (fact "returns current list of queues"
 
   (queue/list-queues (queue/queue {:type :rabbitmq
-                                    :routing routes}))
+                                   :routing routes}))
   => (contains {"q1" map?
                 "q2" map?}))
 
@@ -22,8 +22,8 @@
 (fact "adds a queue to the mq"
 
   (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
+                    :routing routes
+                    :refresh true})
       (queue/add-queue "q3")
       (queue/list-queues))
   => (contains {"q1" map?
