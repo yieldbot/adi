@@ -2,7 +2,8 @@
   (:require [spirit.rabbitmq
              [api :as api]
              [request :as request]]
-            [spirit.common.queue :as queue]
+            [spirit.common.queue :as common]
+            [spirit.protocol.iqueue :as queue]
             [hara.component :as component])
   (:import java.net.URLEncoder))
 
@@ -24,7 +25,7 @@
 (defn routing-all
   "lists all the routing in the mq
  
-   (routing-all (queue/create {:type :rabbitmq
+   (routing-all (common/create {:type :rabbitmq
                                :refresh true})
                 {})
    => {\"/\" {:queues {}, :exchanges {}, :bindings {}}}"
@@ -32,13 +33,13 @@
   [rabbitmq opts]
   (let [vhosts  (->> (api/list-vhosts rabbitmq)
                      (mapv :name))]
-    (->> (map #(queue/routing (assoc rabbitmq :vhost-encode (URLEncoder/encode %))) vhosts)
+    (->> (map #(common/routing (assoc rabbitmq :vhost-encode (URLEncoder/encode %))) vhosts)
          (zipmap vhosts))))
 
 (defn network
   "returns the mq network
  
-   (network (queue/create {:type :rabbitmq
+   (network (common/create {:type :rabbitmq
                            :refresh true}))
    => (contains-in {:cluster-name string?
                     :nodes [string?]
@@ -67,19 +68,19 @@
 (defrecord RabbitMQ []
   Object
   (toString [mq]
-    (str "#rabbit" (queue/routing mq {:short true})))
+    (str "#rabbit" (common/routing mq {:short true})))
   
   component/IComponent
   (-start [{:keys [routing consumers refresh] :as mq}]
     (cond-> mq
-       refresh   (queue/purge-routing)
-       routing   (queue/install-routing routing)
-       consumers (queue/install-consumers consumers)))
+       refresh   (common/purge-routing)
+       routing   (common/install-routing routing)
+       consumers (common/install-consumers consumers)))
   
   (-stop [mq]
     mq)
 
-  interface/IQueue
+  queue/IQueue
   (-list-queues     [mq]
     (->> (api/list-queues mq)
          (reduce (fn [out {:keys [name] :as data}]
@@ -163,7 +164,7 @@
                                               :write ".*"
                                               :read ".*"}))))
 
-(defmethod queue/create :rabbitmq
+(defmethod common/create :rabbitmq
   [m]
   (let [m (merge m *default-options*)]
     (-> (map->RabbitMQ m)
@@ -174,5 +175,5 @@
   {:added "0.5"}
   ([] (rabbit {}))
   ([m]
-   (-> (queue/create {:type :rabbitmq})
+   (-> (common/create {:type :rabbitmq})
        (component/start))))
