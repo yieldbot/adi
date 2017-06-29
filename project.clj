@@ -1,16 +1,16 @@
-(defproject im.chit/spirit "0.5.3"
+(defproject im.chit/spirit "0.5.4"
   :description "data. simplified"
   :url "https://www.github.com/zcaudate/spirit"
   :license {:name "The MIT License"
             :url "http://http://opensource.org/licenses/MIT"}
   :aliases {"test" ["run" "-m" "hara.test" "exit"]}
   :dependencies [[org.clojure/clojure    "1.8.0"]
-                 [im.chit/hara.common    "2.5.8"]
-                 [im.chit/hara.component "2.5.8"]
-                 [im.chit/hara.data      "2.5.8"]
-                 [im.chit/hara.event     "2.5.8"]
-                 [im.chit/hara.function  "2.5.8"]
-                 [im.chit/hara.string    "2.5.8"]
+                 [im.chit/hara.common    "2.5.10"]
+                 [im.chit/hara.component "2.5.10"]
+                 [im.chit/hara.data      "2.5.10"]
+                 [im.chit/hara.event     "2.5.10"]
+                 [im.chit/hara.function  "2.5.10"]
+                 [im.chit/hara.string    "2.5.10"]
                  [inflections "0.13.0"]
                  [http-kit "2.2.0"]
                  [compojure "1.6.0"]
@@ -51,10 +51,10 @@
   
   :profiles {:dev {:dependencies [[com.datomic/datomic-free "0.9.5561.50"]
                                   [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
-                                  [im.chit/lucid.publish "1.3.12"]
-                                  [im.chit/lucid.unit    "1.3.12"]
-                                  [im.chit/lucid.package "1.3.12"]
-                                  [im.chit/lucid.package "1.3.12"]
-                                  [im.chit/hara.test  "2.5.8"]
+                                  [im.chit/lucid.distribute "1.3.13"]
+                                  [im.chit/lucid.mind       "1.3.13"]
+                                  [im.chit/lucid.publish    "1.3.13"]
+                                  [im.chit/lucid.unit       "1.3.13"]
+                                  [im.chit/hara.test  "2.5.10"]
                                   [clj-time "0.13.0"]]
                    :plugins [[lein-ancient "0.6.10"]]}})

@@ -6,5 +6,5 @@
   (-keys-in   [db arr])
   (-drop-in   [db arr])
   (-set-in    [db arr v])
-  (-select-in [db arr])
+  (-select-in [db arr v])
   (-mutate-in [db ks add-map del-vec]))

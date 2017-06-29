@@ -1,5 +1,7 @@
 (ns spirit.common.queue
-  (:require [spirit.protocol.iqueue :as interface]))
+  (:require [spirit.protocol.iqueue :as interface]
+            [hara.component :as component])
+  (:refer-clojure :exclude [queue]))
 
 (def ^:dynamic *default-queue-options*
   {:exclusive false :auto-delete false :durable false})
@@ -513,30 +515,28 @@
   (-publish         [mq exchange body {:keys [key headers]}]
     (let [ex-atm (get-in @state [:exchanges exchange])]
       (swap! ex-atm assoc :package {:key key :headers headers :body body}))
-    mq))
+    mq)
+
+  component/IComponent
+
+  (-start [{:keys [routing consumers refresh] :as mq}]
+    (cond-> mq
+       refresh   (purge-routing)
+       routing   (install-routing routing)
+       consumers (install-consumers consumers)))
+
+
+  (-stop [mq] mq))
 
 (defmethod print-method MockMQ
   [v w]
   (.write w (str v)))
 
-(defmulti create-queue
+(defmulti queue
   ""
   :type)
 
-(defmethod create-queue :mock
+(defmethod queue :mock
   ([m]
    (merge (MockMQ. (atom {}))
           m)))
-
-(defn create
-  ""
-  ([] (create {}))
-  ([{:keys [type routing consumers refresh] :as m}]
-   (let [type (or type :mock)
-         mq (create-queue (assoc m :type type))]
-     (cond-> mq
-       refresh   (purge-routing)
-       routing   (install-routing routing)
-       consumers (install-consumers consumers)))))
-
-

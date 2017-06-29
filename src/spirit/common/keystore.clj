@@ -34,14 +34,32 @@
      db))
 
 (defn select-in
-  ([db] (select-in db []))
-  ([db arr]
-    (keystore/-select-in db arr)))
+  ([db v] (select-in db [] v))
+  ([db arr v]
+    (keystore/-select-in db arr v)))
 
 (defn mutate-in
   [db ks add-map del-vec]
   (keystore/-mutate-in db ks add-map del-vec)
   db)
+
+(defn match [data query]
+  (cond (and (map? data)
+             (map? query))
+        (->> (keys query)
+             (map (fn [k]
+                    (let [sdata  (get data k)
+                          squery (get query k)]
+                      (if (nil? sdata)
+                        false
+                        (match sdata squery)))))
+             (every? true?))
+
+        (fn? query)
+        (query data)
+
+        :else
+        (= query data)))
 
 (extend-protocol keystore/IKeystore
   
@@ -64,6 +82,14 @@
     (if (empty? arr)
       (reset! atom v)
       (swap! atom assoc-in arr v)))
+  (-select-in [atom arr q]
+    (let [data (get-in @atom arr)]
+      (reduce-kv (fn [out k v]
+                   (if (match v q)
+                     (conj out v)
+                     out))
+                 []
+                 data)))
   (-mutate-in [atom arr add-map del-vec]
     (let [addm {arr add-map}]
       (swap! atom
@@ -85,7 +111,9 @@
   (-drop-in [db arr]
     (drop-in state arr))
   (-set-in [db arr v]
-    (set-in state arr))
+    (set-in state arr v))
+  (-select-in [db arr q]
+    (select-in state arr q))
   (-mutate-in [db arr add-map del-vec]
     (mutate-in state arr)))
 
@@ -97,8 +125,9 @@
 
 (defmethod keystore :mock
   [{:keys [file initial reset] :as opts}]
-  (let [file  (or file "keystore.db")
-        state (atom/file-backed (atom nil) (assoc opts :file file))]
+  (let [state (if file
+                (atom/file-backed (atom nil) (assoc opts :file file))
+                (atom {}))]
     (MockKeystore. state opts)))
 
 (comment
