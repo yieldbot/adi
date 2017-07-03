@@ -209,14 +209,14 @@
   {:added "0.5"}
   :type)
 
-(defmethod create :atom
+(defmethod create :raw
   [{:keys [data]}]
   (atom (or data {})))
 
 (defmethod create :mock
-  [{:keys [file initial reset] :as opts}]
+  [{:keys [file data reset] :as opts}]
   (let [_ (if reset (fs/delete file))
-        state (cond-> (atom (or initial {}))
+        state (cond-> (atom (or data {}))
                 file
                 (atom/file-out opts))]
     (MockKeystore. state opts)))
