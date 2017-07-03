@@ -4,6 +4,10 @@
             [clojure.string :as string]
             [hara.string.prose :as prose]))
 
+(defn ascii
+  [vs]
+  (string/join "\n" vs))
+
 ^{:refer spirit.common.table/generate-basic-table :added "0.5"}
 (fact "generates a table for output"
 
@@ -11,15 +15,15 @@
                              [{:id 1 :value "a"}
                               {:id 2 :value "b"}])
       
-  => (prose/ascii ["| :id | :value |"
-                   "|-----+--------|"
-                   "|   1 |    \"a\" |"
-                   "|   2 |    \"b\" |"]))
+  => (ascii ["| :id | :value |"
+             "|-----+--------|"
+             "|   1 |    \"a\" |"
+             "|   2 |    \"b\" |"]))
 
 ^{:refer spirit.common.table/parse-basic-table :added "0.5"}
 (fact "reads a table from a string"
 
-  (parse-basic-table (prose/ascii
+  (parse-basic-table (ascii
                       ["| :id | :value |"
                        "|-----+--------|"
                        "|   1 |    \"a\" |"
@@ -36,20 +40,20 @@
                          {:headers [:id :email :value]
                           :sort-key :email
                           :id-key :email})
-  => (prose/ascii ["| :id |    :email | :value |"
-                   "|-----+-----------+--------|"
-                   "|   1 | \"a@a.com\" |    \"a\" |"
-                   "|   2 | \"b@b.com\" |    \"b\" |"]))
-  
+  => (ascii ["| :id |    :email | :value |"
+             "|-----+-----------+--------|"
+             "|   1 | \"a@a.com\" |    \"a\" |"
+             "|   2 | \"b@b.com\" |    \"b\" |"]))
+
 
 ^{:refer spirit.common.table/parse-single-table :added "0.5"}
 (fact "generates a single table"
 
   (parse-single-table
-   (prose/ascii ["| :id |    :email | :value |"
-                 "|-----+-----------+--------|"
-                 "|   1 | \"a@a.com\" |    \"a\" |"
-                 "|   2 | \"b@b.com\" |    \"b\" |"])
+   (ascii ["| :id |    :email | :value |"
+           "|-----+-----------+--------|"
+           "|   1 | \"a@a.com\" |    \"a\" |"
+           "|   2 | \"b@b.com\" |    \"b\" |"])
    
    {:headers [:id :email :value]
     :sort-key :email
@@ -73,13 +77,13 @@
               :info    [:id :name]}
     :sort-key {:info :name}
     :id-key {:account :email}})
-  => {:account (prose/ascii
+  => {:account (ascii
                 ["| :id |    :email | :value |"
                  "|-----+-----------+--------|"
                  "|   1 | \"a@a.com\" |    \"a\" |"
                  "|   2 | \"b@b.com\" |    \"b\" |"])
 
-      :info (prose/ascii
+      :info (ascii
              ["| :id |   :name |"
               "|-----+---------|"
               "|   3 |  \"Cain\" |"
