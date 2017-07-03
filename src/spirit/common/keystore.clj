@@ -230,8 +230,6 @@
    (keystore {:type :atom})
    => clojure.lang.Atom"
   {:added "0.5"}
-  ([]
-   (create {:type :mock}))
   ([m]
    (-> (create m)
        (component/start))))

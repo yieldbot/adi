@@ -6,7 +6,7 @@
 ^{:refer spirit.common.keystore/create :added "0.5"}
 (fact "creates a keystore"
 
-  (create {:type :atom})
+  (create {:type :raw})
 
   (create {:type :mock
            :file "test.edn"}))
@@ -92,8 +92,8 @@
 ^{:refer spirit.common.keystore/keystore :added "0.5"}
 (fact "creates a standalone keystore"
 
-  (keystore)
+  (keystore {:type :mock})
   => MockKeystore
 
-  (keystore {:type :atom})
+  (keystore {:type :raw})
   => clojure.lang.Atom)
