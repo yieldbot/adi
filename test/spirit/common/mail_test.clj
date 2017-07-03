@@ -43,4 +43,4 @@
 ^{:refer spirit.common.mail/mail :added "0.5"}
 (fact "creates a mail service"
   
-  (mail {:type :postal}))
+  (mail {:type :mock}))
