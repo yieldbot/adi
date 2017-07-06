@@ -5,8 +5,6 @@
 
 (def ^:dynamic *properties-file* ".properties")
 
-
-
 (defn generate-basic-table
   "generates a table for output
  

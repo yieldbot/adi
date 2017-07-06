@@ -1,4 +1,4 @@
-(defproject im.chit/spirit "0.5.4"
+(defproject im.chit/spirit "0.5.5"
   :description "data. simplified"
   :url "https://www.github.com/zcaudate/spirit"
   :license {:name "The MIT License"
@@ -12,11 +12,12 @@
                  [im.chit/hara.function  "2.5.10"]
                  [im.chit/hara.string    "2.5.10"]
                  [com.datomic/datomic-free "0.9.5561.50"]
-
+                 
                  [inflections "0.13.0"]
                  [http-kit "2.2.0"]
                  [compojure "1.6.0"]
-
+                 [cheshire "5.7.1"]
+                 
                  [ring/ring "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
                  
@@ -50,11 +51,11 @@
   
   :distribute {:jars  :dependencies
                :files [{:type :clojure
-                        :levels 1
-                        :path "src"}]}
+                        :levels 2
+                        :path "src"
+                        :standalone #{"datomic" "httpkit" "rabbitmq"}}]}
   
-  :profiles {:dev {:dependencies [
-                                  [im.chit/lucid.distribute "1.3.13"]
+  :profiles {:dev {:dependencies [[im.chit/lucid.distribute "1.3.13"]
                                   [im.chit/lucid.mind       "1.3.13"]
                                   [im.chit/lucid.publish    "1.3.13"]
                                   [im.chit/lucid.unit       "1.3.13"]
