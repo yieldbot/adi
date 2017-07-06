@@ -1,10 +1,10 @@
 (ns spirit.postal
   (:require [spirit.protocol.imail :as mail]
-            [hara.string.mustache :as mustach]
+            [hara.string.mustache :as mustache]
             [spirit.common.mail :as common]))
 
 (defrecord PostalMailer []
-
+  
   mail/IMailer
   #_(-send-mail [mailer {:keys []} data]))
 

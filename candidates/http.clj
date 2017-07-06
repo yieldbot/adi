@@ -34,6 +34,11 @@
   (fn [m]
     (handler (assoc m :scope key))))
 
+(defn adjust-path [path]
+  (let [path (if (.startsWith path "/") path (str "/" path))
+        path (if (.endsWith path "/") path (str path "/"))]
+    path))
+
 (defn create-websocket-routes
   "specified using the 'path' input"
   {:added "0.5"}
@@ -45,30 +50,33 @@
                           req
                      ((:ajax-post-fn ws) req))))
 
+(defn create-websocket-scope-handler [handlers scope]
+  (wrap-scope (fn [{:keys [id] :as msg}]
+                (if-let [handler (get handlers id)]
+                  (handler (assoc msg :scope scope))))
+              scope))
+
+(defn wrap-transport
+  [f]
+  (fn [{:keys [id] :as msg}]
+    (f [id msg])))
+
 (defn create-websocket-handler
-  "takes in a table of handlers and also the scope
-   
-   (create-websocket-handler
-    {:debug {:event-handler   :<debug-event>>
-             :request-handler :<debug-request>}
-    :auth  {:event-handler   :<auth-event>
-             :request-handler :<auth-request>}}
-    [:auth :debug])"
-  {:added "0.5"}
   [handlers scope]
-  (let [event-handlers   (->> scope
-                              (map (fn [k]
-                                     (wrap-scope (or (get-in handlers [k :event-handler])
-                                                     default-event-handler)
-                                                 k))))
-        request-handlers (->> scope
-                              (map (fn [k]
-                                     (wrap-scope (or (get-in handlers [k :request-handler])
-                                                     default-request-handler)
-                                                 k))))]    
-    (fn [{:as msg :keys [event id ?data ring-req ?reply-fn send-fn]}]
+  (let [event-handlers   (keep (fn [k]
+                                 (-> (get-in handlers [k :event-handlers])
+                                     (create-websocket-scope-handler k)))
+                               scope)
+        request-handlers (keep (fn [k]
+                                 (-> (get-in handlers [k :request-handlers])
+                                     (create-websocket-scope-handler k)))
+                               scope)]
+    
+    (fn [{:as msg :keys [id ?data ?reply-fn send-fn]}]
       (if ?reply-fn
-        (?reply-fn [id (some #(%1 msg) request-handlers)])
+        ((wrap-transport ?reply-fn) (assoc (some #(%1 msg)
+                                                 request-handlers)
+                                           :id id))
         (some #(%1 msg) event-handlers)))))
 
 (defn create-websocket
@@ -83,11 +91,11 @@
                           :request-handler :<auth-request>}}})"
   {:added "0.5"}
   [{:keys [packer path scope handlers]}]
-  (let [ws (websocket/websocket {:packer (or packer :edn)
-                                 :handler (create-websocket-handler handlers scope)})
-        http-routes (-> (create-websocket-routes ws path)
-                        )]
-    {:ws ws :ws-routes http-routes}))
+  (let [path (adjust-path path)
+        ws     (websocket/websocket {:packer (or packer :edn)
+                                     :handler (create-websocket-handler handlers scope)})
+        routes (create-websocket-routes ws path)]
+    {:ws ws :ws-routes routes}))
 
 (defn create-application-handler
   "creates a set of routes for http consumption
@@ -100,20 +108,20 @@
              :handler  :<auth>}}
     [:auth :debug])"
   {:added "0.5"}
-  [path handler routes]
+  [path handlers routes]
   (fn [{:keys [uri body params] :as request}]
-    (let [path (if (.startsWith path "/") path (str "/" path))
-          path (if (.endsWith path "/") path (str path "/"))
-          result (bidi/match-route [path routes] uri)]
-      (if result
+    (let [path (adjust-path path)
+          {id :handler :as result} (bidi/match-route [path routes] uri)
+          handler (get handlers id)]
+      (if (and result handler)
         {:status 200
          :headers {"Content-Type" "text/plain"}
-         :body (prn-str (handler (assoc request
-                                        :id (:handler result)
-                                        :?data (merge (:route-params result)
-                                                      (cond (string? body)
-                                                            (read-string body))
-                                                      params))))}))))
+         :body (pr-str (handler (assoc request
+                                       :id id
+                                       :?data (merge (:route-params result)
+                                                     (cond (string? body)
+                                                           (read-string body))
+                                                     params))))}))))
 
 (defn create-application
   "creates the set of application routes for consumption
@@ -129,8 +137,7 @@
                                 (map (fn [k]
                                        (-> (create-application-handler
                                             path
-                                            (or (get-in handlers [k :handler])
-                                                default-request-handler)
+                                            (get-in handlers [k :handlers])
                                             (or (get-in handlers [k :routes])
                                                 {}))
                                            (wrap-scope k)))))]
@@ -186,8 +193,10 @@
       (assoc app :websocket-server ws :http-server server)))
   
   (-stop [{:keys [websocket-server http-server] :as app}]
-    (component/stop websocket-server)
-    (component/stop http-server)
+    (if websocket-server
+      (component/stop websocket-server))
+    (if http-server
+      (component/stop http-server))
     (dissoc app :websocket-channel :http-server)))
 
 (defn application

@@ -11,16 +11,20 @@
                  [im.chit/hara.event     "2.5.10"]
                  [im.chit/hara.function  "2.5.10"]
                  [im.chit/hara.string    "2.5.10"]
+                 [com.datomic/datomic-free "0.9.5561.50"]
+
                  [inflections "0.13.0"]
                  [http-kit "2.2.0"]
                  [compojure "1.6.0"]
-                 [bidi "2.1.1"]
-                 [ring "1.6.1"]
+
+                 [ring/ring "1.6.1"]
                  [ring/ring-defaults "0.3.0"]
-                 [com.taoensso/sente "1.11.0"]
-                 [cheshire "5.7.1"]
+                 
+                 [org.eclipse.jetty.websocket/websocket-client "9.4.6.v20170531"]
+                 [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
                  [com.draines/postal     "2.0.2"]
                  [com.rabbitmq/amqp-client "4.1.1"]]
+  
   :java-source-paths ["java"]
   :publish {:theme  "mormont"
             
@@ -49,8 +53,7 @@
                         :levels 1
                         :path "src"}]}
   
-  :profiles {:dev {:dependencies [[com.datomic/datomic-free "0.9.5561.50"]
-                                  [com.amazonaws/aws-java-sdk-dynamodb "1.11.136"]
+  :profiles {:dev {:dependencies [
                                   [im.chit/lucid.distribute "1.3.13"]
                                   [im.chit/lucid.mind       "1.3.13"]
                                   [im.chit/lucid.publish    "1.3.13"]
