@@ -1,27 +1,34 @@
 (ns spirit.httpkit.client
   (:require [hara.component :as component]
             [org.httpkit.client :as http]
-            [spirit.common.http.client.base :as base]))
+            [spirit.common.http.client.base :as base]
+            [spirit.common.http.transport :as transport]))
 
 (defrecord HttpKitClient [port]
+  Object
+  (toString [conn]
+    (str "#httpkit.client" (into {} conn)))
+  
+  transport/IConnection
+  (transport/-push   [conn data opts])
+  (transport/-request [conn data opts])
+  
   component/IComponent
+  (component/-start [{:keys [host port] :as client}]
+    server)
   
-  (component/-start [{:keys [port routes] :as server}]
-    (let [stop-fn (http-kit/run-server routes server)]
-      (assoc server :stop-fn stop-fn)))
-
-  (component/-started? [server]
-    (boolean (:stop-fn server)))
-  
+  (component/-started? [server])
   (component/-stop [server]
-    (if-let [stop (:stop-fn server)]
-      (stop))
-    (dissoc server :stop-fn)))
+    server))
 
-(defmethod base/create :http-kit
+(defmethod print-method HttpKitClient
+  [v w]
+  (.write w (str v)))
+
+(defmethod base/create :httpkit
   [m]
-  (map->HttpKitServer m))
+  (map->HttpKitClient m))
 
-(defn server [{:keys [port routes] :as opts}]
-  (-> (common/create (assoc opts :type :http-kit))
+(defn httpkit-client [m]
+  (-> (base/create (assoc m :type :httpkit))
       (component/start)))

@@ -1,15 +1,18 @@
 (ns spirit.httpkit.server
-  (:require [hara.component :as component]
-            [org.httpkit.server :as http-kit]
-            [spirit.common.http.server :as common]))
+  (:require [org.httpkit.server :as httpkit]
+            [spirit.common.http.server :as common]
+            [hara.component :as component]
+            [hara.data.nested :as nested]))
 
-(defrecord HttpKitServer [port]
+(defrecord HttpkitServer [port]
   component/IComponent
   
-  (component/-start [{:keys [port routes] :as server}]
-    (let [stop-fn (http-kit/run-server routes server)]
+  (component/-start [{:keys [port handler applications] :as server}]
+    (let [handler (or handler
+                      (common/create-handler server applications))
+          stop-fn (httpkit/run-server handler server)]
       (assoc server :stop-fn stop-fn)))
-
+  
   (component/-started? [server]
     (boolean (:stop-fn server)))
   
@@ -18,10 +21,21 @@
       (stop))
     (dissoc server :stop-fn)))
 
-(defmethod common/create :http-kit
+(defmethod common/create :httpkit
   [m]
-  (map->HttpKitServer m))
+  (map->HttpkitServer (nested/merge-nested common/*default-config* m)))
 
-(defn server [{:keys [port routes] :as opts}]
-  (-> (common/create (assoc opts :type :http-kit))
+(defn server
+  "creating httpkit server
+ 
+   (def sys (server {:handler (fn [_] {:status 200 :body \"hello world\"})}))
+ 
+   (-> @(client/get \"http://localhost:8000\" {:as :text})
+       :body)
+   => \"hello world\"
+ 
+   (component/stop sys)"
+  {:added "0.5"}
+  [{:keys [protocol host port enable applications handler] :as opts}]
+  (-> (common/create (assoc opts :type :httpkit))
       (component/start)))
