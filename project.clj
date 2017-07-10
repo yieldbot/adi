@@ -5,6 +5,7 @@
             :url "http://http://opensource.org/licenses/MIT"}
   :aliases {"test" ["run" "-m" "hara.test" "exit"]}
   :dependencies [[org.clojure/clojure    "1.8.0"]
+                 [org.clojure/core.async "0.3.443"]
                  [im.chit/hara.common    "2.5.10"]
                  [im.chit/hara.component "2.5.10"]
                  [im.chit/hara.data      "2.5.10"]

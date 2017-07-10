@@ -5,6 +5,10 @@
             [hara.data.nested :as nested]))
 
 (defrecord HttpkitServer [port]
+  Object
+  (toString [conn]
+    (str "#httpkit.server" (into {} conn)))
+  
   component/IComponent
   
   (component/-start [{:keys [port handler applications] :as server}]
@@ -20,6 +24,10 @@
     (if-let [stop (:stop-fn server)]
       (stop))
     (dissoc server :stop-fn)))
+
+(defmethod print-method HttpkitServer
+  [v w]
+  (.write w (str v)))
 
 (defmethod common/create :httpkit
   [m]

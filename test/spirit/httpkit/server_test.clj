@@ -10,8 +10,8 @@
 ^{:refer spirit.httpkit.server/server :added "0.5"}
 (fact "creating httpkit server"
 
-  (def sys (server {:handler (fn [_] {:status 200 :body "hello world"})}))
-
+  (def sys (server {:handler (fn [req] (prn req) {:status 200 :body "hello world"})}))
+  
   (-> @(client/get "http://localhost:8000" {:as :text})
       :body)
   => "hello world"

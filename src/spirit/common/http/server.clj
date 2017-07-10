@@ -147,9 +147,9 @@
   ([handler]
    (wrap-parse-data handler :edn))
   ([handler format]
-   (fn [{:keys [body params] :as req}]
+   (fn [{:keys [body] :as req}]
      (let [data (transport/read-body body format)]
-       (handler (update-in req [:data] merge params data))))))
+       (handler (assoc-in req [:data] data))))))
 
 (defn wrap-response
   "reads data from `:body` and store in `:data`
@@ -219,6 +219,32 @@
              :else
              (throw (ex-info "TRANSPORT SHOULD CONTAIN A RESPONSE" {})))))))
 
+(defn wrap-timing
+  [handler]
+  (fn [{:keys [params] :as req}]
+    (cond (:timing params)
+          (let [start    (System/nanoTime)
+                response (handler req)
+                end      (System/nanoTime)]
+            (assoc-in response [:meta :timing] (- end start)))
+
+          :else
+          (handler req))))
+
+(defn wrap-delay
+  [handler]
+  (fn [{:keys [params] :as req}]
+    (if-let [delay (:delay params)]
+      (do (Thread/sleep delay)
+          (handler req))
+      (handler req))))
+
+(defn wrap-all [handlers wrapper]
+  (reduce-kv (fn [out k v]
+               (assoc out k (wrapper v)))
+             {}
+             handlers))
+
 (defn base-handler
   "base handler for `:id` based dispatching
  
@@ -227,10 +253,19 @@
      :data {:hello :world}})
    => {:hello :world}"
   {:added "0.5"}
-  [handlers]
-  (fn [{:keys [id data] :as req}]
-    (if-let [handler (get handlers id)]
-      (handler data))))
+  ([handlers]
+   (base-handler handlers {}))
+  ([handlers options]
+   (let [handlers (cond-> (wrap-all handlers wrap-response)
+                    
+                    (:timing options)
+                    (wrap-all wrap-timing)
+                    
+                    (:delay options)
+                    (wrap-all wrap-delay))]
+     (fn [{:keys [id data] :as req}]
+       (if-let [handler (get handlers id)]
+         (handler data))))))
 
 (def ^:dynamic *default-wrapper-lookup*
   {:wrap-transport      {:func wrap-transport
@@ -240,13 +275,11 @@
                          :args [[:path]]}
    :wrap-routes         {:func wrap-routes
                          :args [[:routes] []]}
-   :wrap-response       {:func wrap-response}
    :wrap-parse-data     {:func wrap-parse-data
                          :args [[:format]]}})
 
 (def ^:dynamic *default-wrapper-list*
   [:wrap-parse-data
-   :wrap-response
    :wrap-routes
    :wrap-path-uri
    :wrap-trim-uri
