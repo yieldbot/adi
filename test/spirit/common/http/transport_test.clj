@@ -37,3 +37,14 @@
                                 :args [[:ops :mul]]}})
    10)
   => 150)
+
+^{:refer spirit.common.http.transport/response :added "0.5"}
+(fact "constructs a Response object"
+
+  (response {:id :on/info
+             :header {:token "123password"}
+             :data {:name "Chris"}})
+  => spirit.common.http.transport.Response)
+
+^{:refer spirit.common.http.transport/response? :added "0.5"}
+(fact "checks if data is a response")

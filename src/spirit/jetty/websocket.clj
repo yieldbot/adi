@@ -1,17 +1,161 @@
 (ns spirit.jetty.websocket
-  (:require [org.httpkit.server :as httpkit]))
+  (:import java.net.URI
+           java.nio.ByteBuffer
+           java.util.List
+           (org.eclipse.jetty.websocket.client ClientUpgradeRequest
+                                               WebSocketClient)
+           (org.eclipse.jetty.util.ssl SslContextFactory)
+           (org.eclipse.jetty.websocket.api WebSocketListener
+                                            RemoteEndpoint
+                                            Session)
+           (org.eclipse.jetty.websocket.api.extensions ExtensionConfig)))
 
-(defn handler [req]
-  (with-channel req channel              ; get the channel
-    ;; communicate with client using method defined above
-    (on-close channel (fn [status]
-                        (println "channel closed")))
-    (if (websocket? channel)
-      (println "WebSocket channel")
-      (println "HTTP channel"))
-    (on-receive channel (fn [data]       ; data received from client
-           ;; An optional param can pass to send!: close-after-send?
-           ;; When unspecified, `close-after-send?` defaults to true for HTTP channels
-           ;; and false for WebSocket.  (send! channel data close-after-send?)
-                          (send! channel data))))) ; data is sent directly to the client
-(run-server handler {:port 8080})
+;; ## Messages
+
+(defprotocol Sendable
+  (send-to-endpoint [this ^RemoteEndpoint e]
+    "Sends an entity to a given WebSocket endpoint."))
+
+(extend-protocol Sendable
+  java.lang.String
+  (send-to-endpoint [msg ^RemoteEndpoint e]
+    @(.sendStringByFuture e msg))
+
+  java.nio.ByteBuffer
+  (send-to-endpoint [buf ^RemoteEndpoint e]
+    @(.sendBytesByFuture e buf)))
+
+(extend-type (class (byte-array 0))
+  Sendable
+  (send-to-endpoint [data ^RemoteEndpoint e]
+    @(.sendBytesByFuture e (ByteBuffer/wrap data))))
+
+;; ## Client
+
+(defprotocol ^:private Client
+  (send-msg [this msg]
+    "Sends a message (implementing `gniazdo.core/Sendable`) to the given WebSocket.")
+  (close [this]
+    "Closes the WebSocket."))
+
+;; ## WebSocket Helpers
+
+(defn- add-headers!
+  [^ClientUpgradeRequest request headers]
+  {:pre [(every? string? (keys headers))]}
+  (doseq [[header value] headers]
+    (let [header-values (if (sequential? value)
+                          value
+                          [value])]
+      (assert (every? string? header-values))
+      (.setHeader
+        request
+        ^String header
+        ^java.util.List header-values))))
+
+(defn- add-subprotocols!
+  [^ClientUpgradeRequest request subprotocols]
+  {:pre [(or (nil? subprotocols) (sequential? subprotocols))
+         (every? string? subprotocols)]}
+  (when (seq subprotocols)
+    (.setSubProtocols request ^List (into () subprotocols))))
+
+(defn- add-extensions!
+  [^ClientUpgradeRequest request extensions]
+  {:pre [(or (nil? extensions) (sequential? extensions))
+         (every? string? extensions)]}
+  (when (seq extensions)
+    (.setExtensions request ^List (map #(ExtensionConfig. ^String %)
+                                       extensions))))
+
+(defn- upgrade-request
+  ^ClientUpgradeRequest
+  [{:keys [headers subprotocols extensions]}]
+  (doto (ClientUpgradeRequest.)
+    (add-headers! headers)
+    (add-subprotocols! subprotocols)
+    (add-extensions! extensions)))
+
+(defn- listener
+  ^WebSocketListener
+  [{:keys [on-connect on-receive on-binary on-error on-close]
+    :or {on-connect (constantly nil)
+         on-receive (constantly nil)
+         on-binary  (constantly nil)
+         on-error   (constantly nil)
+         on-close   (constantly nil)}}
+   result-promise]
+  (reify WebSocketListener
+    (onWebSocketText [_ msg]
+      (on-receive msg))
+    (onWebSocketBinary [_ data offset length]
+      (on-binary data offset length))
+    (onWebSocketError [_ throwable]
+      (if (realized? result-promise)
+        (on-error throwable)
+        (deliver result-promise throwable)))
+    (onWebSocketConnect [_  session]
+      (deliver result-promise session)
+      (on-connect session))
+    (onWebSocketClose [_ x y]
+      (on-close x y))))
+
+(defn- deref-session
+  ^Session
+  [result-promise]
+  (let [result @result-promise]
+    (if (instance? Throwable result)
+      (throw result)
+      result)))
+
+;; ## WebSocket Client + Connection (API)
+
+(defn client
+  "Create a new instance of `WebSocketClient`. If the optionally supplied URI
+   is representing a secure WebSocket endpoint (\"wss://...\") an SSL-capable
+   instance will be returned."
+  (^WebSocketClient
+    [] (WebSocketClient.))
+  (^WebSocketClient
+    [^URI uri]
+    (if (= "wss" (.getScheme uri))
+      (WebSocketClient. (SslContextFactory.))
+      (WebSocketClient.))))
+
+(defn- connect-with-client
+  "Connect to a WebSocket using the supplied `WebSocketClient` instance."
+  [^WebSocketClient client ^URI uri opts]
+   (let [request (upgrade-request opts)
+         cleanup (::cleanup opts)
+         result-promise (promise)
+         listener (listener opts result-promise)]
+     (.connect client listener uri request)
+     (let [session (deref-session result-promise)]
+       (reify Client
+         (send-msg [_ msg]
+           (send-to-endpoint msg (.getRemote session)))
+         (close [_]
+           (when cleanup
+             (cleanup))
+           (.close session))))))
+
+(defn- connect-helper
+  [^URI uri opts]
+  (let [client (client uri)]
+    (try
+      (.start client)
+      (->> (assoc opts ::cleanup #(.stop client))
+           (connect-with-client client uri))
+      (catch Throwable ex
+        (.stop client)
+        (throw ex)))))
+
+(defn connect
+  "Connects to a WebSocket at a given URI (e.g. ws://example.org:1234/socket)."
+  [uri & {:keys [on-connect on-receive on-binary on-error on-close headers client
+                 subprotocols extensions]
+          :as opts}]
+  (let [uri' (URI. uri)]
+    (if client
+      (connect-with-client client uri' opts)
+      (connect-helper uri' opts))))

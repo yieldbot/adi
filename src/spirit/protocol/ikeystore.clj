@@ -1,7 +1,7 @@
 (ns spirit.protocol.ikeystore)
 
 (defprotocol IKeystore
-  (-put-in    [db arr v])
+  (-put-in    [db path v])
   (-peek-in   [db arr])
   (-keys-in   [db arr])
   (-drop-in   [db arr])

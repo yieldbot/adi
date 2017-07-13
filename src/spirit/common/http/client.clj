@@ -13,13 +13,14 @@
    :wrap-transport])
 
 (def ^:dynamic *default-config*
-  (merge transport/*default-config*))
+  (merge transport/*default-config*
+         {:return :value}))
 
 (defn request
   ([client package]
-   (request client package {}))
+   (transport/-request client package))
   ([client package opts]
-   (transport/-request client package opts)))
+   (request (merge client opts) package)))
 
 ;;#?(:cljs (require 'spirit.common.http.client.default))
 

@@ -7,7 +7,7 @@
 (fact "creates a keystore"
 
   (create {:type :raw})
-
+  
   (create {:type :mock
            :file "test.edn"}))
 

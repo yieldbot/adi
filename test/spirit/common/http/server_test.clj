@@ -7,17 +7,6 @@
 ^{:refer spirit.common.http.server/create :added "0.5"}
 (fact "multimethod entrypoint for server construction")
 
-^{:refer spirit.common.http.server/response :added "0.5"}
-(fact "constructs a Response object"
-
-  (response {:id :on/info
-             :header {:token "123password"}
-             :data {:name "Chris"}})
-  => spirit.common.http.server.Response)
-
-^{:refer spirit.common.http.server/response? :added "0.5"}
-(fact "checks if data is a response")
-
 ^{:refer spirit.common.http.server/trim-seperators :added "0.5"}
 (fact "gets rid of seperators on ends of string"
 

@@ -1,9 +1,9 @@
 (ns spirit.httpkit.client
   (:require [hara.component :as component]
-            [org.httpkit.client :as http]
             [spirit.common.http.client.base :as base]
             [spirit.common.http.client :as common]
             [spirit.common.http.transport :as transport]
+            [org.httpkit.client :as http]
             [ring.util.codec :as codec]
             [clojure.core.async :as async]))
 
@@ -47,83 +47,180 @@
 
 (defn http-post
   "httpkit function to client
- 
-   (def cl
-     (client/create {:type      :httpkit
-                     :protocol  \"http\"
-                     :host      \"localhost\"
-                     :port      8001
-                     :path      \"api\"
-                     :routes    {:on/id \"id\"}}))
+   (def server (new-httpkit-server))
    
-   (-> @(http-post cl {:id :on/id
-                       :params {:timing true}
-                       :data {}}
-                  {})
-       :opts
-       :url)
-   => \"http://localhost:8001/api/id?timing=true\""
+   (def client (new-httpkit-client))
+ 
+   (-> (http-post client {:id :on/id})
+       deref
+       :body
+       read-string)
+   => {:id :on/id
+       :type :reply
+       :status :success
+       :data {:on/id true}}
+   
+   (-> (http-post client {:id :on/error})
+       deref
+       :body
+       read-string)
+   => {:id :on/error
+       :type :reply
+       :status :error
+       :data {:on/error true}}
+ 
+   (component/stop server)"
   {:added "0.5"}
-  [{:keys [format] :as client}
-   {:keys [id params data]}
-   {:keys [callback process] :as opts}]
-  (let [client (merge client opts)
-        url    (create-url client id params)
-        result (http/post url {:as :text
-                               :body (transport/write-value data format)}
-                          callback)]
-    (if process
-      (process result)
-      result)))
+  [{:keys [format callback] :as client} {:keys [id params data]}]
+  (let [url    (create-url client id params)]
+    (http/post url {:as :text
+                    :body (transport/write-value data format)}
+               callback)))
 
-(defn wrap-response-errors
-  "wrap errors "
+(defn process-response
+  "processes the response - either errors or success
+   
+   (def server (new-httpkit-server))
+ 
+   (def client (new-httpkit-client))
+   
+   (process-response
+    @(http-post client {:id :on/id})
+    client
+    {:id :on/id})
+   => {:data {:on/id true}, :type :reply, :status :success, :id :on/id}
+ 
+   (component/stop server)
+   
+   (process-response
+    @(http-post client {:id :on/id})
+    client
+    {:id :on/id})
+   => (contains-in {:opts {:as :text,
+                           :body \"nil\",
+                           :method :post,
+                           :url \"http://localhost:8001/v1/id\"},
+                    :id :on/id,
+                    :type :reply,
+                    :status :error,
+                    :data {:exception java.net.ConnectException},
+                    :input nil})"
+  {:added "0.5"}
+  [{:keys [error body] :as response}
+   {:keys [format] :as client}
+   {:keys [id data] :as package}]
+  (-> (cond error
+            (assoc (dissoc response :error)
+                   :id id
+                   :type :reply
+                   :status :error
+                   :data {:exception error}
+                   :input data)
+            
+            :else
+            (transport/read-body body format))
+      (transport/response)))
+
+(defn return-channel
+  "the return channel process compatible with core.async
+   
+   (def server (new-httpkit-server))
+ 
+   (def client (new-httpkit-client))
+   
+   (async/<!! (return-channel http-post client {:id :on/id}))
+   => {:data {:on/id true}, :type :reply, :status :success, :id :on/id}
+ 
+   (component/stop server)
+   (async/<!! (return-channel http-post client {:id :on/id}))
+   => (contains-in
+       {:opts {:as :text, :body \"nil\", :method :post, :url \"http://localhost:8001/v1/id\"},
+        :id :on/id,
+        :type :reply,
+        :status :error,
+        :data {:exception java.net.ConnectException},
+        :input nil})"
+  {:added "0.5"}
+  [handler client package]
+  (let [ch (async/chan)
+        callback  (fn [response]
+                    (async/put! ch (process-response response client package))
+                    (async/close! ch))]
+    (handler (assoc client :callback callback) package)
+    ch))
+
+(defn return-promise
+  "the return channel process as a promise
+ 
+   (def server (new-httpkit-server))
+   
+   (def client (new-httpkit-client))
+   
+   (deref (return-promise http-post client {:id :on/id}))
+   => {:id :on/id
+       :type :reply
+       :status :success 
+       :data {:on/id true}}
+   
+   (component/stop server)
+ 
+   (deref (return-promise http-post client {:id :on/id}))
+   => (contains-in
+       {:opts {:as :text, :body \"nil\", :method :post, :url \"http://localhost:8001/v1/id\"},
+        :id :on/id,
+        :type :reply,
+        :status :error,
+        :data {:exception java.net.ConnectException},
+        :input nil})"
+  {:added "0.5"}
+  [handler client package]
+  (let [p (promise)
+        callback  (fn [response]
+                    (deliver p (process-response response client package)))]
+    (handler (assoc client :callback callback) package)
+    p))
+
+(defn wrap-return
+  "returns the required interface depending on `:return` value
+ 
+   (def server (new-httpkit-server))
+   
+   (def client (new-httpkit-client))
+   
+   ((wrap-return http-post)
+    (assoc client :return :value)
+    {:id :on/id})
+   => {:id :on/id
+       :type :reply
+       :status :success
+       :data {:on/id true}}
+ 
+   (-> ((wrap-return http-post)
+        (assoc client :return :channel)
+        {:id :on/id})
+       (async/<!!))
+   => {:id :on/id
+       :type :reply
+       :status :success
+       :data {:on/id true}}
+ 
+   (-> ((wrap-return http-post)
+        (assoc client :return :promise)
+        {:id :on/id})
+       (deref))
+   => {:id :on/id
+       :type :reply
+       :status :success
+       :data {:on/id true}}
+ 
+   (component/stop server)"
   {:added "0.5"}
   [handler]
-  (fn [response]
-    (let [result (handler response)]
-      result)))
-
-(defn wrap-response
-  ""
-  [handler]
-  (fn [client package {:keys [process callback] :as opts}]
-    (let [process  (if process  (wrap-response-errors process))
-          callback (if callback (wrap-response-errors callback))]
-      (handler client package (assoc opts
-                                     :process process
-                                     :callback callback)))))
-
-(defn wrap-promise
-  ""
-  [handler]
-  (fn [{:keys [format] :as client} package opts]
-    (let [p (promise)
-          callback (fn [{:keys [body] :as response}]
-                     (deliver p (transport/read-body body format)))]
-      (handler client package (assoc opts :callback callback))
-      p)))
-
-(defn wrap-channel
-  ""
-  [handler]
-  (fn [{:keys [format] :as client} package opts]
-    (let [ch  (async/promise-chan)
-          callback (fn [{:keys [body] :as response}]
-                     (async/put! ch (transport/read-body body format))
-                     (async/close! ch))] 
-      (handler client package (assoc opts :callback callback))
-      ch)))
-
-(defn wrap-value
-  ""
-  [handler]
-  (fn [{:keys [format] :as client} {:keys [id data] :as package} opts]
-    (let [result (handler client package {:process deref})]
-      (if-let [error (:error result)]
-        (assoc package :status :error :error error)
-        (-> (:body result)
-            (transport/read-body format))))))
+  (fn [{:keys [return] :as client} package]
+    (case return
+      :promise (return-promise handler client package)
+      :channel (return-channel handler client package)
+      :value   (deref (return-promise handler client package)))))
 
 (defrecord HttpkitClient [port]
   Object
@@ -131,19 +228,15 @@
     (str "#httpkit.client" (into {} client)))
   
   transport/IConnection
-  (transport/-push    [{:keys [handler] :as client} data opts]
-    (handler client data opts))
+  (transport/-push    [{:keys [handler] :as client} data]
+    (handler client data))
   
-  (transport/-request [{:keys [handler] :as client} data opts]
-    (handler client data opts))
+  (transport/-request [{:keys [handler] :as client} data]
+    (handler client data))
   
   component/IComponent
   (component/-start [{:keys [return] :as client}]
-    (let [handler (wrap-response http-post)
-          handler (case return
-                    :promise (wrap-promise handler)
-                    :channel (wrap-channel handler)
-                    (wrap-value handler))]
+    (let [handler (wrap-return http-post)]
       (assoc client :handler handler)))
   
   (component/-stop [client]
@@ -158,56 +251,23 @@
   (map->HttpkitClient (merge common/*default-config* m)))
 
 (defn httpkit-client
-  "" [m]
+  "creates a httpkit client for http transport
+ 
+   (def server (new-httpkit-server))
+   
+   (-> (httpkit-client {:port     8001
+                        :return   :value ;; :promise :data
+                        :path     \"v1\"
+                        :routes   {:on/id \"id\"
+                                   :on/error \"error\"}})
+       (client/request {:id :on/id}))
+   => {:id :on/id
+       :type :reply
+       :status :success
+       :data {:on/id true}}
+   
+   (component/stop server)"
+  {:added "0.5"}
+  [m]
   (-> (base/create (assoc m :type :httpkit))
       (component/start)))
-
-(comment
-
-  (def client (httpkit-client {:protocol "http"
-                               :host     "localhost"
-                               :port     8981
-                               :format   :edn
-                               ;;:return   :channel ;; :promise :data
-                               :path     "api"
-                               :routes   {:on/id    "id"}}))
-  
-  (request-channel client {})
-  
-  (common/request client {:id :on/id})
-  
-  (component/stop client)
-  
-  ((:handler client) client
-   {:id   :on/id
-    :data {}}
-   {}))
-
-(comment
-
-  (require '[spirit.httpkit.server :as server])
-
-  (def server (server/server {:port 8981
-                              :applications
-                              {:default {:path     "api"
-                                         :handlers {:on/id (fn [data] :on/id)}
-                                         :routes   {:on/id "id"}}}}))
-  
-  (component/stop server)
-  
-  (def ch (async/promise-chan))
-  
-  (async/put! ch 1)
-  (async/put! ch 1)
-  (async/close! ch)
-  
-  (async/put! ch nil)
-  
-  
-  
-
-  
-  @(http/get "http://localhost:8981/api/ide" {:as :text})
-  (httpkit-client {})
-
-  )

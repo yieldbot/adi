@@ -31,8 +31,8 @@
   (read-string s))
 
 (defprotocol IConnection
-  (-push    [conn {:keys [id header body]} opts])
-  (-request [conn {:keys [id header body]} opts]))
+  (-push    [conn {:keys [id header body]}])
+  (-request [conn {:keys [id header body]}]))
 
 (defmulti read-body
   "reads the body of the request can be expanded
@@ -75,3 +75,31 @@
               (apply func out (map #(get-in config %) args))))
           handler
           wrappers))
+
+(defrecord Response []
+  Object
+  (toString [res]
+    (str "#response" (into {} (if (get-in res [:data :exception])
+                                (update-in res [:data :exception] type)
+                                res)))))
+
+(defmethod print-method Response
+  [v w]
+  (.write w (str v)))
+
+(defn response
+  "constructs a Response object
+ 
+   (response {:id :on/info
+              :header {:token \"123password\"}
+              :data {:name \"Chris\"}})
+   => spirit.common.http.server.Response"
+  {:added "0.5"}
+  [{:keys [id data] :as m}]
+  (map->Response m))
+
+(defn response?
+  "checks if data is a response"
+  {:added "0.5"}
+  [response]
+  (instance? Response response))

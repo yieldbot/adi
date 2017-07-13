@@ -20,32 +20,6 @@
   [body _]
   (json/generate-string body))
 
-(defrecord Response []
-  Object
-  (toString [res]
-    (str "#response" (into {} res))))
-
-(defmethod print-method Response
-  [v w]
-  (.write w (str v)))
-
-(defn response
-  "constructs a Response object
- 
-   (response {:id :on/info
-              :header {:token \"123password\"}
-              :data {:name \"Chris\"}})
-   => spirit.common.http.server.Response"
-  {:added "0.5"}
-  [{:keys [id data] :as m}]
-  (map->Response m))
-
-(defn response?
-  "checks if data is a response"
-  {:added "0.5"}
-  [response]
-  (instance? Response response))
-
 (defn trim-seperators
   "gets rid of seperators on ends of string
  
@@ -129,13 +103,13 @@
          (let [result (handler (assoc req :id id))]
            (assoc result :id id))
          (cond (:navigation options)
-               (response {:type :not-found
-                          :status :redirect
-                          :data routes})
+               (transport/response {:type :not-found
+                                    :status :redirect
+                                    :data routes})
 
                :else
-               (response {:type :not-found
-                          :data {:uri uri}})))))))
+               (transport/response {:type :not-found
+                                    :data {:uri uri}})))))))
 
 (defn wrap-parse-data
   "reads data from `:body` and store in `:data`
@@ -177,19 +151,19 @@
   (fn [req]
     (event/manage 
      (let [result  (handler req)
-           result  (if (response? result)
+           result  (if (transport/response? result)
                      result
-                     (response {:data (or result {})}))]
+                     (transport/response {:data (or result {})}))]
        (assoc result :type :reply :status :success))
      (on _ issue
-         (response {:type    :reply
-                    :status  :error
-                    :data    issue}))
+         (transport/response {:type    :reply
+                              :status  :error
+                              :data    issue}))
      (catch clojure.lang.ExceptionInfo e
-         (response {:type    :reply
-                    :status  :error
-                    :message (.getMessage e)
-                    :data    (ex-data e)})))))
+       (transport/response {:type    :reply
+                            :status  :error
+                            :message (.getMessage e)
+                            :data    (ex-data e)})))))
 
 (defn wrap-transport
   "packages the response for delivery via http
@@ -209,7 +183,7 @@
        (cond (nil? result)
              nil
              
-             (response? result)
+             (transport/response? result)
              {:headers {"Content-Type" (case format
                                          :edn "application/edn"
                                          :json "application/json")}
