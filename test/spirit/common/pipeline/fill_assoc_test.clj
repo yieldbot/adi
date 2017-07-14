@@ -1,10 +1,10 @@
-(ns spirit.common.pipeline.fill-assoc-test
+(ns spirit.pipeline.fill-assoc-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.fill-assoc :as fill]
-            [spirit.common.pipeline.ignore :as ignore]
-            [spirit.datomic.process.pipeline.db :as db]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.pipeline.fill-assoc :as fill]
+            [spirit.pipeline.ignore :as ignore]
+            [spirit.core.datomic.process.pipeline.db :as db]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
 (def ^:dynamic *wrappers*
@@ -13,7 +13,7 @@
    :normalise-branch [pipeline/wrap-key-path]
    :normalise-attr   [pipeline/wrap-key-path]})
    
-^{:refer spirit.common.pipeline.fill-assoc/wrap-model-fill-assoc :added "0.3"}
+^{:refer spirit.pipeline.fill-assoc/wrap-model-fill-assoc :added "0.3"}
 (fact "fills data by associating additional elements"
   (pipeline/normalise {:account/name "Chris" :account/age 9}
             {:schema (schema/schema examples/account-name-age-sex)

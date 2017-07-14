@@ -1,16 +1,16 @@
-(ns spirit.common.pipeline.allow-test
+(ns spirit.pipeline.allow-test
   (:use hara.test)
   (:require [data.examples :as examples]
-            [spirit.common.schema :as schema]
-            [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.allow :as allow]))
+            [spirit.schema :as schema]
+            [spirit.pipeline :as pipeline]
+            [spirit.pipeline.allow :as allow]))
 
 (def ^:dynamic *wrappers*
   {:normalise        [pipeline/wrap-plus]
    :normalise-branch [allow/wrap-branch-model-allow pipeline/wrap-key-path]
    :normalise-attr   [allow/wrap-attr-model-allow pipeline/wrap-key-path]})
 
-^{:refer spirit.common.pipeline.allow/wrap-branch-model-allow :added "0.3"}
+^{:refer spirit.pipeline.allow/wrap-branch-model-allow :added "0.3"}
 (fact "Works together with wrap-attr-model-allow to control access to data"
   (pipeline/normalise {:account/name "Chris"}
                        {:schema (schema/schema examples/account-name-age-sex)
@@ -39,7 +39,7 @@
                    :not-allowed true
                    :nsv [:account :age]}))
 
-^{:refer spirit.common.pipeline.allow/wrap-branch-model-allow-refs :added "0.3"}
+^{:refer spirit.pipeline.allow/wrap-branch-model-allow-refs :added "0.3"}
 (fact "Allow with Refs"
   (pipeline/normalise {:account/orders {:number 1}}
                        {:schema (schema/schema examples/account-orders-items-image)

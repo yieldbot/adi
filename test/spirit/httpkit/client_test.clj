@@ -3,8 +3,8 @@
   (:require [spirit.httpkit
              [client :refer :all]
              server]
-            [spirit.common.http.client :as client]
-            [spirit.common.http.server :as server]
+            [spirit.http.client :as client]
+            [spirit.http.server :as server]
             [hara.component :as component]
             [hara.event :as event]
             [clojure.core.async :as async]))

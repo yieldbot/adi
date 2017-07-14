@@ -41,10 +41,10 @@
                     {:input "test/documentation/home_spirit.clj"
                      :title "spirit"
                      :subtitle "data. simplified."}
-                    "spirit-datomic"
+                    "spirit-core-datomic"
                     {:input "test/documentation/spirit_datomic.clj"
                      :title "datomic"
-                     :subtitle "spirit.datomic API Reference"}
+                     :subtitle "spirit.core.datomic API Reference"}
                     "spirit-rabbitmq"
                     {:input "test/documentation/spirit_rabbitmq.clj"
                      :title "rabbitmq"

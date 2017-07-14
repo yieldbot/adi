@@ -1,11 +1,11 @@
-(ns spirit.common.pipeline.base.type-check-test
+(ns spirit.pipeline.base.type-check-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.base.type-check :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.pipeline.base.type-check :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.common.pipeline.base.type-check/wrap-single-type-check :added "0.3"}
+^{:refer spirit.pipeline.base.type-check/wrap-single-type-check :added "0.3"}
 (fact "wraps normalise to type check inputs as well as to coerce incorrect inputs"
   (pipeline/normalise {:account {:age "10"}}
                        {:schema (schema/schema examples/account-name-age-sex)}

@@ -1,26 +1,26 @@
-(ns spirit.common.http.server-test
+(ns spirit.http.server-test
   (:use hara.test)
-  (:require [spirit.common.http.server :refer :all]
-            [spirit.common.http.transport :as transport]
+  (:require [spirit.http.server :refer :all]
+            [spirit.http.transport :as transport]
             [hara.event :as event]))
 
-^{:refer spirit.common.http.server/create :added "0.5"}
+^{:refer spirit.http.server/create :added "0.5"}
 (fact "multimethod entrypoint for server construction")
 
-^{:refer spirit.common.http.server/trim-seperators :added "0.5"}
+^{:refer spirit.http.server/trim-seperators :added "0.5"}
 (fact "gets rid of seperators on ends of string"
 
   (trim-seperators "//api/me//")
   => "api/me")
 
-^{:refer spirit.common.http.server/wrap-trim-uri :added "0.5"}
+^{:refer spirit.http.server/wrap-trim-uri :added "0.5"}
 (fact "gets rid of hanging seperator in :uri field"
   
   ((wrap-trim-uri identity)
    {:uri "/api/me/"})
   => {:uri "api/me"})
 
-^{:refer spirit.common.http.server/wrap-path-uri :added "0.5"}
+^{:refer spirit.http.server/wrap-path-uri :added "0.5"}
 (fact "shortcuts the lookup in the uri path"
   
   ((wrap-path-uri identity "api")
@@ -31,7 +31,7 @@
    {:uri "other/me"})
   => nil)
 
-^{:refer spirit.common.http.server/wrap-routes :added "0.5"}
+^{:refer spirit.http.server/wrap-routes :added "0.5"}
 (fact "gets rid of hanging seperator in :uri field"
   
   ((-> identity
@@ -51,14 +51,14 @@
    {:uri "api/lost"})
   => {:type :not-found, :status :redirect, :data {:on/me "api/me"}})
 
-^{:refer spirit.common.http.server/wrap-parse-data :added "0.5"}
+^{:refer spirit.http.server/wrap-parse-data :added "0.5"}
 (fact "reads data from `:body` and store in `:data`"
 
   ((wrap-parse-data identity)
    {:body "{:a 1}"})
   => {:body "{:a 1}", :data {:a 1}})
 
-^{:refer spirit.common.http.server/wrap-response :added "0.5"}
+^{:refer spirit.http.server/wrap-response :added "0.5"}
 (fact "reads data from `:body` and store in `:data`"
 
   ((wrap-response identity)
@@ -80,7 +80,7 @@
       :message "hello",
       :data {:on/hello true}})
 
-^{:refer spirit.common.http.server/wrap-transport :added "0.5"}
+^{:refer spirit.http.server/wrap-transport :added "0.5"}
 (fact "packages the response for delivery via http"
 
   ((wrap-transport (fn [_] (response {:id :on/hello
@@ -90,7 +90,7 @@
       :status 200,
       :body "{:id :on/hello, :data {:hello :world}}"})
 
-^{:refer spirit.common.http.server/base-handler :added "0.5"}
+^{:refer spirit.http.server/base-handler :added "0.5"}
 (fact "base handler for `:id` based dispatching"
 
   ((base-handler {:on/hello identity})
@@ -98,10 +98,10 @@
     :data {:hello :world}})
   => {:hello :world})
 
-^{:refer spirit.common.http.server/wrappers :added "0.5"}
+^{:refer spirit.http.server/wrappers :added "0.5"}
 (comment "accesses default wrappers in the `common.server` namespace")
 
-^{:refer spirit.common.http.server/wrap-handler :added "0.5"}
+^{:refer spirit.http.server/wrap-handler :added "0.5"}
 (fact "testing `transport/wrap-handler` for `base-handler`"
 
   (def app-handler
@@ -140,7 +140,7 @@
   => nil)
 
 
-^{:refer spirit.common.http.server/create-application-handler :added "0.5"}
+^{:refer spirit.http.server/create-application-handler :added "0.5"}
 (fact "creates a handler based on config"
 
   (def app-handler (create-application-handler
@@ -162,7 +162,7 @@
   (app-handler {:uri "lost"})
   => nil)
 
-^{:refer spirit.common.http.server/create-handler :added "0.5"}
+^{:refer spirit.http.server/create-handler :added "0.5"}
 (fact "creates a single handler for application"
 
   (def main-handler

@@ -1,9 +1,9 @@
-(ns spirit.datomic.schema.generate-test
+(ns spirit.core.datomic.schema.generate-test
   (:use hara.test)
-  (:require [spirit.datomic.schema.generate :refer :all]
-            [spirit.datomic.schema.base :as base]))
+  (:require [spirit.core.datomic.schema.generate :refer :all]
+            [spirit.core.datomic.schema.base :as base]))
 
-^{:refer spirit.datomic.schema.generate/datomic-attr-property :added "0.1"}
+^{:refer spirit.core.datomic.schema.generate/datomic-attr-property :added "0.1"}
 (fact "creates a datomic property description from spirit"
   (datomic-attr-property {:type :string} :type
                          (base/datomic-specific :type) {})
@@ -21,7 +21,7 @@
                         (base/datomic-specific :unique) {})
   => {})
 
-^{:refer spirit.datomic.schema.generate/datomic-attr :added "0.1"}
+^{:refer spirit.core.datomic.schema.generate/datomic-attr :added "0.1"}
 (fact "creates a datomic attribute schema entry"
   (datomic-attr [{:ident :account/name
                   :type  :string}])
@@ -47,7 +47,7 @@
                 :db/fulltext     true
                 :db/cardinality  :db.cardinality/many}))
 
-^{:refer spirit.datomic.schema.generate/datomic-enum :added "0.1"}
+^{:refer spirit.core.datomic.schema.generate/datomic-enum :added "0.1"}
 (fact "creates datomic idents from an `:enum` attr"
   (->> (datomic-enum [{:ident   :person/gender
                        :type    :enum
@@ -57,7 +57,7 @@
   => [{:db/ident :person.gender/female}
       {:db/ident :person.gender/male}])
 
-^{:refer spirit.datomic.schema.generate/datomic :added "0.1"}
+^{:refer spirit.core.datomic.schema.generate/datomic :added "0.1"}
 (fact "creates a full datomic schema from spirit"
   (->> (datomic-schema {:node/link   [{:ident :node/link
                                        :type  :ref

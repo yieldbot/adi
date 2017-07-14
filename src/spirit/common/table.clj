@@ -1,6 +1,5 @@
 (ns spirit.common.table
   (:require [clojure.string :as string]
-            [clojure.pprint :as pprint]
             [hara.io.file :as fs]))
 
 (def ^:dynamic *properties-file* ".properties")

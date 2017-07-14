@@ -1,29 +1,29 @@
-(ns spirit.datomic-test
+(ns spirit.core.datomic-test
   (:use hara.test)
-  (:require [spirit.datomic :refer :all]
+  (:require [spirit.core.datomic :refer :all]
             [spirit.common.graph :as graph]
             [hara.component :as component]))
 
-^{:refer spirit.datomic/connect! :added "0.5"}
+^{:refer spirit.core.datomic/connect! :added "0.5"}
 (fact "creates a datomic connection to a database"
 
   (def ds (connect! {:protocol :mem
-                     :name "spirit.datomic-test"
+                     :name "spirit.core.datomic-test"
                      :schema {:account {:user [{:required true}]}}
                      :options {:ids false
                                :reset-db true
                                :install-schema true}})))
 
-^{:refer spirit.datomic/disconnect! :added "0.5"}
+^{:refer spirit.core.datomic/disconnect! :added "0.5"}
 (comment "releases the datomic connection"
 
-  (def ds (connect! "datomic:mem://spirit.datomic-test"
+  (def ds (connect! "datomic:mem://spirit.core.datomic-test"
                     {:account {:user [{:required true}]}}
                     true true))
   (disconnect! ds))
 
 
-^{:refer spirit.datomic/args->opts :added "0.5"}
+^{:refer spirit.core.datomic/args->opts :added "0.5"}
 (fact "makes a map from input arguments"
 
   (args->opts [:raw false :first :ids :transact :datasource])
@@ -32,7 +32,7 @@
                 :ids true},
       :transact :datasource})
 
-^{:refer spirit.datomic/sync-> :added "0.5"}
+^{:refer spirit.core.datomic/sync-> :added "0.5"}
 (fact "makes a map from input arguments"
   
   (-> (test-instance)
@@ -48,16 +48,16 @@
   => #{{:account {:email "bar", :lastname "foobar"}}
        {:account {:email "baz"}}})
 
-^{:refer spirit.datomic/create-function-template :added "0.5"}
+^{:refer spirit.core.datomic/create-function-template :added "0.5"}
 (comment "helper function to define-database-functions")
 
-^{:refer spirit.datomic/define-database-functions :added "0.5"}
+^{:refer spirit.core.datomic/define-database-functions :added "0.5"}
 (comment "scaffolding to create user friendly datomic functions")
 
-^{:refer spirit.datomic/create-data-form :added "0.5"}
+^{:refer spirit.core.datomic/create-data-form :added "0.5"}
 (comment "helper function to sync-> for creating datom outputs")
 
-^{:refer spirit.datomic/test-instance :added "0.5"}
+^{:refer spirit.core.datomic/test-instance :added "0.5"}
 (comment "creates a test in-memory database")
 
 ^{:refer spirit.common.graph/grapd :added "0.5"}
@@ -65,9 +65,9 @@
   
   (graph/graph {:type :datomic
                 :protocol :mem
-                :name "spirit.datomic-test"
+                :name "spirit.core.datomic-test"
                 :options {:reset-db true}})
-  => spirit.datomic.types.Datomic)
+  => spirit.core.datomic.types.Datomic)
 
 ^{:refer spirit.common.graph/-select :added "0.5"}
 (fact "selects from the database"

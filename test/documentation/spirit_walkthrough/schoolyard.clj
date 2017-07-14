@@ -1,6 +1,6 @@
 (ns documentation.spirit-walkthrough.schoolyard
   (:use hara.test)
-  (:require [spirit.datomic :as datomic]
+  (:require [spirit.core.datomic :as datomic]
             [datomic.api :as raw]))
 
 [[:chapter {:title "Schoolyard"}]]

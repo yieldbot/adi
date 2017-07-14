@@ -1,2 +1,2 @@
 (ns spirit.api
-  (:require [spirit.datomic :as datomic]))
+  (:require [spirit.core.datomic :as datomic]))

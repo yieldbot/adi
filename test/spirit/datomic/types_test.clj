@@ -1,11 +1,11 @@
-(ns spirit.datomic.types-test
+(ns spirit.core.datomic.types-test
   (:use hara.test)
-  (:require [spirit.datomic.types :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.core.datomic.types :refer :all]
+            [spirit.schema :as schema]
             [datomic.api :as datomic]
             [hara.component :as component]))
 
-^{:refer spirit.datomic.types/construct-uri :added "0.5"}
+^{:refer spirit.core.datomic.types/construct-uri :added "0.5"}
 (fact "constructs the datomic uri"
 
   (construct-uri {:protocol :mem
@@ -21,18 +21,18 @@
     (construct-uri {:uri "datomic:mem://hello"})
   => "datomic:mem://hello")
 
-^{:refer spirit.datomic.types/connect :added "0.5"}
+^{:refer spirit.core.datomic.types/connect :added "0.5"}
 (fact "connect to uri, creating the database if it does not exist"
 
   (connect "datomic:mem://hello")
   => #(instance? datomic.peer.LocalConnection %))
 
-^{:refer spirit.datomic.types/delete-database :added "0.5"}
+^{:refer spirit.core.datomic.types/delete-database :added "0.5"}
 (fact "deletes the specified database"
   
   (delete-database {:uri "datomic:mem://hello"}))
 
-^{:refer spirit.datomic.types/install-schema :added "0.5"}
+^{:refer spirit.core.datomic.types/install-schema :added "0.5"}
 (comment "installs the schema to the database"
   
   (-> (map->Datomic {:schema {:account {:user [{}]}}
@@ -42,13 +42,13 @@
   ;;            :connection #conn{...}
   )
 
-^{:refer spirit.datomic.types/last-transaction-time :added "0.5"}
+^{:refer spirit.core.datomic.types/last-transaction-time :added "0.5"}
 (fact "returns the time of last transaction for the database"
   
   (last-transaction-time (datomic/db (connect "datomic:mem://hello")))
   => (contains [number? #(instance? java.util.Date %)]))
 
-^{:refer spirit.datomic.types/start-datomic :added "0.5"}
+^{:refer spirit.core.datomic.types/start-datomic :added "0.5"}
 (comment "helper for IComponent/-start"
   
   (start-datomic {:schema {:account {:user [{}]}}
@@ -60,7 +60,7 @@
   ;;    :connection #conn{...}}
   )
 
-^{:refer spirit.datomic.types/stop-datomic :added "0.5"}
+^{:refer spirit.core.datomic.types/stop-datomic :added "0.5"}
 (comment "helper for IComponent/-start"
 
   (-> {:uri "datomic:mem://hello"}
@@ -70,14 +70,14 @@
   ;;=> {:uri "datomic:mem://hello", :schema #schema{}}
   )
 
-^{:refer spirit.datomic.types/Datomic :added "0.5"}
+^{:refer spirit.core.datomic.types/Datomic :added "0.5"}
 (fact "testing IComponent functionality"
 
   (def topology {:db [map->Datomic :schema]
                  :schema [schema/schema]})
   
   (def config   {:db  {:protocol :mem
-                       :name "spirit.datomic.types-test"}
+                       :name "spirit.core.datomic.types-test"}
                  :schema {:account {:name [{}]}}})
   
   (-> (component/system topology config)

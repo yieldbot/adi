@@ -1,12 +1,12 @@
-(ns spirit.datomic.process.pipeline.list-test
+(ns spirit.core.datomic.process.pipeline.list-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.datomic.process.pipeline.list :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.core.datomic.process.pipeline.list :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]
             ))
 
-^{:refer spirit.datomic.process.pipeline.list/wrap-single-list :added "0.3"}
+^{:refer spirit.core.datomic.process.pipeline.list/wrap-single-list :added "0.3"}
 (fact "wraps normalise with support for more complex expressions through use of double vector"
 
   (pipeline/normalise {:account {:age '(< ? 1)}}

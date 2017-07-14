@@ -1,11 +1,11 @@
-(ns spirit.common.pipeline.ignore-test
+(ns spirit.pipeline.ignore-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.ignore :as ignore]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.pipeline.ignore :as ignore]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.common.pipeline.ignore/wrap-nil-model-ignore :added "0.3"}
+^{:refer spirit.pipeline.ignore/wrap-nil-model-ignore :added "0.3"}
 (fact "wraps the normalise-nil function such that any unknown keys are ignored"
   (pipeline/normalise {:account {:name "Chris"
                        :age 10

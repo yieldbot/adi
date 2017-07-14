@@ -1,11 +1,11 @@
-(ns spirit.common.pipeline.base.keyword-test
+(ns spirit.pipeline.base.keyword-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.base.keyword :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.pipeline.base.keyword :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.common.pipeline.base.keyword/wrap-single-keyword :added "0.3"}
+^{:refer spirit.pipeline.base.keyword/wrap-single-keyword :added "0.3"}
 (fact "removes the keyword namespace if there is one"
 
   (pipeline/normalise {:account {:type :account.type/vip}}

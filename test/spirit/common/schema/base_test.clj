@@ -1,9 +1,9 @@
-(ns spirit.common.schema.base-test
+(ns spirit.schema.base-test
   (:use hara.test)
-  (:require [spirit.common.schema.base :as base]
-            [spirit.datomic.schema.base :as datomic]))
+  (:require [spirit.schema.base :as base]
+            [spirit.core.datomic.schema.base :as datomic]))
 
-^{:refer spirit.common.schema.base/attr-add-ident :added "0.3"}
+^{:refer spirit.schema.base/attr-add-ident :added "0.3"}
 (fact "adds the key of a pair as :ident to a schema property pair"
   (base/attr-add-ident [:person [{}]])
   => [:person [{:ident :person}]]
@@ -11,7 +11,7 @@
   (base/attr-add-ident [:person/address [{}]])
   => [:person/address [{:ident :person/address}]])
 
-^{:refer spirit.common.schema.base/attr-add-defaults :added "0.3"}
+^{:refer spirit.schema.base/attr-add-defaults :added "0.3"}
 (fact "adds defaults to a given schema property pair"
   (base/attr-add-defaults [:person [{}]] [])
   => [:person [{}]]

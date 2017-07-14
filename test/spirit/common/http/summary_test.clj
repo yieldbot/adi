@@ -1,1 +1,1 @@
-(ns spirit.common.http.summary-test)
+(ns spirit.http.summary-test)

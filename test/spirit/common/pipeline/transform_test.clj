@@ -1,16 +1,16 @@
-(ns spirit.common.pipeline.transform-test
+(ns spirit.pipeline.transform-test
   (:use hara.test)
   (:require [data.examples :as examples]
-            [spirit.common.schema :as schema]
-            [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.transform :as transform]))
+            [spirit.schema :as schema]
+            [spirit.pipeline :as pipeline]
+            [spirit.pipeline.transform :as transform]))
 
 (def ^:dynamic *wrappers*
   {:normalise        [pipeline/wrap-plus transform/wrap-model-pre-transform]
    :normalise-branch [pipeline/wrap-key-path]
    :normalise-attr   [pipeline/wrap-key-path]})
 
-^{:refer spirit.common.pipeline.transform/process-transform :added "0.3"}
+^{:refer spirit.pipeline.transform/process-transform :added "0.3"}
 (fact "Used by both wrap-model-pre-transform and wrap-model-post-transform
   for determining correct input"
 
@@ -34,7 +34,7 @@
                        *wrappers*)
   => {:account {:name "Christian"}})
 
-^{:refer spirit.common.pipeline.transform/wrap-model-pre-transform :added "0.3"}
+^{:refer spirit.pipeline.transform/wrap-model-pre-transform :added "0.3"}
 (fact "transform also works across refs"
   (pipeline/normalise {:account/orders #{{:number 1 :items {:name "one"}}
                                           {:number 2 :items {:name "two"}}}}

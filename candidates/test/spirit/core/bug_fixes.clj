@@ -1,6 +1,6 @@
 (ns spirit.core.bug-fixes
   (:use hara.test)
-  (:require [spirit.datomic :as datomic]
+  (:require [spirit.core.datomic :as datomic]
             [spirit.test.checkers :refer :all]
             [datomic.api :as datomic]))
 

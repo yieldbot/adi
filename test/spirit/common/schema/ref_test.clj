@@ -1,8 +1,8 @@
-(ns spirit.common.schema.ref-test
+(ns spirit.schema.ref-test
   (:use hara.test)
-  (:require [spirit.common.schema.ref :refer :all]))
+  (:require [spirit.schema.ref :refer :all]))
 
-^{:refer spirit.common.schema.ref/is-reversible? :added "0.3"}
+^{:refer spirit.schema.ref/is-reversible? :added "0.3"}
 (fact "determines whether a ref attribute is reversible or not"
   (is-reversible? {:ident   :account/email    ;; okay
                    :type    :ref
@@ -34,7 +34,7 @@
                              :norev true}})
   => false)
 
-^{:refer spirit.common.schema.ref/determine-rval :added "0.3"}
+^{:refer spirit.schema.ref/determine-rval :added "0.3"}
 (fact "outputs the :rval value of a :ref schema reference"
 
   (determine-rval [[:account :email false]
@@ -69,7 +69,7 @@
                      :ref    {:ns    :node}}]])
   => :children_of)
 
-^{:refer spirit.common.schema.ref/forward-ref-attr :added "0.3"}
+^{:refer spirit.schema.ref/forward-ref-attr :added "0.3"}
 (fact "creates the :ref schema attribute for the forward reference case"
 
   (forward-ref-attr [{:ident  :node/children
@@ -88,7 +88,7 @@
                       :ref    {:ns    :node}}])
   => (throws Exception))
 
-^{:refer spirit.common.schema.ref/reverse-ref-attr :added "0.3"}
+^{:refer spirit.schema.ref/reverse-ref-attr :added "0.3"}
 (fact "creates the reverse :ref schema attribute for backward reference"
 
   (reverse-ref-attr [{:ident    :node/children
@@ -115,7 +115,7 @@
   => (throws Exception))
 
 
-^{:refer spirit.common.schema.ref/attr-ns-pair :added "0.3"}
+^{:refer spirit.schema.ref/attr-ns-pair :added "0.3"}
 (fact "constructs a :ns and :ident root pair for comparison"
 
   ;; (attr-ns-pair [{:ident  :a/b/c
@@ -126,7 +126,7 @@
                   :ref    {:ns :c}}])
   => [:a :c])
 
-^{:refer spirit.common.schema.ref/mark-multiple :added "0.3"}
+^{:refer spirit.schema.ref/mark-multiple :added "0.3"}
 (fact "marks multiple ns/ident groups"
 
   (mark-multiple [[[:a :b] [1 2]]
@@ -134,7 +134,7 @@
   => [[[:c :d false] 1]
       [[:a :b true] 1] [[:a :b true] 2]])
 
-^{:refer spirit.common.schema.ref/ref-attrs :added "0.3"}
+^{:refer spirit.schema.ref/ref-attrs :added "0.3"}
 (fact "creates forward and reverse attributes for a flattened schema"
 
   (ref-attrs {:account/email [{:ident   :account/email

@@ -1,10 +1,10 @@
-(ns spirit.datomic.process.pack.review-test
+(ns spirit.core.datomic.process.pack.review-test
   (:use hara.test)
-  (:require [spirit.datomic.process.pack.review :refer :all]
-            [spirit.datomic.process.pack.analyse :as analyse]
-            [spirit.common.schema :as schema]))
+  (:require [spirit.core.datomic.process.pack.review :refer :all]
+            [spirit.core.datomic.process.pack.analyse :as analyse]
+            [spirit.schema :as schema]))
 
-^{:refer spirit.datomic.process.pack.review/review-raw :added "0.3"}
+^{:refer spirit.core.datomic.process.pack.review/review-raw :added "0.3"}
 (fact "checks for required data"
   
   (review-raw {:# {:nss #{:account} :account/name "Chris"}}

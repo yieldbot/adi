@@ -1,5 +1,5 @@
 (ns spirit.examples.bkell-test
-  (:require [spirit.datomic :as datomic]
+  (:require [spirit.core.datomic :as datomic]
             [spirit.core [transaction :as transaction]
              [prepare :as prepare]]))
 

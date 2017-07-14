@@ -1,7 +1,7 @@
 (ns documentation.spirit-walkthrough.step-2
   (:use hara.test)
-  (:require [spirit.datomic :as datomic]
-            [spirit.datomic.core.select :as select]
+  (:require [spirit.core.datomic :as datomic]
+            [spirit.core.datomic.core.select :as select]
             [datomic.api :as raw]))
 
 [[:chapter {:title "Step Two"}]]

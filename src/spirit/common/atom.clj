@@ -2,7 +2,7 @@
   (:require [spirit.common.table :as table]
             [clojure.pprint :as pprint]))
 
-(defmulti  read-value
+(defmulti read-value
   "reads a value from a file
    
    (read-value {:file \"test.db\"

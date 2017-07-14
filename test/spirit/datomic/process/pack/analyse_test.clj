@@ -1,10 +1,10 @@
-(ns spirit.datomic.process.pack.analyse-test
+(ns spirit.core.datomic.process.pack.analyse-test
   (:use hara.test)
-  (:require [spirit.datomic.process.pack.analyse :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.core.datomic.process.pack.analyse :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.datomic.process.pack.analyse/analyse-raw :added "0.3"}
+^{:refer spirit.core.datomic.process.pack.analyse/analyse-raw :added "0.3"}
 (fact "turns a nested-tree map into reference maps"
   (analyse-raw {:account {:name "Chris"}}
            {:schema (schema/schema examples/account-name-age-sex)

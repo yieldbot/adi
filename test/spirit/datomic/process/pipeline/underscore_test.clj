@@ -1,11 +1,11 @@
-(ns spirit.datomic.process.pipeline.underscore-test
+(ns spirit.core.datomic.process.pipeline.underscore-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.datomic.process.pipeline.underscore :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.core.datomic.process.pipeline.underscore :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.datomic.process.pipeline.underscore/rep-key :added "0.3"}
+^{:refer spirit.core.datomic.process.pipeline.underscore/rep-key :added "0.3"}
 (fact "finds the :required or :representative key within a schema,
   otherwise throws an error"
   (rep-key (:account examples/account-orders-items-image))
@@ -14,7 +14,7 @@
   (rep-key (:order examples/account-orders-items-image))
   => (throws-info {:needs-require-key true}))
 
-^{:refer spirit.datomic.process.pipeline.underscore/wrap-branch-underscore :added "0.3"}
+^{:refer spirit.core.datomic.process.pipeline.underscore/wrap-branch-underscore :added "0.3"}
 (fact "wraps normalise to process underscores"
   (pipeline/normalise {:account '_}
                        {:schema (schema/schema examples/account-orders-items-image)

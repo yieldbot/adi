@@ -1,10 +1,10 @@
-(ns spirit.common.pipeline.base.alias-test
+(ns spirit.pipeline.base.alias-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.base.alias :refer :all]
-            [spirit.datomic.process.pipeline.db :as db]
-            [spirit.datomic.process.pipeline.set :as set]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.pipeline.base.alias :refer :all]
+            [spirit.core.datomic.process.pipeline.db :as db]
+            [spirit.core.datomic.process.pipeline.set :as set]
+            [spirit.schema :as schema]
             [data.family :as family]))
 
 (def ^:dynamic *wrappers*
@@ -12,7 +12,7 @@
    :normalise-attr [set/wrap-attr-set]
    :normalise-branch [wrap-alias]})
 
-^{:refer spirit.common.pipeline.base.alias/wrap-alias :added "0.3"}
+^{:refer spirit.pipeline.base.alias/wrap-alias :added "0.3"}
 (fact "wraps normalise to process aliases for a database schema"
 
   (pipeline/normalise {:db/id 'chris

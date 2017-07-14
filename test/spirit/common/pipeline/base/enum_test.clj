@@ -1,11 +1,11 @@
-(ns spirit.common.pipeline.base.enum-test
+(ns spirit.pipeline.base.enum-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.base.enum :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.pipeline.base.enum :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.common.pipeline.base.enum/wrap-single-enum :added "0.3"}
+^{:refer spirit.pipeline.base.enum/wrap-single-enum :added "0.3"}
 (fact "wraps normalise with comprehension of the enum type"
 
   (pipeline/normalise {:account {:type :account.type/guest}}

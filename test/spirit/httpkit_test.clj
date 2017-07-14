@@ -1,6 +1,6 @@
 (ns spirit.httpkit-test
-  (:require [spirit.common.http.server :as server]
-            [spirit.common.http.client :as client]
+  (:require [spirit.http.server :as server]
+            [spirit.http.client :as client]
             [spirit.httpkit.server]
             [spirit.httpkit.client]
             [hara.component :as component]))

@@ -1,8 +1,8 @@
-(ns spirit.common.schema-test
+(ns spirit.schema-test
   (:use hara.test)
-  (:require [spirit.common.schema :refer :all]))
+  (:require [spirit.schema :refer :all]))
 
-^{:refer spirit.common.schema/simplify :added "0.3"}
+^{:refer spirit.schema/simplify :added "0.3"}
 (fact "helper function for easier display of spirit schema"
   (simplify {:account/name  [{:type :long}]
              :account/email [{:type :string
@@ -13,7 +13,7 @@
   => {:email {:accounts :&account<*>}
       :account {:email :string<*> :name :long}})
 
-^{:refer spirit.common.schema/create-lookup :added "0.3"}
+^{:refer spirit.schema/create-lookup :added "0.3"}
 (fact "lookup from flat schema mainly for reverse refs"
   (create-lookup
    {:account/name   [{}]
@@ -27,7 +27,7 @@
       :account/email :account/email
       :account/name :account/name})
 
-^{:refer spirit.common.schema/create-flat-schema :added "0.3"}
+^{:refer spirit.schema/create-flat-schema :added "0.3"}
 (fact "creates a flat schema from an input map"
   (create-flat-schema {:account {:email [{:type    :ref
                                           :ref     {:ns  :email}}]}})
@@ -52,7 +52,7 @@
                               :rkey :account/_email
                               :rident :email/accounts}}]})
 
-^{:refer spirit.common.schema/schema :added "0.3"}
+^{:refer spirit.schema/schema :added "0.3"}
 (fact "creates an extended schema for use by spirit"
   (-> (schema {:account/name   [{}]
                :account/email  [{:ident   :account/email

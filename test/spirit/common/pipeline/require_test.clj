@@ -1,16 +1,16 @@
-(ns spirit.common.pipeline.require-test
+(ns spirit.pipeline.require-test
   (:use hara.test)
   (:require [data.examples :as examples]
-            [spirit.common.schema :as schema]
-            [spirit.common.pipeline :as pipeline]
-            [spirit.common.pipeline.require :as require]))
+            [spirit.schema :as schema]
+            [spirit.pipeline :as pipeline]
+            [spirit.pipeline.require :as require]))
 
 (def ^:dynamic *wrappers*
   {:normalise        [pipeline/wrap-plus require/wrap-model-pre-require]
    :normalise-branch [pipeline/wrap-key-path]
    :normalise-attr   [pipeline/wrap-key-path]})
 
-^{:refer spirit.common.pipeline.require/process-require :added "0.3"}
+^{:refer spirit.pipeline.require/process-require :added "0.3"}
 (fact "Used by both wrap-model-pre-require and wrap-model-post-require
   for determining correct input"
   (pipeline/normalise {:account/name "Chris"}
@@ -26,7 +26,7 @@
   => (throws-info {:nsv [:account :name]
                     :no-required true}))
 
-^{:refer spirit.common.pipeline.require/wrap-model-pre-require :added "0.3"}
+^{:refer spirit.pipeline.require/wrap-model-pre-require :added "0.3"}
 (fact "require also works across refs"
   (pipeline/normalise {:account/orders #{{:number 1}
                                           {:number 2}}}

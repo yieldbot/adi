@@ -1,9 +1,9 @@
-(ns spirit.datomic.process.pipeline.expression-test
+(ns spirit.core.datomic.process.pipeline.expression-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.datomic.process.pipeline.list :as list]
-            [spirit.datomic.process.pipeline.expression :as expression]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.core.datomic.process.pipeline.list :as list]
+            [spirit.core.datomic.process.pipeline.expression :as expression]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
 (def ^:dynamic *wrappers*
@@ -13,7 +13,7 @@
    :normalise-branch [pipeline/wrap-key-path]
    :normalise-attr   [pipeline/wrap-key-path]})
    
-^{:refer spirit.datomic.process.pipeline.expression/wrap-single-model-expression :added "0.3"}
+^{:refer spirit.core.datomic.process.pipeline.expression/wrap-single-model-expression :added "0.3"}
 (fact "controls the expressions allowed for searches"
    (pipeline/normalise {:account/name '(= "Chris")}
                 {:schema (schema/schema examples/account-name-age-sex)

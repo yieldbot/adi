@@ -1,10 +1,10 @@
-(ns spirit.datomic.schema.base-test
+(ns spirit.core.datomic.schema.base-test
   (:use hara.test)
-  (:require [spirit.datomic.schema.base :as base :refer :all]
-            [spirit.common.schema.ref :as ref]
-            [spirit.common.schema.base :as common]))
+  (:require [spirit.core.datomic.schema.base :as base :refer :all]
+            [spirit.schema.ref :as ref]
+            [spirit.schema.base :as common]))
 
-^{:refer spirit.common.schema.base/schema-property :added "0.3"}
+^{:refer spirit.schema.base/schema-property :added "0.3"}
 (fact "constructs a :db property out of a value and a type"
   (schema-property :string :type) => :db.type/string
   (schema-property :long :type) => :db.type/long

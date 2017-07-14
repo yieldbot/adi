@@ -1,6 +1,6 @@
 (ns documentation.spirit-walkthrough.step-1
   [:use hara.test]
-  (:require [spirit.datomic :as datomic]))
+  (:require [spirit.core.datomic :as datomic]))
 
 [[:chapter {:title "Step One"}]]
 

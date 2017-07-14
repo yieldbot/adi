@@ -1,11 +1,11 @@
-(ns spirit.datomic.process.pipeline.set-test
+(ns spirit.core.datomic.process.pipeline.set-test
   (:use hara.test)
-  (:require [spirit.common.pipeline :as pipeline]
-            [spirit.datomic.process.pipeline.set :refer :all]
-            [spirit.common.schema :as schema]
+  (:require [spirit.pipeline :as pipeline]
+            [spirit.core.datomic.process.pipeline.set :refer :all]
+            [spirit.schema :as schema]
             [data.examples :as examples]))
 
-^{:refer spirit.datomic.process.pipeline.set/wrap-attr-set :added "0.3"}
+^{:refer spirit.core.datomic.process.pipeline.set/wrap-attr-set :added "0.3"}
 (fact "wraps normalise to type check inputs as well as to coerce incorrect inputs"
   (pipeline/normalise {:account {:tags "10"}}
                        {:schema (schema/schema examples/account-orders-items-image)}

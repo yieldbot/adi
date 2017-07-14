@@ -1,7 +1,7 @@
 (ns spirit.httpkit.server-test
   (:use hara.test)
-  (:require [spirit.common.http.server :as common]
-            [spirit.common.http.transport :as transport]
+  (:require [spirit.http.server :as common]
+            [spirit.http.transport :as transport]
             [spirit.httpkit.server :refer :all]
             [org.httpkit.client :as client]
             [hara.component :as component]
@@ -18,7 +18,7 @@
 
   (component/stop sys))
 
-^{:refer spirit.common.http.server/create :added "0.5"}
+^{:refer spirit.http.server/create :added "0.5"}
 (fact "creating httpkit server"
   
   (def sys (-> (common/create {:type     :httpkit
