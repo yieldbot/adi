@@ -1,6 +1,6 @@
 (ns spirit.pipeline.base.type-check
   (:require [spirit.schema.base :as base]
-            [spirit.common.data.coerce :refer [coerce]]
+            [spirit.common.util.coerce :refer [coerce]]
             [hara.event :refer [raise]]))
 
 (defn wrap-single-type-check

@@ -1,4 +1,4 @@
-(ns spirit.httpkit.server.ws-connection
+(ns spirit.core.httpkit.server.ws-connection
   (:require [clojure.core.async :as async]
             [org.httpkit.server :as httpkit]
             [spirit.http.transport :as transport]))

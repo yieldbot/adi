@@ -1,14 +1,14 @@
-(ns spirit.common.data.coerce-test
+(ns spirit.common.util.coerce-test
   (:use hara.test)
-  (:require [spirit.common.data.coerce :refer :all]))
+  (:require [spirit.common.util.coerce :refer :all]))
 
-^{:refer spirit.common.data.coerce/assoc-set :added "0.3"}
+^{:refer spirit.common.util.coerce/assoc-set :added "0.3"}
 (fact "associates a set as keys to a map"
   (assoc-set {} #{:a :b :c} 1)
   => {:a 1, :b 1, :c 1})
 
 
-^{:refer spirit.common.data.coerce/coerce :added "0.3"}
+^{:refer spirit.common.util.coerce/coerce :added "0.3"}
 (fact "associates a set as keys to a map"
   (coerce 1 :string)
   => "1"

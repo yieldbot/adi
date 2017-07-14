@@ -48,7 +48,7 @@
                     "spirit-rabbitmq"
                     {:input "test/documentation/spirit_rabbitmq.clj"
                      :title "rabbitmq"
-                     :subtitle "spirit.rabbitmq API Reference"}}}
+                     :subtitle "spirit.core.rabbitmq API Reference"}}}
   
   :distribute {:jars  :dependencies
                :files [{:type :clojure

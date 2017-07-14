@@ -1,6 +1,6 @@
-(ns spirit.httpkit.client-test
+(ns spirit.core.httpkit.client-test
   (:use hara.test)
-  (:require [spirit.httpkit
+  (:require [spirit.core.httpkit
              [client :refer :all]
              server]
             [spirit.http.client :as client]
@@ -33,7 +33,7 @@
                   :routes    {:on/id "id"
                               :on/error "error"}}))
 
-^{:refer spirit.httpkit.client/query-string :added "0.5"}
+^{:refer spirit.core.httpkit.client/query-string :added "0.5"}
 (fact "create a query string from a map"
 
   (query-string {})
@@ -42,7 +42,7 @@
   (query-string {:timing true})
   => "?timing=true")
 
-^{:refer spirit.httpkit.client/create-url :added "0.5"}
+^{:refer spirit.core.httpkit.client/create-url :added "0.5"}
 (fact "`create-url` for client"
 
   (def cl
@@ -56,7 +56,7 @@
   (create-url cl :on/id {})
   => "http://localhost:8001/api/id")
 
-^{:refer spirit.httpkit.client/http-post :added "0.5"}
+^{:refer spirit.core.httpkit.client/http-post :added "0.5"}
 (fact "httpkit function to client"
   (def server (new-httpkit-server))
   
@@ -82,7 +82,7 @@
 
   (component/stop server))
 
-^{:refer spirit.httpkit.client/process-response :added "0.5"}
+^{:refer spirit.core.httpkit.client/process-response :added "0.5"}
 (fact "processes the response - either errors or success"
   
   (def server (new-httpkit-server))
@@ -111,7 +111,7 @@
                    :data {:exception java.net.ConnectException},
                    :input nil}))
 
-^{:refer spirit.httpkit.client/return-channel :added "0.5"}
+^{:refer spirit.core.httpkit.client/return-channel :added "0.5"}
 (fact "the return channel process compatible with core.async"
   
   (def server (new-httpkit-server))
@@ -131,7 +131,7 @@
        :data {:exception java.net.ConnectException},
        :input nil}))
 
-^{:refer spirit.httpkit.client/return-promise :added "0.5"}
+^{:refer spirit.core.httpkit.client/return-promise :added "0.5"}
 (fact "the return channel process as a promise"
 
   (def server (new-httpkit-server))
@@ -155,7 +155,7 @@
        :data {:exception java.net.ConnectException},
        :input nil}))
 
-^{:refer spirit.httpkit.client/wrap-return :added "0.5"}
+^{:refer spirit.core.httpkit.client/wrap-return :added "0.5"}
 (fact "returns the required interface depending on `:return` value"
 
   (def server (new-httpkit-server))
@@ -190,7 +190,7 @@
 
   (component/stop server))
 
-^{:refer spirit.httpkit.client/httpkit-client :added "0.5"}
+^{:refer spirit.core.httpkit.client/httpkit-client :added "0.5"}
 (fact "creates a httpkit client for http transport"
 
   (def server (new-httpkit-server))

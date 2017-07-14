@@ -1,8 +1,8 @@
-(ns spirit.common.data.keys-test
+(ns spirit.common.util.keys-test
   (:use hara.test)
-  (:require [spirit.common.data.keys :refer :all]))
+  (:require [spirit.common.util.keys :refer :all]))
             
-^{:refer spirit.common.data.keys/keyword-reverse :added "0.3"}
+^{:refer spirit.common.util.keys/keyword-reverse :added "0.3"}
 (fact "reverses the keyword by either adding or removing '_' in the value"
   (keyword-reverse :a/b) => :a/_b
   (keyword-reverse :a/_b) => :a/b
@@ -12,7 +12,7 @@
   ;;(keyword-reverse :a/b/_c) => :a/b/c
   (keyword-reverse :_b) => (throws Exception))
 
-^{:refer spirit.common.data.keys/keyword-reversed? :added "0.3"}
+^{:refer spirit.common.util.keys/keyword-reversed? :added "0.3"}
 (fact "checks whether the keyword is reversed (begins with '_')"
   (keyword-reversed? :a) => false
   (keyword-reversed? :a/b) => false

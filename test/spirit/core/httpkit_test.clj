@@ -1,12 +1,12 @@
-(ns spirit.httpkit-test
+(ns spirit.core.httpkit-test
   (:require [spirit.http.server :as server]
             [spirit.http.client :as client]
-            [spirit.httpkit.server]
-            [spirit.httpkit.client]
+            [spirit.core.httpkit.server]
+            [spirit.core.httpkit.client]
             [hara.component :as component]))
 
 (comment
-  (ns-unalias 'spirit.httpkit-test 'client)
+  (ns-unalias 'spirit.core.httpkit-test 'client)
   
   (def server     (-> (server/create {:type :httpkit
                                       :host "localhost"

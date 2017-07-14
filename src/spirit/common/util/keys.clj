@@ -1,4 +1,4 @@
-(ns spirit.common.data.keys
+(ns spirit.common.util.keys
   (:require [hara.string.path :as path]))
 
 (defn keyword-reverse

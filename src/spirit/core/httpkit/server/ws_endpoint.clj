@@ -1,7 +1,7 @@
-(ns spirit.httpkit.server.ws-endpoint
+(ns spirit.core.httpkit.server.ws-endpoint
   (:require [hara.component :as component]
             [org.httpkit.server :as httpkit]
-            [spirit.httpkit.server.ws-connection :as conn]))
+            [spirit.core.httpkit.server.ws-connection :as conn]))
 
 (defn endpoint-handler
   [{:keys [connections] :as endpoint}

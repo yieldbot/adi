@@ -1,4 +1,4 @@
-(ns spirit.httpkit.server
+(ns spirit.core.httpkit.server
   (:require [org.httpkit.server :as httpkit]
             [spirit.http.server :as common]
             [hara.component :as component]

@@ -1,13 +1,13 @@
-(ns spirit.httpkit.server-test
+(ns spirit.core.httpkit.server-test
   (:use hara.test)
   (:require [spirit.http.server :as common]
             [spirit.http.transport :as transport]
-            [spirit.httpkit.server :refer :all]
+            [spirit.core.httpkit.server :refer :all]
             [org.httpkit.client :as client]
             [hara.component :as component]
             [hara.event :as event]))
 
-^{:refer spirit.httpkit.server/server :added "0.5"}
+^{:refer spirit.core.httpkit.server/server :added "0.5"}
 (fact "creating httpkit server"
 
   (def sys (server {:handler (fn [req] (prn req) {:status 200 :body "hello world"})}))

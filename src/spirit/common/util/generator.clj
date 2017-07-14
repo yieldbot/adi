@@ -1,4 +1,4 @@
-(ns spirit.common.data.generator)
+(ns spirit.common.util.generator)
 
 (defn incremental-sym-gen
   "constructs a function that generate incremental symbols 

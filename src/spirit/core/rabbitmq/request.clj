@@ -1,4 +1,4 @@
-(ns spirit.rabbitmq.request
+(ns spirit.core.rabbitmq.request
   (:require [hara.component :as component]
             [hara.string.case :as case]
             [hara.data.nested :as nested]

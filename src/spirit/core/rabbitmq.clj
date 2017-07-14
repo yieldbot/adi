@@ -1,5 +1,5 @@
-(ns spirit.rabbitmq
-  (:require [spirit.rabbitmq
+(ns spirit.core.rabbitmq
+  (:require [spirit.core.rabbitmq
              [api :as api]
              [request :as request]]
             [spirit.common.queue :as common]

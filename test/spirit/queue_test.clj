@@ -1,7 +1,7 @@
 (ns spirit.common.queue-test
   (:use hara.test)
   (:require [spirit.common.queue :refer :all :as queue]
-            [spirit.rabbitmq :as rabbitmq]))
+            [spirit.core.rabbitmq :as rabbitmq]))
 
 (def routes {:queues    #{"q1" "q2"},
              :exchanges #{"ex1" "ex2"},

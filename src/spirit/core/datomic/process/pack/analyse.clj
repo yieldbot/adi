@@ -6,7 +6,7 @@
             [spirit.core.datomic.schema.base :as base]
             [spirit.core.datomic.data.checks :refer [db-id?]]
             [spirit.core.datomic.data :refer [iid]]
-            [spirit.common.data.coerce :as coerce]
+            [spirit.common.util.coerce :as coerce]
             [clojure.set :as set]
             [hara.event :refer [raise]]))
 

@@ -1,5 +1,5 @@
-(ns spirit.rabbitmq.consumer
-  (:require [spirit.rabbitmq
+(ns spirit.core.rabbitmq.consumer
+  (:require [spirit.core.rabbitmq
              [api :as api]
              [request :as request]])
   (:import [com.rabbitmq.client

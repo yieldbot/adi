@@ -1,7 +1,7 @@
-(ns spirit.rabbitmq-test
+(ns spirit.core.rabbitmq-test
   (:use hara.test)
   (:require [spirit.common.queue :as queue]
-            [spirit.rabbitmq :refer :all]))
+            [spirit.core.rabbitmq :refer :all]))
 
 (def routes {:queues    #{"q1" "q2"},
              :exchanges #{"ex1" "ex2"},
@@ -10,7 +10,7 @@
                           "ex2" {:exchanges #{}
                                  :queues #{"q2"}}}})
 
-^{:refer spirit.rabbitmq/list-queues :added "0.5"}
+^{:refer spirit.core.rabbitmq/list-queues :added "0.5"}
 (fact "returns current list of queues"
 
   (queue/list-queues (queue/queue {:type :rabbitmq
@@ -18,7 +18,7 @@
   => (contains {"q1" map?
                 "q2" map?}))
 
-^{:refer spirit.rabbitmq/add-queue :added "0.5"}
+^{:refer spirit.core.rabbitmq/add-queue :added "0.5"}
 (fact "adds a queue to the mq"
 
   (-> (queue/queue {:type :rabbitmq
@@ -30,7 +30,7 @@
                 "q2" map?
                 "q3" map?}))
 
-^{:refer spirit.rabbitmq/delete-queue :added "0.5"}
+^{:refer spirit.core.rabbitmq/delete-queue :added "0.5"}
 (fact "deletes a queue from the mq"
 
   (-> (queue/queue {:type :rabbitmq
@@ -40,7 +40,7 @@
       (queue/list-queues))
   => (contains {"q2" map?}))
 
-^{:refer spirit.rabbitmq/list-exchanges :added "0.5"}
+^{:refer spirit.core.rabbitmq/list-exchanges :added "0.5"}
 (fact "returns current list of exchanges"
 
   (-> (queue/queue {:type :rabbitmq
@@ -50,7 +50,7 @@
   => (contains {"ex1" map?
                 "ex2" map?}))
 
-^{:refer spirit.rabbitmq/add-exchange :added "0.5"}
+^{:refer spirit.core.rabbitmq/add-exchange :added "0.5"}
 (fact "adds an exchange to the mq"
 
   (-> (queue/queue {:type :rabbitmq
@@ -62,7 +62,7 @@
                 "ex2" map?
                 "ex3" map?}))
 
-^{:refer spirit.rabbitmq/delete-exchange :added "0.5"}
+^{:refer spirit.core.rabbitmq/delete-exchange :added "0.5"}
 (fact "removes an exchange from the mq"
 
   (-> (queue/queue {:type :rabbitmq
@@ -72,7 +72,7 @@
       (queue/list-exchanges))
   => (contains {"ex2" map?}))
 
-^{:refer spirit.rabbitmq/list-bindings :added "0.5"}
+^{:refer spirit.core.rabbitmq/list-bindings :added "0.5"}
 (fact "returns current list of exchanges"
 
   (-> (queue/queue {:type :rabbitmq
@@ -83,7 +83,7 @@
                           :queues {"q1" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
 
-^{:refer spirit.rabbitmq/bind-exchange :added "0.5"}
+^{:refer spirit.core.rabbitmq/bind-exchange :added "0.5"}
 (fact "returns current list of exchanges"
 
   (-> (queue/queue {:type :rabbitmq
@@ -97,7 +97,7 @@
                           :queues {"q1" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
 
-^{:refer spirit.rabbitmq/bind-queue :added "0.5"}
+^{:refer spirit.core.rabbitmq/bind-queue :added "0.5"}
 (fact "returns current list of exchanges"
 
   (-> (queue/queue {:type :rabbitmq
@@ -111,7 +111,7 @@
                                    "q3" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
 
-^{:refer spirit.rabbitmq/routing-all :added "0.5"}
+^{:refer spirit.core.rabbitmq/routing-all :added "0.5"}
 (fact "lists all the routing in the mq"
 
   (routing-all (queue/queue {:type :rabbitmq
@@ -119,7 +119,7 @@
                {})
   => {"/" {:queues {}, :exchanges {}, :bindings {}}})
 
-^{:refer spirit.rabbitmq/network :added "0.5"}
+^{:refer spirit.core.rabbitmq/network :added "0.5"}
 (fact "returns the mq network"
 
   (network (queue/queue {:type :rabbitmq
@@ -130,11 +130,11 @@
                    :connections ()
                    :channels {}}))
 
-^{:refer spirit.rabbitmq/install-vhost :added "0.5"}
+^{:refer spirit.core.rabbitmq/install-vhost :added "0.5"}
 (fact "installs vhost and adds user permissions")
 
-^{:refer spirit.rabbitmq/install-consumers :added "0.5"}
+^{:refer spirit.core.rabbitmq/install-consumers :added "0.5"}
 (fact "install consumers")
 
-^{:refer spirit.rabbitmq/rabbit :added "0.5"}
+^{:refer spirit.core.rabbitmq/rabbit :added "0.5"}
 (fact "creates a rabbitmq instance")

@@ -1,5 +1,5 @@
-(ns spirit.rabbitmq.api
-  (:require [spirit.rabbitmq.request :as request]
+(ns spirit.core.rabbitmq.api
+  (:require [spirit.core.rabbitmq.request :as request]
             [clojure.string :as string])
   (:refer-clojure :exclude [methods]))
 
