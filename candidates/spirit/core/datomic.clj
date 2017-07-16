@@ -2,22 +2,22 @@
   (:require [hara.namespace.import :as ns]
             [hara.common [checks :refer [boolean?]]]
             [hara.data.nested :refer [merge-nested merge-nil-nested]]
-            [spirit.core.datomic.core
+            [spirit.core.datomic.api
              [helpers :as helpers]
              [prepare :as prepare]
              [nested :as nested]
              [retract :as retract]
              [select :as select]
              [transaction :as transaction]]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [spirit.protocol.igraph :as graph]
             [spirit.core.datomic.schema.base :as base]
             [spirit.core.datomic.data :as data]
             [spirit.core.datomic.types :as types]
             [hara.component :as component]))
 
-(ns/import spirit.core.datomic.core.helpers    [transactions transaction-time schema-properties]
-           spirit.schema           [schema]
+(ns/import spirit.core.datomic.api.helpers    [transactions transaction-time schema-properties]
+           spirit.data.schema           [schema]
            spirit.core.datomic.data            [iid])
 
 (def reserved

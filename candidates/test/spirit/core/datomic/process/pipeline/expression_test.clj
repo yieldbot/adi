@@ -1,9 +1,9 @@
 (ns spirit.core.datomic.process.pipeline.expression-test
   (:use hara.test)
-  (:require [spirit.pipeline :as pipeline]
+  (:require [spirit.data.pipeline :as pipeline]
             [spirit.core.datomic.process.pipeline.list :as list]
             [spirit.core.datomic.process.pipeline.expression :as expression]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [data.examples :as examples]))
 
 (def ^:dynamic *wrappers*

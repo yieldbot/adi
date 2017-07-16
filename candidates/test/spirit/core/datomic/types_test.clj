@@ -1,7 +1,7 @@
 (ns spirit.core.datomic.types-test
   (:use hara.test)
   (:require [spirit.core.datomic.types :refer :all]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [datomic.api :as datomic]
             [hara.component :as component]))
 

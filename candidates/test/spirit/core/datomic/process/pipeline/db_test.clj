@@ -1,8 +1,8 @@
 (ns spirit.core.datomic.process.pipeline.db-test
   (:use hara.test)
-  (:require [spirit.pipeline :as pipeline]
+  (:require [spirit.data.pipeline :as pipeline]
             [spirit.core.datomic.process.pipeline.db :refer :all]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [data.examples :as examples]))
 
 ^{:refer spirit.core.datomic.process.pipeline.db/db-id-syms :added "0.3"}

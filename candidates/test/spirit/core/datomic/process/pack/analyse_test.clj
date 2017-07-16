@@ -1,7 +1,7 @@
 (ns spirit.core.datomic.process.pack.analyse-test
   (:use hara.test)
   (:require [spirit.core.datomic.process.pack.analyse :refer :all]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [data.examples :as examples]))
 
 ^{:refer spirit.core.datomic.process.pack.analyse/analyse-raw :added "0.3"}

@@ -3,7 +3,7 @@
             [hara.component :as component]
             [spirit.core.datomic.schema.generate :as generate]
             [spirit.core.datomic.schema.base :as base]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [spirit.common.graph :as graph]))
 
 ;;(ns-unalias 'spirit.core.datomic.types 'schema)
@@ -120,7 +120,7 @@
   (let [uri  (construct-uri db)
         _    (if (:reset-db options) (datomic/delete-database uri))
         conn (connect uri)
-        schema  (if (instance? spirit.schema.Schema schema)
+        schema  (if (instance? spirit.data.schema.Schema schema)
                   schema
                   (schema/schema schema base/all-auto-defaults))
         db   (assoc db :uri uri :schema schema :connection conn)]

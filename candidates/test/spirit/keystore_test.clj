@@ -1,17 +1,17 @@
-(ns spirit.common.keystore-test
+(ns spirit.data.keystore-test
   (:use hara.test)
-  (:require [spirit.common.keystore :refer :all])
-  (:import spirit.common.keystore.MockKeystore))
+  (:require [spirit.data.keystore :refer :all])
+  (:import spirit.data.keystore.MockKeystore))
 
-^{:refer spirit.common.keystore/create :added "0.5"}
+^{:refer spirit.data.keystore/create :added "0.5"}
 (fact "creates a keystore"
 
   (create {:type :raw})
   
   (create {:type :mock
-           :file "test.edn"}))
+           :output {:file "test.edn"}}))
 
-^{:refer spirit.common.keystore/put-in :added "0.5"}
+^{:refer spirit.data.keystore/put-in :added "0.5"}
 (fact "adds data to the database"
 
   (-> (create {:type :mock})
@@ -20,7 +20,7 @@
       (peek-in))
   => {:b {:d 2, :c 2}})
 
-^{:refer spirit.common.keystore/peek-in :added "0.5"}
+^{:refer spirit.data.keystore/peek-in :added "0.5"}
 (fact "accesses all or part of the database"
 
   (-> (create {:type :mock})
@@ -28,7 +28,7 @@
       (peek-in [:b]))
   => {:c 2})
 
-^{:refer spirit.common.keystore/keys-in :added "0.5"}
+^{:refer spirit.data.keystore/keys-in :added "0.5"}
 (fact "returns all keys in the particular level"
 
   (-> (create {:type :mock})
@@ -37,7 +37,7 @@
       (sort))
   => [:a :b])
 
-^{:refer spirit.common.keystore/drop-in :added "0.5"}
+^{:refer spirit.data.keystore/drop-in :added "0.5"}
 (fact "removes keys in the database"
   
   (-> (create {:type :mock})
@@ -46,7 +46,7 @@
       (peek-in))
   => {:b {:c 2}})
 
-^{:refer spirit.common.keystore/set-in :added "0.5"}
+^{:refer spirit.data.keystore/set-in :added "0.5"}
 (fact "adds data to the database. overwrites"
 
   (-> (create {:type :mock})
@@ -55,7 +55,7 @@
       (peek-in))
   => {:b {:c 2}})
 
-^{:refer spirit.common.keystore/select-in :added "0.5"}
+^{:refer spirit.data.keystore/select-in :added "0.5"}
 (fact "selects the key values corresponding to the query"
   (-> (create {:type :mock})
       (set-in [:data] {:a 1
@@ -65,7 +65,7 @@
       (select-in [:data] odd?))
   => [[:a 1] [:c 3]])
 
-^{:refer spirit.common.keystore/mutate-in :added "0.5"}
+^{:refer spirit.data.keystore/mutate-in :added "0.5"}
 (fact "batch add and removal of data"
 
   (-> (create {:type :mock})
@@ -81,7 +81,7 @@
   => {:data {:b 2, :x 1}
       :input {:c 3, :y 2}})
 
-^{:refer spirit.common.keystore/match :added "0.5"}
+^{:refer spirit.data.keystore/match :added "0.5"}
 (fact "matches data according to the query"
 
   (match 1 odd?) => true
@@ -89,7 +89,7 @@
   (match {:a 1} {:a odd?}) => true)
 
 
-^{:refer spirit.common.keystore/keystore :added "0.5"}
+^{:refer spirit.data.keystore/keystore :added "0.5"}
 (fact "creates a standalone keystore"
 
   (keystore {:type :mock})

@@ -1,9 +1,9 @@
 (ns spirit.core.datomic.process.pipeline.vector-test
   (:use hara.test)
-  (:require [spirit.pipeline :as pipeline]
+  (:require [spirit.data.pipeline :as pipeline]
             [spirit.core.datomic.process.pipeline.id :as id]
             [spirit.core.datomic.process.pipeline.vector :refer :all]
-            [spirit.schema :as schema]
+            [spirit.data.schema :as schema]
             [data.examples :as examples]))
 
 ^{:refer spirit.core.datomic.process.pipeline.vector/wrap-attr-vector :added "0.3"}

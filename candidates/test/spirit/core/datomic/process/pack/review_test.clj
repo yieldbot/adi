@@ -2,7 +2,7 @@
   (:use hara.test)
   (:require [spirit.core.datomic.process.pack.review :refer :all]
             [spirit.core.datomic.process.pack.analyse :as analyse]
-            [spirit.schema :as schema]))
+            [spirit.data.schema :as schema]))
 
 ^{:refer spirit.core.datomic.process.pack.review/review-raw :added "0.3"}
 (fact "checks for required data"

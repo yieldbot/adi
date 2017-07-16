@@ -1,5 +1,5 @@
 (ns spirit.core.datomic.schema.base
-  (:require [spirit.schema.base :as common]
+  (:require [spirit.data.schema.base :as common]
             [hara.common.checks :refer
              [type-checker boolean? long? bigint? double? bigdec? instant? uuid? uri? bytes?]]
             [spirit.core.datomic.data.checks :refer [enum? ref?]]

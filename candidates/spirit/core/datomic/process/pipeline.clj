@@ -1,5 +1,5 @@
 (ns spirit.core.datomic.process.pipeline
-  (:require [spirit.pipeline :as pipeline]
+  (:require [spirit.data.pipeline :as pipeline]
             [hara.data.path :as data]
             [hara.common.error :refer [error]]
             [hara.function.args :refer [op]]
