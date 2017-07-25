@@ -10,12 +10,15 @@
     (send-off raw (fn [_]
                     (if-let [delay (get-in conn [:options :network :delay])]
                       (Thread/sleep delay))
-                    message))))
+                    message))
+    conn))
 
 (defn attach-fn
-  [{:keys [raw] :as conn} receive-fn]
-  (add-watch raw :receive-fn (fn [_ _ _ package]
-                               (receive-fn conn package))))
+  [{:keys [raw] :as conn}]
+  (let [receive-fn (-> conn :fn :receive)]
+    (add-watch raw :receive-fn (fn [_ _ _ package]
+                                 (receive-fn conn package))))
+  conn)
 
 (defrecord Singleton []
 
