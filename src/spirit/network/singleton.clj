@@ -5,15 +5,41 @@
             [hara.event :as event]))
 
 (defn send-fn
-  [{:keys [raw] :as conn} package]
+  "send via agent with simulated network delay
+ 
+   (def result (promise))
+   
+   (send-fn {:raw (doto (agent nil)
+                    (add-watch :test (fn [_ _ _ v]
+                                       (deliver result v))))
+             :format :edn
+             :options {:network {:delay 100}}}
+            {:type :on/id})
+ 
+   @result
+   => \"{:type :on/id}\""
+  {:added "0.5"}
+  [{:keys [raw options] :as conn} package]
   (let [message (common/pack conn package)]
     (send-off raw (fn [_]
-                    (if-let [delay (get-in conn [:options :network :delay])]
+                    (if-let [delay (get-in options [:network :delay])]
                       (Thread/sleep delay))
                     message))
     conn))
 
 (defn attach-fn
+  "attaches the `:receive` function to the singleton'
+ 
+   (def raw (agent nil))
+   (def result (promise))
+   
+   (do (attach-fn {:raw raw
+                   :fn  {:receive (fn [conn package]
+                                    (deliver result package))}})
+       (send-off raw (constantly {:type :on/id})))
+   @result
+   => {:type :on/id}"
+  {:added "0.5"}
   [{:keys [raw] :as conn}]
   (let [receive-fn (-> conn :fn :receive)]
     (add-watch raw :receive-fn (fn [_ _ _ package]
@@ -43,6 +69,7 @@
   [v w]
   (.write w (str v)))
 
-(defn singleton [m]
+(defn singleton
+  "" [m]
   (-> (map->Singleton m)
       (component/start)))
