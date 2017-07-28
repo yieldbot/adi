@@ -1,12 +1,12 @@
-(ns spirit.network.singleton-test
+(ns spirit.network.base.singleton-test
   (:use hara.test)
-  (:require [spirit.network.singleton :refer :all]
+  (:require [spirit.network.base.singleton :refer :all]
             [spirit.network.common :as common]
             [hara.component :as component]
             [clojure.core.async :as async])
   (:refer-clojure :exclude [send]))
 
-^{:refer spirit.network.singleton/send-fn :added "0.5"}
+^{:refer spirit.network.base.singleton/send-fn :added "0.5"}
 (fact "send via agent with simulated network delay"
 
   (def result (promise))
@@ -21,7 +21,7 @@
   @result
   => "{:type :on/id}")
 
-^{:refer spirit.network.singleton/attach-fn :added "0.5"}
+^{:refer spirit.network.base.singleton/attach-fn :added "0.5"}
 (fact "attaches the `:receive` function to the singleton'"
 
   (def raw (agent nil))
@@ -34,7 +34,7 @@
   @result
   => {:type :on/id})
 
-^{:refer spirit.network.singleton/singleton :added "0.5"}
+^{:refer spirit.network.base.singleton/singleton :added "0.5"}
 (fact "creates a singleton for simulating network activity"
 
   (def network
@@ -49,7 +49,11 @@
                 :return  {:type    :channel
                           :timeout 1000}
                 :flags     {:on/id :full}
-                :handlers  {:on/id (fn [req] (:request req))}})))
+                :handlers  {:on/id (fn [package] (:request package))}})))
+
+
+;;:ot/initialise
+;;:ot/revision
 
 (fact "test for send via transport"
   
@@ -72,7 +76,8 @@
       (Thread/sleep 500)
       (read-string @(:raw network)))
   => (just-in {:type :on/id,
-               :code :response,
+               :code :response
+               :status :success
                :tag string?
                :response nil})
 
@@ -82,9 +87,10 @@
       (Thread/sleep 500)
       (read-string @(:raw network)))
   => (just-in {:type :on/id,
-               :params {:metrics true, :track true},
-               :code :response,
-               :tag string?,
+               :code :response
+               :status :success
+               :params {:metrics true, :track true}
+               :tag string?
                :time {:overall {:start number?},
                       :remote  {:start number?
                                 :end number?}},
@@ -99,8 +105,22 @@
   (common/request network :on/id "hello" )
   => (just-in {:type :on/id,
                :code :response,
+               :status :success
                :params {:full true, :metrics true},
                :request "hello",
                :tag string?
                :response "hello",
+               :metrics {:remote number?, :overall number?}}))
+
+(fact "test for common/request"
+
+  (common/request network :on/not-available "hello")
+  => (just-in {:type :on/not-available,
+               :code :response,
+               :status :error,
+               :request "hello",
+               :params {:full true, :metrics true}, 
+               :error {:message "handler not found for :on/not-available",
+                       :type :on/not-available},
+               :tag string?
                :metrics {:remote number?, :overall number?}}))

@@ -1,4 +1,4 @@
-(ns spirit.network.singleton
+(ns spirit.network.base.singleton
   (:require [hara.component :as component]
             [hara.event :as event]
             [spirit.protocol.itransport :as transport]

@@ -60,13 +60,16 @@
    (pack {:format :edn} {:type :on/id})
    => \"{:type :on/id}\""
   {:added "0.5"}
-  [{:keys [format]} package]
+  [{:keys [format] :or {format :edn}} package]
   (try
     (write-value package format)
     (catch Exception e
-      (write-value {:type  :error/write-value
-                    :code  :error
-                    :error {:message (ex-data e)}} format))))
+      (write-value {:type   :error/write-value
+                    :code   :error
+                    :status :error
+                    :input  package
+                    :error  {:message (ex-data e)
+                             :format format}} format))))
 
 (defn unpack
   "after transport, reads the package out from string
@@ -74,14 +77,16 @@
    (unpack {:format :edn} \"{:type :on/id}\")
    => {:type :on/id}"
   {:added "0.5"}
-  [{:keys [format]} message]
+  [{:keys [format] :or {format :edn}} message]
   (try
     (read-value message format)
     (catch Exception e
-      {:type  :error/read-value
-       :code  :error
-       :input message
-       :error {:message (ex-data e)}})))
+      {:type   :error/read-value
+       :code   :error
+       :status :error
+       :input  message
+       :error  {:message (ex-data e)
+                :format format}})))
 
 (defn random-uuid
   "creates a random uuid as a string"
@@ -140,8 +145,10 @@
     \"[1 2 3 4\")
    => {:type :error/read-value
        :code :error
+       :status :error
        :input \"[1 2 3 4\"
-       :error {:message nil}}"
+       :error {:message nil
+               :format :edn}}"
   {:added "0.5"}
   [handler]
   (fn [conn message]
@@ -166,15 +173,22 @@
   [{:keys [handlers fn flags] :as conn}
    {:keys [type code] :as package}]
   (let [handler (get handlers type)
-        
         data (if (= :full (get flags type))
                package
                (get package code))]
     (cond handler
-          (handler data)
+          (try (handler data)
+               (catch Exception e
+                 (throw (ex-info (str "handler " type " failed")
+                          (assoc package
+                                 :error (merge {:message (str "handler " type " failed")}
+                                                 (ex-data e)))))))
 
           :else
-          ((:dead fn) conn data))))
+          (throw (ex-info (str "handler not found for " type)
+                          (assoc package
+                                 :error {:message (str "handler not found for " type)
+                                         :type type}))))))
 
 (defn return-fn
   "default function for returning responses
@@ -220,8 +234,18 @@
     (let [result  (handler conn package)
           response (if (instance? Response result)
                      result
-                     {:response result})]
+                     {:response result :status :success})]
       ((:reply fn) conn (merge package (assoc response :code :response))))))
+
+(defn wrap-exceptions
+  ""
+  [handler]
+  (fn [{:keys [fn] :as conn} package]
+    (let [result  (try (handler conn package)
+                       (catch Exception e
+                         (response (merge {:status :error}
+                                          (ex-data e)))))]
+      result)))
 
 (defn wrap-time-start
   "wrapper for adding start time
@@ -276,10 +300,10 @@
    ((wrap-display (fn [_ package]
                     package))
     nil
-    {:params {:time false
-              :metrics true}
-     :time {:overall {:start 0
-                     :end 1000}}
+    {:params  {:time false
+               :metrics true}
+     :time    {:overall {:start 0
+                       :end 1000}}
      :metrics {:overall 1000}})
    => {:params {:time false
                 :metrics true}
@@ -310,6 +334,14 @@
                     package)]
       (handler conn package))))
 
+(defn wrap-active?
+  ""
+  [handler]
+  (fn [{:keys [fn] :as conn} package]
+    (if ((:active? fn) conn)
+      (handler conn package)
+      (throw (ex-info "connection not active" {})))))
+
 (defn init-functions
   "helper function to create the network functions
  
@@ -317,9 +349,11 @@
                          :attach (fn [conn] conn)}})
    => (just-in {:id string?
                 :pending #(instance? clojure.lang.Atom %)
-                :fn {:attach  fn?
+                :fn {:active? fn?
+                     :attach  fn?
+                    :close   fn?
                      :dead    fn?
-                    :process fn?
+                     :process fn?
                      :receive fn?
                      :reply   fn?
                      :request fn?
@@ -332,21 +366,24 @@
         pending    (atom {})
         send-fn    (cond-> (or (:send fn)
                                (throw (ex-info "send function is required" {})))
-                     (:track options) (wrap-track :send))
+                     (:track options) (wrap-track :send)
+                     :then (wrap-active?))
         
         attach-fn  (cond-> (or (:attach fn)
                                (throw (ex-info "attach function is required" {}))))
         
         request-fn (cond-> send-fn
                      (:time options) (wrap-time-start [:overall]) 
-                     :then (wrap-request))
+                     :then (wrap-request)
+                     :then (wrap-active?))
         
         process-fn (cond-> (or (:process fn) process-fn))
-
+        
         reply-fn   (cond-> send-fn
                      (:time options) (wrap-time-end [:remote]))
         
         respond-fn (cond-> process-fn
+                     :then (wrap-exceptions)
                      :then (wrap-response)
                      (:time options) (wrap-time-start [:remote]))
         
@@ -360,10 +397,16 @@
         
         dead-fn    (cond-> (or (:dead fn) dead-fn))
         
+        close-fn   (or (:close fn) identity)
+
+        active?-fn   (or (:active? fn) (constantly true))
+        
         conn       (assoc conn
                           :id id
                           :pending pending
-                          :fn {:attach  attach-fn
+                          :fn {:active? active?-fn
+                               :attach  attach-fn
+                               :close   close-fn
                                :dead    dead-fn
                                :process process-fn
                                :receive receive-fn
@@ -395,6 +438,7 @@
    (request network :on/id :hello)
    => (just-in {:type :on/id,
                 :code :response,
+                :status :success
                 :request :hello,
                 :params {:full true,
                          :metrics true},
@@ -442,4 +486,3 @@
                                     {:type type
                                      :code :data
                                      :data input}))))
-

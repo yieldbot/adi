@@ -1,8 +1,6 @@
-(ns spirit.network.singleton
-  (:require [spirit.protocol.itransport :as transport]
-            [spirit.network.common :as common]
-            [hara.component :as component]
-            [hara.event :as event]))
+(ns spirit.network.base.singleton
+  (:require [spirit.network.common :as common]
+            [hara.component :as component]))
 
 (defn send-fn
   "send via agent with simulated network delay
@@ -58,9 +56,9 @@
   component/IComponent
   (-start [conn]
     (-> conn
-        (assoc :raw (agent nil)
-               :fn  {:send send-fn
-                     :attach attach-fn})
+        (assoc :raw (agent nil))
+        (update-in [:fn] merge {:send send-fn
+                                :attach attach-fn})
         (common/init-functions)))
   (-stop [conn]
     (dissoc conn :pending :raw :fn)))
@@ -70,6 +68,22 @@
   (.write w (str v)))
 
 (defn singleton
-  "" [m]
+  "creates a singleton for simulating network activity
+ 
+   (def network
+    (singleton {:id \"A\"
+                 :default {:params {:full true
+                                    :metrics true}}
+                 :format :edn
+                 
+                 :options {:time  true
+                           :track true
+                           :network {:delay 100}}
+                 :return  {:type    :channel
+                           :timeout 1000}
+                 :flags     {:on/id :full}
+                 :handlers  {:on/id (fn [package] (:request package))}}))"
+  {:added "0.5"}
+  [m]
   (-> (map->Singleton m)
       (component/start)))

@@ -1,1 +1,0 @@
-(ns spirit.network.singleton.channel)

@@ -1,7 +1,7 @@
 (ns spirit.network.common-test
   (:use hara.test)
   (:require [spirit.network.common :refer :all]
-            [spirit.network.singleton :as singleton]
+            [spirit.network.base.singleton :as singleton]
             [clojure.core.async :as async]))
 
 ^{:refer spirit.network.common/response :added "0.5"}
@@ -73,8 +73,10 @@
    "[1 2 3 4")
   => {:type :error/read-value
       :code :error
+      :status :error
       :input "[1 2 3 4"
-      :error {:message nil}})
+      :error {:message nil
+              :format :edn}})
 
 ^{:refer spirit.network.common/dead-fn :added "0.5"}  
 (fact "default function for messages that haven't been processed")
@@ -145,10 +147,10 @@
   ((wrap-display (fn [_ package]
                    package))
    nil
-   {:params {:time false
-             :metrics true}
-    :time {:overall {:start 0
-                     :end 1000}}
+   {:params  {:time false
+              :metrics true}
+    :time    {:overall {:start 0
+                       :end 1000}}
     :metrics {:overall 1000}})
   => {:params {:time false
                :metrics true}
@@ -172,7 +174,9 @@
                         :attach (fn [conn] conn)}})
   => (just-in {:id string?
                :pending #(instance? clojure.lang.Atom %)
-               :fn {:attach  fn?
+               :fn {:active? fn?
+                    :attach  fn?
+                    :close   fn?
                     :dead    fn?
                     :process fn?
                     :receive fn?
@@ -202,6 +206,7 @@
   (request network :on/id :hello)
   => (just-in {:type :on/id,
                :code :response,
+               :status :success
                :request :hello,
                :params {:full true,
                         :metrics true},
