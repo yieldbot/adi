@@ -1,4 +1,4 @@
-(ns spirit.common.graph
+(ns spirit.data.graph
   (:require [spirit.protocol.igraph :as graph]
             [hara.component :as component])
   (:refer-clojure :exclude [update empty]))

@@ -1,7 +1,7 @@
 (ns spirit.core.datomic-test
   (:use hara.test)
   (:require [spirit.core.datomic :refer :all]
-            [spirit.common.graph :as graph]
+            [spirit.data.graph :as graph]
             [hara.component :as component]))
 
 ^{:refer spirit.core.datomic/connect! :added "0.5"}
@@ -60,7 +60,7 @@
 ^{:refer spirit.core.datomic/test-instance :added "0.5"}
 (comment "creates a test in-memory database")
 
-^{:refer spirit.common.graph/grapd :added "0.5"}
+^{:refer spirit.data.graph/grapd :added "0.5"}
 (fact "interface to graph/db"
   
   (graph/graph {:type :datomic
@@ -69,7 +69,7 @@
                 :options {:reset-db true}})
   => spirit.core.datomic.types.Datomic)
 
-^{:refer spirit.common.graph/-select :added "0.5"}
+^{:refer spirit.data.graph/-select :added "0.5"}
 (fact "selects from the database"
 
   (-> (test-instance)
@@ -79,7 +79,7 @@
                     {:options {:first true}}))
   => (contains-in {:account {:email "hello"}}))
 
-^{:refer spirit.common.graph/-empty :added "0.5"}
+^{:refer spirit.data.graph/-empty :added "0.5"}
 (comment "inserts into the database"
 
   (-> (test-instance)
@@ -90,7 +90,7 @@
       (graph/select {:account/email '_}))
   => #{})
 
-^{:refer spirit.common.graph/-insert :added "0.5"}
+^{:refer spirit.data.graph/-insert :added "0.5"}
 (comment "inserts into the database"
 
   (-> (test-instance)
@@ -98,7 +98,7 @@
                                :firstname "chris"
                                :lastname "zheng"}})))
 
-^{:refer spirit.common.graph/-delete :added "0.5"}
+^{:refer spirit.data.graph/-delete :added "0.5"}
 (fact "deletes from the database"
 
   (-> (test-instance)
@@ -109,7 +109,7 @@
       count)
   => 1)
 
-^{:refer spirit.common.graph/-retract :added "0.5"}
+^{:refer spirit.data.graph/-retract :added "0.5"}
 (fact "retracts keys from the selected entity"
 
   (-> (test-instance)
@@ -123,7 +123,7 @@
                                :ids false}}))
   => {:account {:email "hello", :lastname "zheng"}})
 
-^{:refer spirit.common.graph/-update :added "0.5"}
+^{:refer spirit.data.graph/-update :added "0.5"}
 (fact "retracts keys from the selected entity"
 
   (-> (test-instance)

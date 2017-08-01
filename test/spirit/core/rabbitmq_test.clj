@@ -1,6 +1,6 @@
 (ns spirit.core.rabbitmq-test
   (:use hara.test)
-  (:require [spirit.common.queue :as queue]
+  (:require [spirit.data.exchange :as exchange]
             [spirit.core.rabbitmq :refer :all]))
 
 (def routes {:queues    #{"q1" "q2"},
@@ -13,19 +13,19 @@
 ^{:refer spirit.core.rabbitmq/list-queues :added "0.5"}
 (fact "returns current list of queues"
 
-  (queue/list-queues (queue/queue {:type :rabbitmq
-                                   :routing routes}))
+  (exchange/list-queues (exchange/exchange {:type :rabbitmq
+                                            :routing routes}))
   => (contains {"q1" map?
                 "q2" map?}))
 
 ^{:refer spirit.core.rabbitmq/add-queue :added "0.5"}
 (fact "adds a queue to the mq"
 
-  (-> (queue/queue {:type :rabbitmq
-                    :routing routes
-                    :refresh true})
-      (queue/add-queue "q3")
-      (queue/list-queues))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/add-queue "q3")
+      (exchange/list-queues))
   => (contains {"q1" map?
                 "q2" map?
                 "q3" map?}))
@@ -33,31 +33,31 @@
 ^{:refer spirit.core.rabbitmq/delete-queue :added "0.5"}
 (fact "deletes a queue from the mq"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/delete-queue "q1")
-      (queue/list-queues))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/delete-queue "q1")
+      (exchange/list-queues))
   => (contains {"q2" map?}))
 
 ^{:refer spirit.core.rabbitmq/list-exchanges :added "0.5"}
 (fact "returns current list of exchanges"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/list-exchanges))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/list-exchanges))
   => (contains {"ex1" map?
                 "ex2" map?}))
 
 ^{:refer spirit.core.rabbitmq/add-exchange :added "0.5"}
 (fact "adds an exchange to the mq"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/add-exchange "ex3")
-      (queue/list-exchanges))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/add-exchange "ex3")
+      (exchange/list-exchanges))
   => (contains {"ex1" map?
                 "ex2" map?
                 "ex3" map?}))
@@ -65,20 +65,20 @@
 ^{:refer spirit.core.rabbitmq/delete-exchange :added "0.5"}
 (fact "removes an exchange from the mq"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/delete-exchange "ex1")
-      (queue/list-exchanges))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/delete-exchange "ex1")
+      (exchange/list-exchanges))
   => (contains {"ex2" map?}))
 
 ^{:refer spirit.core.rabbitmq/list-bindings :added "0.5"}
 (fact "returns current list of exchanges"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/list-bindings))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/list-bindings))
   => (contains-in {"ex1" {:exchanges {"ex2" [map?]}
                           :queues {"q1" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
@@ -86,12 +86,12 @@
 ^{:refer spirit.core.rabbitmq/bind-exchange :added "0.5"}
 (fact "returns current list of exchanges"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/add-exchange "ex3")
-      (queue/bind-exchange "ex1" "ex3")
-      (queue/list-bindings))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/add-exchange "ex3")
+      (exchange/bind-exchange "ex1" "ex3")
+      (exchange/list-bindings))
   => (contains-in {"ex1" {:exchanges {"ex2" [map?]
                                       "ex3" [map?]}
                           :queues {"q1" [map?]}}
@@ -100,12 +100,12 @@
 ^{:refer spirit.core.rabbitmq/bind-queue :added "0.5"}
 (fact "returns current list of exchanges"
 
-  (-> (queue/queue {:type :rabbitmq
-                     :routing routes
-                     :refresh true})
-      (queue/add-queue "q3")
-      (queue/bind-queue "ex1" "q3")
-      (queue/list-bindings))
+  (-> (exchange/exchange {:type :rabbitmq
+                          :routing routes
+                          :refresh true})
+      (exchange/add-queue "q3")
+      (exchange/bind-queue "ex1" "q3")
+      (exchange/list-bindings))
   => (contains-in {"ex1" {:exchanges {"ex2" [map?]}
                           :queues {"q1" [map?]
                                    "q3" [map?]}}
@@ -114,16 +114,16 @@
 ^{:refer spirit.core.rabbitmq/routing-all :added "0.5"}
 (fact "lists all the routing in the mq"
 
-  (routing-all (queue/queue {:type :rabbitmq
-                              :refresh true})
+  (routing-all (exchange/exchange {:type :rabbitmq
+                                   :refresh true})
                {})
   => {"/" {:queues {}, :exchanges {}, :bindings {}}})
 
 ^{:refer spirit.core.rabbitmq/network :added "0.5"}
 (fact "returns the mq network"
 
-  (network (queue/queue {:type :rabbitmq
-                          :refresh true}))
+  (network (exchange/exchange {:type :rabbitmq
+                               :refresh true}))
   => (contains-in {:cluster-name string?
                    :nodes [string?]
                    :vhosts ["/"]

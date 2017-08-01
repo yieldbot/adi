@@ -1,6 +1,6 @@
-(ns spirit.common.queue-test
+(ns spirit.data.exchange-test
   (:use hara.test)
-  (:require [spirit.common.queue :refer :all :as queue]
+  (:require [spirit.data.exchange :refer :all :as queue]
             [spirit.core.rabbitmq :as rabbitmq]))
 
 (def routes {:queues    #{"q1" "q2"},
@@ -10,7 +10,7 @@
                           "ex2" {:exchanges #{}
                                  :queues #{"q2"}}}})
 
-^{:refer spirit.common.queue/lengthen-topology :added "0.5"}
+^{:refer spirit.data.exchange/lengthen-topology :added "0.5"}
 (fact "display routes in full"
 
   (lengthen-topology   {:queues    #{"q1" "q2"},
@@ -29,20 +29,20 @@
                   "ex2" {:exchanges {},
                          :queues {"q2" [map?]}}}}))
 
-^{:refer spirit.common.queue/shorten-topology :added "0.5"}
+^{:refer spirit.data.exchange/shorten-topology :added "0.5"}
 (fact "creates a shorthand version of the routing topology"
 
   (shorten-topology (lengthen-topology routes))
   => routes)
 
-^{:refer spirit.common.queue/list-queues :added "0.5"}
+^{:refer spirit.data.exchange/list-queues :added "0.5"}
 (fact "returns current list of queues"
 
   (list-queues (queue/queue {:routing routes}))
   => (contains {"q1" map?
                 "q2" map?}))
 
-^{:refer spirit.common.queue/add-queue :added "0.5"}
+^{:refer spirit.data.exchange/add-queue :added "0.5"}
 (fact "adds a queue to the mq"
 
   (-> (queue/queue {:routing routes})
@@ -52,7 +52,7 @@
                 "q2" map?
                 "q3" map?}))
 
-^{:refer spirit.common.queue/delete-queue :added "0.5"}
+^{:refer spirit.data.exchange/delete-queue :added "0.5"}
 (fact "deletes a queue from the mq"
 
   (-> (queue/queue {:routing routes})
@@ -60,14 +60,14 @@
       (list-queues))
   => (contains {"q2" map?}))
 
-^{:refer spirit.common.queue/list-exchanges :added "0.5"}
+^{:refer spirit.data.exchange/list-exchanges :added "0.5"}
 (fact "returns current list of exchanges"
 
   (list-exchanges (queue/queue {:routing routes}))
   => (contains {"ex1" map?
                 "ex2" map?}))
 
-^{:refer spirit.common.queue/add-exchange :added "0.5"}
+^{:refer spirit.data.exchange/add-exchange :added "0.5"}
 (fact "adds an exchange to the mq"
 
   (-> (queue/queue {:routing routes})
@@ -77,7 +77,7 @@
                 "ex2" map?
                 "ex3" map?}))
 
-^{:refer spirit.common.queue/delete-exchange :added "0.5"}
+^{:refer spirit.data.exchange/delete-exchange :added "0.5"}
 (fact "removes an exchange from the mq"
 
   (-> (queue/queue {:routing routes})
@@ -85,7 +85,7 @@
       (list-exchanges))
   => (contains {"ex2" map?}))
 
-^{:refer spirit.common.queue/list-bindings :added "0.5"}
+^{:refer spirit.data.exchange/list-bindings :added "0.5"}
 (fact "returns current list of exchanges"
 
   (list-bindings (queue/queue {:routing routes}))
@@ -93,7 +93,7 @@
                           :queues {"q1" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
 
-^{:refer spirit.common.queue/bind-exchange :added "0.5"}
+^{:refer spirit.data.exchange/bind-exchange :added "0.5"}
 (fact "binds a queue to the exchange"
 
   (-> (queue/queue {:routing routes})
@@ -105,7 +105,7 @@
                           :queues {"q1" [map?]}}
                    "ex2" {:queues {"q2" [map?]}}}))
 
-^{:refer spirit.common.queue/bind-queue :added "0.5"}
+^{:refer spirit.data.exchange/bind-queue :added "0.5"}
 (fact "binds an exchange to the exchange"
 
   (-> (queue/queue {:routing routes})
@@ -118,7 +118,7 @@
                    "ex2" {:queues {"q2" [map?]}}}))
 
 
-^{:refer spirit.common.queue/routing :added "0.5"}
+^{:refer spirit.data.exchange/routing :added "0.5"}
 (fact "returns the routes for the current mq"
   
   (-> (queue/queue {:routing routes})
@@ -131,7 +131,7 @@
          :world {:sync true :function #(prn % :world)}}
    "q2" {:foo {:sync true :function #(prn % :foo)}}})
 
-^{:refer spirit.common.queue/list-consumers :added "0.5"}
+^{:refer spirit.data.exchange/list-consumers :added "0.5"}
 (fact "lists all the consumers for the mq"
 
   (-> (queue/queue {:routing routes :consumers consumers})
@@ -140,7 +140,7 @@
                          :world map?},
                    "q2" {:foo map?}}))
 
-^{:refer spirit.common.queue/add-consumer :added "0.5"}
+^{:refer spirit.data.exchange/add-consumer :added "0.5"}
 (fact "adds a consumers to the mq"
 
   (-> (queue/queue {:routing routes :consumers consumers})
@@ -151,7 +151,7 @@
                    "q2" {:foo map?
                          :bar map?}}))
 
-^{:refer spirit.common.queue/delete-consumer :added "0.5"}
+^{:refer spirit.data.exchange/delete-consumer :added "0.5"}
 (fact "deletes the consumer from the queue"
   
   (-> (queue/queue {:routing routes :consumers consumers})
@@ -160,7 +160,7 @@
   => (contains-in {"q1" {:world map?},
                    "q2" {:foo map?}}))
 
-^{:refer spirit.common.queue/publish :added "0.5"}
+^{:refer spirit.data.exchange/publish :added "0.5"}
 (fact "publishes a message to an exchange"
 
   (def p (promise))
@@ -171,7 +171,7 @@
   
   @p => "hello there")
 
-^{:refer spirit.common.queue/install-bindings :added "0.5"}
+^{:refer spirit.data.exchange/install-bindings :added "0.5"}
 (fact "installs bindings on the mq"
   (-> (queue/queue {:routing {:queues #{"q1"}
                                :exchanges #{"ex1"}}})
@@ -179,14 +179,14 @@
       (list-bindings))
   => (contains-in {"ex1" {:queues {"q1" [map?]}}}))
 
-^{:refer spirit.common.queue/install-routing :added "0.5"}
+^{:refer spirit.data.exchange/install-routing :added "0.5"}
 (fact "installs routing on the mq"
   (-> (queue/queue)
       (install-routing routes)
       (routing {:short true}))
   => routes)
 
-^{:refer spirit.common.queue/remove-routing :added "0.5"}
+^{:refer spirit.data.exchange/remove-routing :added "0.5"}
 (fact "removes routing on the mq"
   
   (-> (queue/queue {:routing routes})
@@ -195,7 +195,7 @@
       (routing {:short true}))
   => {:queues #{"q3"}, :exchanges #{}, :bindings {}})
 
-^{:refer spirit.common.queue/purge-routing :added "0.5"}
+^{:refer spirit.data.exchange/purge-routing :added "0.5"}
 (fact "clears all routing on the mq"
   
   (-> (queue/queue {:routing routes})
@@ -203,10 +203,10 @@
       (routing {:short true}))
   => {:queues #{}, :exchanges #{}, :bindings {}})
 
-^{:refer spirit.common.queue/install-consumers :added "0.5"}
+^{:refer spirit.data.exchange/install-consumers :added "0.5"}
 (fact "installs-consumers on the queues")
 
-^{:refer spirit.common.queue/match-pattern :added "0.5"}
+^{:refer spirit.data.exchange/match-pattern :added "0.5"}
 (fact "creates a re-pattern for the rabbitmq regex string"
 
   (match-pattern "*" "hello")
@@ -215,7 +215,7 @@
   (match-pattern ".*." ".hello.")
   => true)
 
-^{:refer spirit.common.queue/route? :added "0.5"}
+^{:refer spirit.data.exchange/route? :added "0.5"}
 (fact "checks if a message will be routed"
 
   (route? {:type "fanout"} {} {})

@@ -4,7 +4,7 @@
             [spirit.core.datomic.schema.generate :as generate]
             [spirit.core.datomic.schema.base :as base]
             [spirit.data.schema :as schema]
-            [spirit.common.graph :as graph]))
+            [spirit.data.graph :as graph]))
 
 ;;(ns-unalias 'spirit.core.datomic.types 'schema)
 

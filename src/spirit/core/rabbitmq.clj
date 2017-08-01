@@ -2,8 +2,9 @@
   (:require [spirit.core.rabbitmq
              [api :as api]
              [request :as request]]
-            [spirit.common.queue :as common]
-            [spirit.protocol.iqueue :as queue]
+            [spirit.data.exchange :as exchange]
+            [spirit.data.exchange.common :as common]
+            [spirit.protocol.iexchange :as interface]
             [hara.component :as component])
   (:import java.net.URLEncoder))
 
@@ -25,7 +26,7 @@
 (defn routing-all
   "lists all the routing in the mq
  
-   (routing-all (common/create {:type :rabbitmq
+   (routing-all (exchange/create {:type :rabbitmq
                                :refresh true})
                 {})
    => {\"/\" {:queues {}, :exchanges {}, :bindings {}}}"
@@ -39,7 +40,7 @@
 (defn network
   "returns the mq network
  
-   (network (common/create {:type :rabbitmq
+   (network (exchange/create {:type :rabbitmq
                            :refresh true}))
    => (contains-in {:cluster-name string?
                     :nodes [string?]
@@ -80,7 +81,7 @@
   (-stop [mq]
     mq)
 
-  queue/IQueue
+  interface/IExchange
   (-list-queues     [mq]
     (->> (api/list-queues mq)
          (reduce (fn [out {:keys [name] :as data}]
@@ -164,7 +165,7 @@
                                               :write ".*"
                                               :read ".*"}))))
 
-(defmethod common/create :rabbitmq
+(defmethod interface/create :rabbitmq
   [m]
   (let [m (merge m *default-options*)]
     (-> (map->RabbitMQ m)
@@ -175,5 +176,5 @@
   {:added "0.5"}
   ([] (rabbit {}))
   ([m]
-   (-> (common/create {:type :rabbitmq})
+   (-> (exchange/create {:type :rabbitmq})
        (component/start))))

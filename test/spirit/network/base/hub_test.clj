@@ -15,7 +15,6 @@
                            :timeout 1000}
                  :handlers  {:on/id (fn [req] :a)}})))
 
-
 ^{:refer spirit.network.base.hub/connect :added "0.5"}
 (fact "returns an endpoint for connection"
 
