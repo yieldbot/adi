@@ -19,6 +19,8 @@
 (fact "returns an endpoint for connection"
 
   (def ca (connect sys))
+
+  (Thread/sleep 10)
   
   (common/request ca :on/id nil {:params {}})
   => :a)

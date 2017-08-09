@@ -10,10 +10,12 @@
     :channel/get-state
     :channel/set-state})
 
-(defn channel-handshake [conn package])
+(defn handshake [conn package])
 
-(defn channel-heartbeat [conn package])
+(defn heartbeat [conn package])
 
-(defn channel-get-id [conn package])
+(defn get-id [conn package])
 
-(defn channel-get-id [conn package])
+(defn set-id [conn package])
+
+(defn close [conn package])
