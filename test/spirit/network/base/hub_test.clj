@@ -20,7 +20,7 @@
 
   (def ca (connect sys))
 
-  (Thread/sleep 10)
+  (Thread/sleep 1000)
   
   (common/request ca :on/id nil {:params {}})
   => :a)
