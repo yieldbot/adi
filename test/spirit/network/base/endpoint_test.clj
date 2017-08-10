@@ -92,8 +92,7 @@
                    :response :b
                    :metrics {:remote  number?
                              :overall number?}})
-
-
+  
   (common/request a :on/oeuoeu {})
   => (contains {:type :on/oeuoeu
                 :status :error

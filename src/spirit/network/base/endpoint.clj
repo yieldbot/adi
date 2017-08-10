@@ -41,13 +41,15 @@
    => nil"
   {:added "0.5"}
   [{:keys [raw fn] :as conn}]
-  (let [receive-fn (:receive fn)]
-    (async/go-loop []
-      (if-let [message (and (:in @raw)
-                            (async/<! (:in @raw)))]
-        (do (receive-fn conn message)
-            (recur))
-        ((:close fn) conn))))
+  (let [receive-fn (:receive fn)
+        in-channel (:in @raw)]
+    (if in-channel
+      (async/go-loop []
+        (if-let [message (and (:in @raw)
+                              (async/<! (:in @raw)))]
+          (do (receive-fn conn message)
+              (recur))
+          ((:close fn) conn)))))
   conn)
 
 (defn close-fn
@@ -158,6 +160,7 @@
         _    (reset! (:raw b) {:in  a->b :out b->a})]
     ((-> a :fn :attach) a)
     ((-> b :fn :attach) b)
+    (Thread/sleep 100)
     [a b]))
 
 (defn coupled
