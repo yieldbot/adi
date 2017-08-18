@@ -160,7 +160,7 @@
         _    (reset! (:raw b) {:in  a->b :out b->a})]
     ((-> a :fn :attach) a)
     ((-> b :fn :attach) b)
-    (Thread/sleep 100)
+    (Thread/sleep 10)
     [a b]))
 
 (defn coupled

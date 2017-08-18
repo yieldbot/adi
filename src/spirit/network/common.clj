@@ -351,7 +351,7 @@
                 :pending #(instance? clojure.lang.Atom %)
                 :fn {:active? fn?
                      :attach  fn?
-                    :close   fn?
+                     :close   fn?
                      :dead    fn?
                      :process fn?
                      :receive fn?
