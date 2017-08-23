@@ -1,6 +1,6 @@
 (ns spirit.data.keystore.base
   (:require [spirit.protocol.ikeystore :as keystore]
-            [spirit.common.atom :as atom]
+            [spirit.data.atom :as atom]
             [hara.component :as component]
             [hara.data.nested :as nested]
             [hara.data.map :as map]

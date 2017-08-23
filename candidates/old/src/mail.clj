@@ -1,6 +1,6 @@
 (ns spirit.mail
   (:require [spirit.protocol.imail :as mail]
-            [spirit.common.atom :as atom]
+            [spirit.data.atom :as atom]
             [hara.component :as component]
             [hara.string.mustache :as mustache]))
 

@@ -1,7 +1,7 @@
 (ns spirit.data.exchange.base
   (:require [spirit.protocol.iexchange :as exchange]
             [spirit.data.exchange.common :as common]
-            [spirit.common.atom :as atom]
+            [spirit.data.atom :as atom]
             [hara.component :as component]))
 
 (defn match-pattern

@@ -1,6 +1,6 @@
 (ns spirit.data.cache.base
   (:require [spirit.protocol.icache :as cache]
-            [spirit.common.atom :as atom]
+            [spirit.data.atom :as atom]
             [hara.component :as component]))
 
 (def ^:dynamic *current* nil)

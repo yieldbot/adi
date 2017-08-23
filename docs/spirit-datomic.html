@@ -1,64 +1,89 @@
-<html>
-  <head>
-    <meta content=\"chrome=1\" http-equiv=\"X-UA-Compatible\" />
-    <meta charset=\"utf-8\" /><meta content=\"width=device-width, initial-scale=1, user-scalable=no\" name=\"viewport\" />
-    <link rel="shortcut icon" href="favicon.png?v2">
-    <title>datomic - spirit.datomic API Reference</title>
-    <script src="js/highlight.min.js"></script>
-    <script src="js/gumshoe.min.js"></script>
-    <script src="js/smooth-scroll.min.js"></script>
 
-    <link rel="stylesheet" href="css/page.css">
-    <link rel="stylesheet" href="css/api.css">
-    <link rel="stylesheet" href="css/code.css">
-    <link rel="stylesheet" href="css/highlight.css">
-  </head>
-    
-  <body>
-    <header class="top">
-      <ul><li><a href="index.html">home</a></li><li><a href="spirit-datomic.html">datomic</a></li></ul>
-    </header>
-    <header>      
-      <div class="heading">
-        <h1>datomic</h1>
-        <h3>spirit.datomic API Reference</h3>
-        <hr/>
-        <div class=\"info\">
-          <h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5>
-          <h5>Date: 31 May 2017</h5>
-          <h5>Repository: <a href="https://www.github.com/zcaudate/spirit">https://www.github.com/zcaudate/spirit</a></h5>
-          <h5>Version: 0.5.1</h5>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en-us">
+
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+  <!-- Enable responsiveness on mobile devices-->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+  <link rel="shortcut icon" href="favicon.ico">
+  <title>spirit.datomic - datomic API Reference</title>
+  <script src="js/highlight.min.js"></script>
+  <script src="js/gumshoe.min.js"></script>
+  <script src="js/smooth-scroll.min.js"></script>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/poole.css">
+  <link rel="stylesheet" href="css/syntax.css">
+  <link rel="stylesheet" href="css/lanyon.css">
+  <link rel="stylesheet" href="css/stark.css">
+  <link rel="stylesheet" href="css/stark-api.css">
+  <link rel="stylesheet" href="css/stark-highlight.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Serif:400,400italic,700|PT+Sans:400">
+  
+</head>
+
+  <body class="theme-base-0b">
+    <span id="page-top"></span>
+
+    <!-- Target for toggling the sidebar `.sidebar-checkbox` is for regular
+     styles, `#sidebar-checkbox` for behavior. -->
+<input type="checkbox" class="sidebar-checkbox" id="sidebar-checkbox">
+
+<!-- Toggleable sidebar -->
+<div class="sidebar" id="sidebar">
+  <nav class="sidebar-nav">
+    <span>&nbsp;</span>
+    <a class="sidebar-nav-item header" href="index.html"><img src="img/logo-white.png" style="width:100%; padding-left:1em"/></a>
+    <span>&nbsp;</span>
+    <a class="sidebar-nav-item" href="spirit-data-atom.html">data.atom</a><a class="sidebar-nav-item" href="spirit-data-cache.html">data.cache</a><a class="sidebar-nav-item" href="spirit-data-exchange.html">data.exchange</a><a class="sidebar-nav-item" href="spirit-data-graph.html">data.graph</a><a class="sidebar-nav-item" href="spirit-data-keystore.html">data.keystore</a><a class="sidebar-nav-item" href="spirit-data-pipeline.html">data.pipeline</a><a class="sidebar-nav-item" href="spirit-data-schema.html">data.schema</a><a class="sidebar-nav-item" href="spirit-data-table.html">data.table</a><a class="sidebar-nav-item active" href="spirit-datomic.html">datomic</a><a class="sidebar-nav-item" href="spirit-httpkit.html">httpkit</a><a class="sidebar-nav-item" href="spirit-network.html">network</a><a class="sidebar-nav-item" href="spirit-rabbitmq.html">rabbitmq</a>
+    <span class="sidebar-nav-item">&nbsp;</span>
+    <span class="sidebar-nav-item">&nbsp;</span>
+  </nav>
+</div>
+
+
+    <!-- Wrap is the content to shift when toggling the sidebar. We wrap the
+         content to avoid any CSS collisions with our real content. -->
+    <div class="wrap">
+      <div class="masthead">
+        <div class="container">
+          <h3 class="masthead-title">
+            <span>spirit.datomic</span>
+            <small>datomic API Reference</small>
+          </h3>
         </div>
-        <br/>
-        <hr/>
       </div>
 
-      <h4><a href="#introduction">1 &nbsp; Introduction</a></h4><h5>&nbsp;&nbsp;<i><a href="#required">1.1 &nbsp; Required</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#outline">1.2 &nbsp; Outline</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#architecture">1.3 &nbsp; Architecture</a></i></h5><h4><a href="#api">2 &nbsp; API</a></h4><h5>&nbsp;&nbsp;<i><a href="#connect">2.1 &nbsp; connect!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#insert">2.2 &nbsp; insert!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#select">2.3 &nbsp; select</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#query">2.4 &nbsp; query</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#update">2.5 &nbsp; update!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#retract">2.6 &nbsp; retract!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#update-in">2.7 &nbsp; update-in!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#retract-in">2.8 &nbsp; retract-in!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#transact">2.9 &nbsp; transact!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#delete">2.10 &nbsp; delete!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#delete-in">2.11 &nbsp; delete-in!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#delete-all">2.12 &nbsp; delete-all!</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#parameters">2.13 &nbsp; Parameters</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#options">2.14 &nbsp; Options</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#pipeline">2.15 &nbsp; Pipeline</a></i></h5><h4><a href="#schema">3 &nbsp; Schema</a></h4><h5>&nbsp;&nbsp;<i><a href="#basics">3.1 &nbsp; Basics</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#shorthand">3.1.1 &nbsp; Shorthand</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#attributes">3.2 &nbsp; Attributes</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#type">3.3 &nbsp; :type</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ref">3.4 &nbsp; :ref</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#enum">3.5 &nbsp; :enum</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#cardinality">3.6 &nbsp; :cardinality</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#unique">3.7 &nbsp; :unique</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#doc">3.8 &nbsp; :doc</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#index">3.9 &nbsp; :index</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#fulltext">3.10 &nbsp; :fulltext</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#is-component">3.11 &nbsp; :isComponent</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#no-history">3.12 &nbsp; :noHistory</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#required-0">3.13 &nbsp; :required</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#restrict">3.14 &nbsp; :restrict</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#default">3.15 &nbsp; :default</a></i></h5><h4><a href="#connection-params">4 &nbsp; Connection Params</a></h4><h5>&nbsp;&nbsp;<i><a href="#connection">4.1 &nbsp; :connection</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#creating-a-datastore">4.1.1 &nbsp; creating a datastore</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#more-datastores">4.1.2 &nbsp; more datastores</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#key--value-input">4.1.3 &nbsp; key/value input</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#map-input">4.1.4 &nbsp; map input</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#different-sinks">4.1.5 &nbsp; different sinks</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#update-example">4.1.6 &nbsp; update example</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#delete-example">4.1.7 &nbsp; delete example</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#db">4.2 &nbsp; :db</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#key--value-input-0">4.2.1 &nbsp; key/value input</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#map-input-0">4.2.2 &nbsp; map input</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#overwriting">4.2.3 &nbsp; overwriting</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#at">4.3 &nbsp; :at</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#time-travel">4.3.1 &nbsp; time travel</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#syntactic-sugar">4.3.2 &nbsp; syntactic sugar</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#transaction-id">4.3.3 &nbsp; transaction id</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#transaction-time">4.3.4 &nbsp; transaction time</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#mix-and-match">4.3.5 &nbsp; mix and match</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#return">4.4 &nbsp; :return</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#ids">4.4.1 &nbsp; :ids</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#entities">4.4.2 &nbsp; :entities</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#data">4.4.3 &nbsp; :data</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#transact-0">4.5 &nbsp; :transact</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#resolve">4.5.1 &nbsp; :resolve</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#datomic">4.5.2 &nbsp; :datomic</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#promise">4.5.3 &nbsp; :promise</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#async">4.5.4 &nbsp; :async</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#simulate">4.6 &nbsp; :simulate</a></i></h5><h4><a href="#schema-params">5 &nbsp; Schema Params</a></h4><h5>&nbsp;&nbsp;<i><a href="#schema-0">5.1 &nbsp; :schema</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#book">5.1.1 &nbsp; book</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#partial-schema">5.1.2 &nbsp; partial schema</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#more-examples">5.1.3 &nbsp; more examples</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#pull">5.2 &nbsp; :pull</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#defaults">5.2.1 &nbsp; defaults</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#checked-and-unchecked">5.2.2 &nbsp; :checked and :unchecked</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#id">5.2.3 &nbsp; :id</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#forward-walk">5.2.4 &nbsp; forward walk</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#reverse-walk">5.2.5 &nbsp; reverse walk</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#yield">5.2.6 &nbsp; :yield</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#recursion">5.2.7 &nbsp; recursion</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#access">5.3 &nbsp; :access</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#restrictions">5.3.1 &nbsp; restrictions</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#combination">5.3.2 &nbsp; combination</a></i></h5><h4><a href="#options-0">6 &nbsp; Options</a></h4><h5>&nbsp;&nbsp;<i><a href="#first">6.1 &nbsp; :first</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ids-0">6.2 &nbsp; :ids</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#blank">6.3 &nbsp; :blank</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#default-setting">6.3.1 &nbsp; default setting</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#pull-behaviour">6.3.2 &nbsp; pull behaviour</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#access-behaviour">6.3.3 &nbsp; access behaviour</a></i></h5><h5>&nbsp;&nbsp;&nbsp;&nbsp;<i><a href="#ref-traversal">6.3.4 &nbsp; ref traversal</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ban-expressions">6.4 &nbsp; :ban-expressions</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ban-top-id">6.5 &nbsp; :ban-top-id</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ban-body-ids">6.6 &nbsp; :ban-body-ids</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ban-ids">6.7 &nbsp; :ban-ids</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#raw">6.8 &nbsp; :raw</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#spirit">6.9 &nbsp; :spirit</a></i></h5><h4><a href="#pipeline-0">7 &nbsp; Pipeline</a></h4><h5>&nbsp;&nbsp;<i><a href="#pre-process">7.1 &nbsp; :pre-process</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#pre-require">7.2 &nbsp; :pre-require</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#pre-mask">7.3 &nbsp; :pre-mask</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#pre-transform">7.4 &nbsp; :pre-transform</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#fill-empty">7.5 &nbsp; :fill-empty</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#fill-assoc">7.6 &nbsp; :fill-assoc</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#ignore">7.7 &nbsp; :ignore</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#allow">7.8 &nbsp; :allow</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#validate">7.9 &nbsp; :validate</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#convert">7.10 &nbsp; :convert</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#post-require">7.11 &nbsp; :post-require</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#post-mask">7.12 &nbsp; :post-mask</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#post-transform">7.13 &nbsp; :post-transform</a></i></h5><h5>&nbsp;&nbsp;<i><a href="#post-process">7.14 &nbsp; :post-process</a></i></h5>
-      <!--nav data-gumshoe-header>
-        <ul data-gumshoe>
-          <a data-scroll class="top" href="#page-top">TOP</a>
-        </ul>
-      </nav-->
-      <br/>
-      <br/>
-    </header>
-    
-    <div class="content">
-      <section>
-        <div class="heading">
-          <h1>datomic</h1>
-          <h3>spirit.datomic API Reference</h3>
+      <div class="container content">
+        <div class="page">
+          <div class="heading">
+            <div>
+              <h5>Author: Chris Zheng&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></h5>
+              <h5>Date: 23 August 2017</h5>
+              <h5>Repository: <a href="https://www.github.com/zcaudate/spirit">https://www.github.com/zcaudate/spirit</a></h5>
+              <h5>Version: 0.7.1</h5></div></div>
           <hr/>
-          <div class=\"info\">
-            <h5>Author: Chris Zheng<b>&nbsp;&nbsp;<a href="mailto:z@caudate.me">(z@caudate.me)</a></b></h5>
-            <h5>Date: 31 May 2017</h5>
-            <h5>Repository: <a href="https://www.github.com/zcaudate/spirit">https://www.github.com/zcaudate/spirit</a></h5>
-            <h5>Version: 0.5.1</h5>
+          <div class="outline">
+            <div class="toc">
+              <nav data-gumshoe-header>
+                <ul data-gumshoe>
+                  <a data-scroll class="top" href="#page-top">TOP</a>
+                  <li><a class="chapter" data-scroll="" href="#introduction"><h4>1 &nbsp; Introduction</h4></a><a class="section" data-scroll="" href="#required"><h5><i>1.1 &nbsp; Required</i></h5></a><a class="section" data-scroll="" href="#outline"><h5><i>1.2 &nbsp; Outline</i></h5></a><a class="section" data-scroll="" href="#architecture"><h5><i>1.3 &nbsp; Architecture</i></h5></a></li><li><a class="chapter" data-scroll="" href="#api"><h4>2 &nbsp; API</h4></a><a class="section" data-scroll="" href="#connect"><h5><i>2.1 &nbsp; connect!</i></h5></a><a class="section" data-scroll="" href="#insert"><h5><i>2.2 &nbsp; insert!</i></h5></a><a class="section" data-scroll="" href="#select"><h5><i>2.3 &nbsp; select</i></h5></a><a class="section" data-scroll="" href="#query"><h5><i>2.4 &nbsp; query</i></h5></a><a class="section" data-scroll="" href="#update"><h5><i>2.5 &nbsp; update!</i></h5></a><a class="section" data-scroll="" href="#retract"><h5><i>2.6 &nbsp; retract!</i></h5></a><a class="section" data-scroll="" href="#update-in"><h5><i>2.7 &nbsp; update-in!</i></h5></a><a class="section" data-scroll="" href="#retract-in"><h5><i>2.8 &nbsp; retract-in!</i></h5></a><a class="section" data-scroll="" href="#transact"><h5><i>2.9 &nbsp; transact!</i></h5></a><a class="section" data-scroll="" href="#delete"><h5><i>2.10 &nbsp; delete!</i></h5></a><a class="section" data-scroll="" href="#delete-in"><h5><i>2.11 &nbsp; delete-in!</i></h5></a><a class="section" data-scroll="" href="#delete-all"><h5><i>2.12 &nbsp; delete-all!</i></h5></a><a class="section" data-scroll="" href="#parameters"><h5><i>2.13 &nbsp; Parameters</i></h5></a><a class="section" data-scroll="" href="#options"><h5><i>2.14 &nbsp; Options</i></h5></a><a class="section" data-scroll="" href="#pipeline"><h5><i>2.15 &nbsp; Pipeline</i></h5></a></li><li><a class="chapter" data-scroll="" href="#schema"><h4>3 &nbsp; Schema</h4></a><a class="section" data-scroll="" href="#basics"><h5><i>3.1 &nbsp; Basics</i></h5></a><a class="section" data-scroll="" href="#attributes"><h5><i>3.2 &nbsp; Attributes</i></h5></a><a class="section" data-scroll="" href="#type"><h5><i>3.3 &nbsp; :type</i></h5></a><a class="section" data-scroll="" href="#ref"><h5><i>3.4 &nbsp; :ref</i></h5></a><a class="section" data-scroll="" href="#enum"><h5><i>3.5 &nbsp; :enum</i></h5></a><a class="section" data-scroll="" href="#cardinality"><h5><i>3.6 &nbsp; :cardinality</i></h5></a><a class="section" data-scroll="" href="#unique"><h5><i>3.7 &nbsp; :unique</i></h5></a><a class="section" data-scroll="" href="#doc"><h5><i>3.8 &nbsp; :doc</i></h5></a><a class="section" data-scroll="" href="#index"><h5><i>3.9 &nbsp; :index</i></h5></a><a class="section" data-scroll="" href="#fulltext"><h5><i>3.10 &nbsp; :fulltext</i></h5></a><a class="section" data-scroll="" href="#is-component"><h5><i>3.11 &nbsp; :isComponent</i></h5></a><a class="section" data-scroll="" href="#no-history"><h5><i>3.12 &nbsp; :noHistory</i></h5></a><a class="section" data-scroll="" href="#required-0"><h5><i>3.13 &nbsp; :required</i></h5></a><a class="section" data-scroll="" href="#restrict"><h5><i>3.14 &nbsp; :restrict</i></h5></a><a class="section" data-scroll="" href="#default"><h5><i>3.15 &nbsp; :default</i></h5></a></li><li><a class="chapter" data-scroll="" href="#connection-params"><h4>4 &nbsp; Connection Params</h4></a><a class="section" data-scroll="" href="#connection"><h5><i>4.1 &nbsp; :connection</i></h5></a><a class="section" data-scroll="" href="#db"><h5><i>4.2 &nbsp; :db</i></h5></a><a class="section" data-scroll="" href="#at"><h5><i>4.3 &nbsp; :at</i></h5></a><a class="section" data-scroll="" href="#return"><h5><i>4.4 &nbsp; :return</i></h5></a><a class="section" data-scroll="" href="#transact-0"><h5><i>4.5 &nbsp; :transact</i></h5></a><a class="section" data-scroll="" href="#simulate"><h5><i>4.6 &nbsp; :simulate</i></h5></a></li><li><a class="chapter" data-scroll="" href="#schema-params"><h4>5 &nbsp; Schema Params</h4></a><a class="section" data-scroll="" href="#schema-0"><h5><i>5.1 &nbsp; :schema</i></h5></a><a class="section" data-scroll="" href="#pull"><h5><i>5.2 &nbsp; :pull</i></h5></a><a class="section" data-scroll="" href="#access"><h5><i>5.3 &nbsp; :access</i></h5></a></li><li><a class="chapter" data-scroll="" href="#options-0"><h4>6 &nbsp; Options</h4></a><a class="section" data-scroll="" href="#first"><h5><i>6.1 &nbsp; :first</i></h5></a><a class="section" data-scroll="" href="#ids-0"><h5><i>6.2 &nbsp; :ids</i></h5></a><a class="section" data-scroll="" href="#blank"><h5><i>6.3 &nbsp; :blank</i></h5></a><a class="section" data-scroll="" href="#ban-expressions"><h5><i>6.4 &nbsp; :ban-expressions</i></h5></a><a class="section" data-scroll="" href="#ban-top-id"><h5><i>6.5 &nbsp; :ban-top-id</i></h5></a><a class="section" data-scroll="" href="#ban-body-ids"><h5><i>6.6 &nbsp; :ban-body-ids</i></h5></a><a class="section" data-scroll="" href="#ban-ids"><h5><i>6.7 &nbsp; :ban-ids</i></h5></a><a class="section" data-scroll="" href="#raw"><h5><i>6.8 &nbsp; :raw</i></h5></a><a class="section" data-scroll="" href="#spirit"><h5><i>6.9 &nbsp; :spirit</i></h5></a></li><li><a class="chapter" data-scroll="" href="#pipeline-0"><h4>7 &nbsp; Pipeline</h4></a><a class="section" data-scroll="" href="#pre-process"><h5><i>7.1 &nbsp; :pre-process</i></h5></a><a class="section" data-scroll="" href="#pre-require"><h5><i>7.2 &nbsp; :pre-require</i></h5></a><a class="section" data-scroll="" href="#pre-mask"><h5><i>7.3 &nbsp; :pre-mask</i></h5></a><a class="section" data-scroll="" href="#pre-transform"><h5><i>7.4 &nbsp; :pre-transform</i></h5></a><a class="section" data-scroll="" href="#fill-empty"><h5><i>7.5 &nbsp; :fill-empty</i></h5></a><a class="section" data-scroll="" href="#fill-assoc"><h5><i>7.6 &nbsp; :fill-assoc</i></h5></a><a class="section" data-scroll="" href="#ignore"><h5><i>7.7 &nbsp; :ignore</i></h5></a><a class="section" data-scroll="" href="#allow"><h5><i>7.8 &nbsp; :allow</i></h5></a><a class="section" data-scroll="" href="#validate"><h5><i>7.9 &nbsp; :validate</i></h5></a><a class="section" data-scroll="" href="#convert"><h5><i>7.10 &nbsp; :convert</i></h5></a><a class="section" data-scroll="" href="#post-require"><h5><i>7.11 &nbsp; :post-require</i></h5></a><a class="section" data-scroll="" href="#post-mask"><h5><i>7.12 &nbsp; :post-mask</i></h5></a><a class="section" data-scroll="" href="#post-transform"><h5><i>7.13 &nbsp; :post-transform</i></h5></a><a class="section" data-scroll="" href="#post-process"><h5><i>7.14 &nbsp; :post-process</i></h5></a></li>
+                </ul>
+              </nav>
+            </div>
           </div>
-          <br/>
-          <hr/>
-        </div>
-        <div><span id="introduction"></span><h2><b>1 &nbsp;&nbsp; Introduction</b></h2></div><div><p><a href='https://www.github.com/zcaudate/spirit'>spirit</a> provides a simple, intuitive data layer to access datomic using a document-based syntax, as well as a data-processing pipeline for fine-grain manipulation and access of data.</p></div><div><span id="required"></span><h3>1.1 &nbsp;&nbsp; Required</h3></div><div><p>All functionality is contained in the <code>spirit.datomic</code> namespace:</p></div><div class="code"><pre><code class="clojure">(require '[spirit.datomic :as datomic])</code></pre></div><div><span id="outline"></span><h3>1.2 &nbsp;&nbsp; Outline</h3></div><div><p><a href='https://www.github.com/zcaudate/spirit'>spirit.datomic</a> provides the following advantages</p><ul><li>Using the schema as a 'type' system to process incoming data.</li><li>Relations mapped to nested object structures (using a graph-like notion)</li><li>Nested maps/objects as declarative logic queries.</li><li>Custom views on data (similar to the <code>:pull</code> api)</li></ul></div><div><span id="architecture"></span><h3>1.3 &nbsp;&nbsp; Architecture</h3></div><div><p>The architecture can be seen below:</p></div><div class="figure"><a id="img-img--spirit-png"></a><div class="img"><img line="{:row 32, :col 1, :end-row 32, :end-col 49}" src="img/spirit.png" width="100%" /></div><p></p></div><div><span id="api"></span><h2><b>2 &nbsp;&nbsp; API</b></h2></div><div><p>Top Level API's are listed below, first, we define a schema:</p></div><div class="code"><pre><code class="clojure">(def schema-api
+
+          <div class="toc">
+              <nav>
+                <ul>
+                  <li><a class="chapter" data-scroll="" href="#introduction"><h4>1 &nbsp; Introduction</h4></a><a class="section" data-scroll="" href="#required"><h5><i>1.1 &nbsp; Required</i></h5></a><a class="section" data-scroll="" href="#outline"><h5><i>1.2 &nbsp; Outline</i></h5></a><a class="section" data-scroll="" href="#architecture"><h5><i>1.3 &nbsp; Architecture</i></h5></a></li><li><a class="chapter" data-scroll="" href="#api"><h4>2 &nbsp; API</h4></a><a class="section" data-scroll="" href="#connect"><h5><i>2.1 &nbsp; connect!</i></h5></a><a class="section" data-scroll="" href="#insert"><h5><i>2.2 &nbsp; insert!</i></h5></a><a class="section" data-scroll="" href="#select"><h5><i>2.3 &nbsp; select</i></h5></a><a class="section" data-scroll="" href="#query"><h5><i>2.4 &nbsp; query</i></h5></a><a class="section" data-scroll="" href="#update"><h5><i>2.5 &nbsp; update!</i></h5></a><a class="section" data-scroll="" href="#retract"><h5><i>2.6 &nbsp; retract!</i></h5></a><a class="section" data-scroll="" href="#update-in"><h5><i>2.7 &nbsp; update-in!</i></h5></a><a class="section" data-scroll="" href="#retract-in"><h5><i>2.8 &nbsp; retract-in!</i></h5></a><a class="section" data-scroll="" href="#transact"><h5><i>2.9 &nbsp; transact!</i></h5></a><a class="section" data-scroll="" href="#delete"><h5><i>2.10 &nbsp; delete!</i></h5></a><a class="section" data-scroll="" href="#delete-in"><h5><i>2.11 &nbsp; delete-in!</i></h5></a><a class="section" data-scroll="" href="#delete-all"><h5><i>2.12 &nbsp; delete-all!</i></h5></a><a class="section" data-scroll="" href="#parameters"><h5><i>2.13 &nbsp; Parameters</i></h5></a><a class="section" data-scroll="" href="#options"><h5><i>2.14 &nbsp; Options</i></h5></a><a class="section" data-scroll="" href="#pipeline"><h5><i>2.15 &nbsp; Pipeline</i></h5></a></li><li><a class="chapter" data-scroll="" href="#schema"><h4>3 &nbsp; Schema</h4></a><a class="section" data-scroll="" href="#basics"><h5><i>3.1 &nbsp; Basics</i></h5></a><a class="section" data-scroll="" href="#attributes"><h5><i>3.2 &nbsp; Attributes</i></h5></a><a class="section" data-scroll="" href="#type"><h5><i>3.3 &nbsp; :type</i></h5></a><a class="section" data-scroll="" href="#ref"><h5><i>3.4 &nbsp; :ref</i></h5></a><a class="section" data-scroll="" href="#enum"><h5><i>3.5 &nbsp; :enum</i></h5></a><a class="section" data-scroll="" href="#cardinality"><h5><i>3.6 &nbsp; :cardinality</i></h5></a><a class="section" data-scroll="" href="#unique"><h5><i>3.7 &nbsp; :unique</i></h5></a><a class="section" data-scroll="" href="#doc"><h5><i>3.8 &nbsp; :doc</i></h5></a><a class="section" data-scroll="" href="#index"><h5><i>3.9 &nbsp; :index</i></h5></a><a class="section" data-scroll="" href="#fulltext"><h5><i>3.10 &nbsp; :fulltext</i></h5></a><a class="section" data-scroll="" href="#is-component"><h5><i>3.11 &nbsp; :isComponent</i></h5></a><a class="section" data-scroll="" href="#no-history"><h5><i>3.12 &nbsp; :noHistory</i></h5></a><a class="section" data-scroll="" href="#required-0"><h5><i>3.13 &nbsp; :required</i></h5></a><a class="section" data-scroll="" href="#restrict"><h5><i>3.14 &nbsp; :restrict</i></h5></a><a class="section" data-scroll="" href="#default"><h5><i>3.15 &nbsp; :default</i></h5></a></li><li><a class="chapter" data-scroll="" href="#connection-params"><h4>4 &nbsp; Connection Params</h4></a><a class="section" data-scroll="" href="#connection"><h5><i>4.1 &nbsp; :connection</i></h5></a><a class="section" data-scroll="" href="#db"><h5><i>4.2 &nbsp; :db</i></h5></a><a class="section" data-scroll="" href="#at"><h5><i>4.3 &nbsp; :at</i></h5></a><a class="section" data-scroll="" href="#return"><h5><i>4.4 &nbsp; :return</i></h5></a><a class="section" data-scroll="" href="#transact-0"><h5><i>4.5 &nbsp; :transact</i></h5></a><a class="section" data-scroll="" href="#simulate"><h5><i>4.6 &nbsp; :simulate</i></h5></a></li><li><a class="chapter" data-scroll="" href="#schema-params"><h4>5 &nbsp; Schema Params</h4></a><a class="section" data-scroll="" href="#schema-0"><h5><i>5.1 &nbsp; :schema</i></h5></a><a class="section" data-scroll="" href="#pull"><h5><i>5.2 &nbsp; :pull</i></h5></a><a class="section" data-scroll="" href="#access"><h5><i>5.3 &nbsp; :access</i></h5></a></li><li><a class="chapter" data-scroll="" href="#options-0"><h4>6 &nbsp; Options</h4></a><a class="section" data-scroll="" href="#first"><h5><i>6.1 &nbsp; :first</i></h5></a><a class="section" data-scroll="" href="#ids-0"><h5><i>6.2 &nbsp; :ids</i></h5></a><a class="section" data-scroll="" href="#blank"><h5><i>6.3 &nbsp; :blank</i></h5></a><a class="section" data-scroll="" href="#ban-expressions"><h5><i>6.4 &nbsp; :ban-expressions</i></h5></a><a class="section" data-scroll="" href="#ban-top-id"><h5><i>6.5 &nbsp; :ban-top-id</i></h5></a><a class="section" data-scroll="" href="#ban-body-ids"><h5><i>6.6 &nbsp; :ban-body-ids</i></h5></a><a class="section" data-scroll="" href="#ban-ids"><h5><i>6.7 &nbsp; :ban-ids</i></h5></a><a class="section" data-scroll="" href="#raw"><h5><i>6.8 &nbsp; :raw</i></h5></a><a class="section" data-scroll="" href="#spirit"><h5><i>6.9 &nbsp; :spirit</i></h5></a></li><li><a class="chapter" data-scroll="" href="#pipeline-0"><h4>7 &nbsp; Pipeline</h4></a><a class="section" data-scroll="" href="#pre-process"><h5><i>7.1 &nbsp; :pre-process</i></h5></a><a class="section" data-scroll="" href="#pre-require"><h5><i>7.2 &nbsp; :pre-require</i></h5></a><a class="section" data-scroll="" href="#pre-mask"><h5><i>7.3 &nbsp; :pre-mask</i></h5></a><a class="section" data-scroll="" href="#pre-transform"><h5><i>7.4 &nbsp; :pre-transform</i></h5></a><a class="section" data-scroll="" href="#fill-empty"><h5><i>7.5 &nbsp; :fill-empty</i></h5></a><a class="section" data-scroll="" href="#fill-assoc"><h5><i>7.6 &nbsp; :fill-assoc</i></h5></a><a class="section" data-scroll="" href="#ignore"><h5><i>7.7 &nbsp; :ignore</i></h5></a><a class="section" data-scroll="" href="#allow"><h5><i>7.8 &nbsp; :allow</i></h5></a><a class="section" data-scroll="" href="#validate"><h5><i>7.9 &nbsp; :validate</i></h5></a><a class="section" data-scroll="" href="#convert"><h5><i>7.10 &nbsp; :convert</i></h5></a><a class="section" data-scroll="" href="#post-require"><h5><i>7.11 &nbsp; :post-require</i></h5></a><a class="section" data-scroll="" href="#post-mask"><h5><i>7.12 &nbsp; :post-mask</i></h5></a><a class="section" data-scroll="" href="#post-transform"><h5><i>7.13 &nbsp; :post-transform</i></h5></a><a class="section" data-scroll="" href="#post-process"><h5><i>7.14 &nbsp; :post-process</i></h5></a></li>
+                </ul>
+              </nav>
+          </div>
+          <div><span id="introduction"></span><h2><b>1 &nbsp;&nbsp; Introduction</b></h2></div><div><p><a href='https://www.github.com/zcaudate/spirit'>spirit.datomic</a> provides a simple, intuitive data layer to access datomic using a document-based syntax, as well as a data-processing pipeline for fine-grain manipulation and access of data.</p></div><div><span id="required"></span><h3>1.1 &nbsp;&nbsp; Required</h3></div><div><p>All functionality is contained in the <code>spirit.datomic</code> namespace:</p></div><div class="code"><pre><code class="clojure">(require '[spirit.datomic :as datomic])</code></pre></div><div><span id="outline"></span><h3>1.2 &nbsp;&nbsp; Outline</h3></div><div><p><a href='https://www.github.com/zcaudate/spirit'>spirit.datomic</a> provides the following advantages</p><ul><li>Using the schema as a 'type' system to process incoming data.</li><li>Relations mapped to nested object structures (using a graph-like notion)</li><li>Nested maps/objects as declarative logic queries.</li><li>Custom views on data (similar to the <code>:pull</code> api)</li></ul></div><div><span id="architecture"></span><h3>1.3 &nbsp;&nbsp; Architecture</h3></div><div><p>The architecture can be seen below:</p></div><div class="figure"><a id="img-img--spirit-png"></a><div class="img"><img line="{:row 32, :col 1, :end-row 32, :end-col 49}" src="img/spirit.png" width="100%" /></div><p></p></div><div><span id="api"></span><h2><b>2 &nbsp;&nbsp; API</b></h2></div><div><p>Top Level API's are listed below, first, we define a schema:</p></div><div class="code"><pre><code class="clojure">(def schema-api
  {:account {:user     [{:required true
                         :unique :value}]
             :books    [{:type :ref
@@ -66,7 +91,10 @@
                         :ref  {:ns :book}}]}
   :book   {:name    [{:required true
                       :fulltext true}]
-           :author  [{:fulltext true}]}})</code></pre></div><div><span id="connect"></span><h3>2.1 &nbsp;&nbsp; connect!</h3></div><div><p><code>connect!</code> creates a connection to a datomic datastore:</p></div><div class="code"><pre><code class="clojure">(def api-ds (datomic/connect! &quot;datomic:mem://datomic-api&quot; schema-api true true))</code></pre></div><div><span id="insert"></span><h3>2.2 &nbsp;&nbsp; insert!</h3></div><div><p><code>insert!</code> puts data into the datastore:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! api-ds
+           :author  [{:fulltext true}]}})</code></pre></div><div><span id="connect"></span><h3>2.1 &nbsp;&nbsp; connect!</h3></div><div><p><code>connect!</code> creates a connection to a datomic datastore:</p></div><div class="code"><pre><code class="clojure">(def api-ds (datomic/connect! {:uri &quot;datomic:mem://datomic-api&quot;
+                               :schema schema-api
+                               :options {:install-schema true
+                                         :reset-db true}}))</code></pre></div><div><span id="insert"></span><h3>2.2 &nbsp;&nbsp; insert!</h3></div><div><p><code>insert!</code> puts data into the datastore:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! api-ds
                  [{:account {:user &quot;Anne&quot;
                              :books #{{:name &quot;Watership Down&quot;}}}}
                   {:account {:user &quot;Bob&quot;
@@ -178,11 +206,22 @@
           :author  [{:fulltext true}]}})
 
 
-(def ds-1 (datomic/connect! &quot;datomic:mem://datomic-connection-1&quot; schema-connection true true))</code></pre></div><div class="code"><pre><code class="clojure">(println ds-1)
+(def ds-1 (datomic/connect! {:uri &quot;datomic:mem://datomic-connection-1&quot;
+                             :schema schema-connection
+                             :options {:install-schema true
+                                       :reset-db true}}))</code></pre></div><div class="code"><pre><code class="clojure">(println ds-1)
 ;;=&gt; #spirit{:connection #connection{1000 #inst &quot;2016-03-15T12:47:10.039-00:00&quot;},
-;;        :schema     #schema{:book {:name :string, :author :string}}}</code></pre></div><div><span id="more-datastores"></span><h3><i>4.1.2 &nbsp;&nbsp; more datastores</i></h3></div><div><p><code>:connection</code> is a reserved keyword in options. We can show how this works by creating two more datastores:</p></div><div class="code"><pre><code class="clojure">(def ds-2 (datomic/connect! &quot;datomic:mem://datomic-connection-2&quot; schema-connection true true))
+;;        :schema     #schema{:book {:name :string, :author :string}}}</code></pre></div><div><span id="more-datastores"></span><h3><i>4.1.2 &nbsp;&nbsp; more datastores</i></h3></div><div><p><code>:connection</code> is a reserved keyword in options. We can show how this works by creating two more datastores:</p></div><div class="code"><pre><code class="clojure">(def ds-2 (datomic/connect!
+           {:uri &quot;datomic:mem://datomic-connection-2&quot;
+                             :schema schema-connection
+                             :options {:install-schema true
+                                       :reset-db true}}))
 
-(def ds-3 (datomic/connect! &quot;datomic:mem://datomic-connection-3&quot; schema-connection true true))</code></pre></div><div><p>Passing a value for <code>:connection</code> will change the connection object that is used. This shouldn't be used very frequently but the feature is there to be exploited. To highlight this, a standard call to <code>insert!</code> is made:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! ds-1 {:book/name &quot;Orpheus&quot;})
+(def ds-3 (datomic/connect!
+           {:uri &quot;datomic:mem://datomic-connection-3&quot;
+            :schema schema-connection
+            :options {:install-schema true
+                      :reset-db true}}))</code></pre></div><div><p>Passing a value for <code>:connection</code> will change the connection object that is used. This shouldn't be used very frequently but the feature is there to be exploited. To highlight this, a standard call to <code>insert!</code> is made:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! ds-1 {:book/name &quot;Orpheus&quot;})
 =&gt; (contains {:book {:name &quot;Orpheus&quot;}, :db map?})</code></pre></div><div><span id="key--value-input"></span><h3><i>4.1.3 &nbsp;&nbsp; key/value input</i></h3></div><div><p>Lets see the different ways that the <code>:connection</code> entry can be overwritten, first via key/value pair:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! ds-1 {:book/name &quot;Ulysses&quot;} :connection (:connection ds-2))
 =&gt; (contains {:book {:name &quot;Ulysses&quot;}, :db map?})</code></pre></div><div><span id="map-input"></span><h3><i>4.1.4 &nbsp;&nbsp; map input</i></h3></div><div><p>The arguments can also be passed in as part of a map:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! ds-1  {:book/name &quot;Eurydice&quot;} {:connection (:connection ds-3)})
 =&gt; (contains {:book {:name &quot;Eurydice&quot;}, :db map?})</code></pre></div><div><span id="different-sinks"></span><h3><i>4.1.5 &nbsp;&nbsp; different sinks</i></h3></div><div><p>It can be seen that each datastore has a book of their own:</p></div><div class="code"><pre><code class="clojure">(datomic/select ds-1 :book)
@@ -263,8 +302,12 @@
 =&gt; #{{:book {:name &quot;Orpheus&quot;}}}</code></pre></div><div><span id="schema-params"></span><h2><b>5 &nbsp;&nbsp; Schema Params</b></h2></div><div><span id="schema-0"></span><h3>5.1 &nbsp;&nbsp; :schema</h3></div><div><span id="book"></span><h3><i>5.1.1 &nbsp;&nbsp; book</i></h3></div><div><p><code>:schema</code> is the other part of the datastore that is created when <code>connect!</code> is called. The schema is a powerful ally because it contains information about how data should be related, created and managed. To demonstrate this, a book schema is defined:</p></div><div class="code"><pre><code class="clojure">(def schema-book
    {:book   {:name    [{:required true
                         :fulltext true}]
-             :author  [{:fulltext true}]}})</code></pre></div><div><p>A connection is created using the schema:</p></div><div class="code"><pre><code class="clojure">(def book-ds (datomic/connect! &quot;datomic:mem://datomic-schema-book&quot; schema-book true true))</code></pre></div><div><p>A single book is entered:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! book-ds {:book {:name &quot;The Magicians&quot;
-                             :author &quot;Lev Grossman&quot;}})</code></pre></div><div><p>And then accessed:</p></div><div class="code"><pre><code class="clojure">(datomic/select book-ds :book)
+             :author  [{:fulltext true}]}})</code></pre></div><div><p>A connection is created using the schema:</p></div><div class="code"><pre><code class="clojure">(def book-ds (datomic/connect!
+              {:uri &quot;datomic:mem://datomic-schema-book&quot;
+               :schema schema-book
+               :options {:install-schema true
+                         :reset-db true}}))</code></pre></div><div><p>A single book is entered:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! book-ds {:book {:name &quot;The Magicians&quot;
+                                 :author &quot;Lev Grossman&quot;}})</code></pre></div><div><p>And then accessed:</p></div><div class="code"><pre><code class="clojure">(datomic/select book-ds :book)
 =&gt; #{{:book {:name &quot;The Magicians&quot;, :author &quot;Lev Grossman&quot;}}}</code></pre></div><div><p>We see that both the name and the author of the book is returned.</p></div><div><span id="partial-schema"></span><h3><i>5.1.2 &nbsp;&nbsp; partial schema</i></h3></div><div><p>However, lets define a partial schema:</p></div><div class="code"><pre><code class="clojure">(def name-schema (datomic/schema {:book {:name  [{:required true}]}}))</code></pre></div><div><p>And make a call to select, passing in the <code>:schema</code> entry</p></div><div class="code"><pre><code class="clojure">(datomic/select book-ds :book :schema name-schema)
 =&gt; #{{:book {:name &quot;The Magicians&quot;}}}</code></pre></div><div><p>It can be seen that only the book name is returned.</p></div><div><span id="more-examples"></span><h3><i>5.1.3 &nbsp;&nbsp; more examples</i></h3></div><div><p>By passing in different schemas, an application can allow for isolation of various functionalities as well have as basic protection of data. It can be seen how the two schemas behave. Below shows a normal search on :book/author:</p></div><div class="code"><pre><code class="clojure">(datomic/select book-ds :book/author)
 =&gt; #{{:book {:name &quot;The Magicians&quot;, :author &quot;Lev Grossman&quot;}}}</code></pre></div><div><p>Using the abridged schema, an exception is thrown:</p></div><div class="code"><pre><code class="clojure">(datomic/select book-ds :book/author :schema name-schema)
@@ -281,23 +324,27 @@
     :store  {:name    [{:required true
                         :fulltext true}]}})
 
-(def store-ds (datomic/connect! &quot;datomic:mem://datomic-schema-store&quot; schema-store true true))</code></pre></div><div><p>A store is created with inventory:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! store-ds
+(def store-ds (datomic/connect!
+               {:uri &quot;datomic:mem://datomic-schema-store&quot;
+                :schema schema-store
+                :options {:install-schema true
+                          :reset-db true}}))</code></pre></div><div><p>A store is created with inventory:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! store-ds
              {:store {:name &quot;Happy Books&quot;
-                      :inventory #{{:count 10
+                      :inventory [{:count 10
                                     :book {:name &quot;The Magicians&quot;
                                            :author &quot;Lev Grossman&quot;}}
-                                   {:count 8
-                                    :book {:name &quot;The Color of Magic&quot;
-                                           :author &quot;Terry Pratchett&quot;}}}}})</code></pre></div><div><span id="defaults"></span><h3><i>5.2.1 &nbsp;&nbsp; defaults</i></h3></div><div><p>The default behaviour for <code>:pull</code> is to grab all attributes from an entity that are not references:</p></div><div class="code"><pre><code class="clojure">(datomic/select store-ds :store)
+                                  {:count 8
+                                   :book {:name &quot;The Color of Magic&quot;
+                                          :author &quot;Terry Pratchett&quot;}}]}})</code></pre></div><div><span id="defaults"></span><h3><i>5.2.1 &nbsp;&nbsp; defaults</i></h3></div><div><p>The default behaviour for <code>:pull</code> is to grab all attributes from an entity that are not references:</p></div><div class="code"><pre><code class="clojure">(datomic/select store-ds :store)
 =&gt; #{{:store {:name &quot;Happy Books&quot;}}}</code></pre></div><div><span id="checked-and-unchecked"></span><h3><i>5.2.2 &nbsp;&nbsp; :checked and :unchecked</i></h3></div><div><p>However, this can be customised by using <code>:checked</code> and <code>:unchecked</code></p></div><div class="code"><pre><code class="clojure">(datomic/select store-ds :store
             :pull {:store {:name :unchecked
                            :inventory :checked}})
 =&gt; #{{:store {:inventory #{{:count 8} {:count 10}}}}}</code></pre></div><div><span id="id"></span><h3><i>5.2.3 &nbsp;&nbsp; :id</i></h3></div><div><p>The pull model can be nested and allows very quick customisation of data. Using <code>:id</code> restricts refs to return the internal id:</p></div><div class="code"><pre><code class="clojure">(datomic/select store-ds :store
             :pull {:store {:inventory {:book :id}}}
             :first)
-=&gt; {:store {:name &quot;Happy Books&quot;,
-            :inventory #{{:count 8, :book 17592186045422}
-                         {:count 10, :book 17592186045420}}}}</code></pre></div><div><span id="forward-walk"></span><h3><i>5.2.4 &nbsp;&nbsp; forward walk</i></h3></div><div><p>Using <code>{}</code> for defining the <code>:pull</code> model for a ref is the same as using <code>:checked</code></p></div><div class="code"><pre><code class="clojure">(datomic/select store-ds {:store/name &quot;Happy Books&quot;}
+=&gt; (contains-in {:store {:name &quot;Happy Books&quot;,
+                         :inventory #{{:count 8, :book number?}
+                                      {:count 10, :book number?}}}})</code></pre></div><div><span id="forward-walk"></span><h3><i>5.2.4 &nbsp;&nbsp; forward walk</i></h3></div><div><p>Using <code>{}</code> for defining the <code>:pull</code> model for a ref is the same as using <code>:checked</code></p></div><div class="code"><pre><code class="clojure">(datomic/select store-ds {:store/name &quot;Happy Books&quot;}
             :pull {:store {:inventory {:book {}}}})
 =&gt; #{{:store {:name &quot;Happy Books&quot;,
                :inventory #{{:count 10
@@ -316,7 +363,11 @@
                        :ref {:ns :node
                              :rval :previous}}]}})
 
-(def node-ds (datomic/connect! &quot;datomic:mem://datomic-schema-nodes&quot; schema-nodes true true))</code></pre></div><div><p>A set of maps are inserted:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! node-ds {:node {:name &quot;A&quot;
+(def node-ds (datomic/connect!
+              {:uri &quot;datomic:mem://datomic-schema-nodes&quot;
+               :schema schema-nodes
+               :options {:reset-db true
+                         :install-schema true}}))</code></pre></div><div><p>A set of maps are inserted:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! node-ds {:node {:name &quot;A&quot;
                              :next {:name &quot;B&quot;
                                     :next {:name &quot;C&quot;
                                            :next {:name &quot;D&quot;}}}}})</code></pre></div><div><p>We can now perform selection:</p></div><div class="code"><pre><code class="clojure">(datomic/select node-ds {:node/name &quot;B&quot;})
@@ -356,7 +407,11 @@
                           :ref {:ns   :teacher
                                 :rval :class}}]}
    :teacher   {:name    [{:required true}]
-               :age     [{:type :long}]}})</code></pre></div><div><p>The datastore is created:</p></div><div class="code"><pre><code class="clojure">(def school-ds (datomic/connect! &quot;datomic:mem://datomic-options-school-store&quot; schema-school true true))</code></pre></div><div><p>Data is put into the system:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! school-ds
+               :age     [{:type :long}]}})</code></pre></div><div><p>The datastore is created:</p></div><div class="code"><pre><code class="clojure">(def school-ds (datomic/connect!
+                {:uri &quot;datomic:mem://datomic-options-school-store&quot;
+                 :schema schema-school
+                 :options {:install-schema true
+                           :reset-db true}}))</code></pre></div><div><p>Data is put into the system:</p></div><div class="code"><pre><code class="clojure">(datomic/insert! school-ds
              [{:db/id (datomic/iid :science)
                :class {:subject &quot;Science&quot;
                        :teacher {:name &quot;Mr Michaels&quot;
@@ -505,7 +560,7 @@
 ;;                 :data ({:class {:subject &quot;Science&quot;}}
 ;;                        {:class {:subject &quot;Math&quot;}})}
 ;;        :options {:spirit true},
-;;        :connection #connection{1001 #inst &quot;2016-03-18T06:14:23.156-00:00&quot;}}</code></pre></div><div><span id="pipeline-0"></span><h2><b>7 &nbsp;&nbsp; Pipeline</b></h2></div><div><p>The data pipeline is used for preprocessing of incoming data before accessing datomic. Different stages of the pipeline can be seen below:</p></div><div class="figure"><a id="img-img--spirit-pipeline-png"></a><div class="img"><img line="{:row 274, :col 1, :end-row 274, :end-col 59}" src="img/spirit-pipeline.png" width="250px" /></div><p></p></div><div><span id="pre-process"></span><h3>7.1 &nbsp;&nbsp; :pre-process</h3></div><div><p>Manipulation of the datastructure before going into the pipeline. Takes one function the first the data structure</p></div><div class="code"><pre><code class="clojure">(datomic/select school-ds
+;;        :connection #connection{1001 #inst &quot;2016-03-18T06:14:23.156-00:00&quot;}}</code></pre></div><div><span id="pipeline-0"></span><h2><b>7 &nbsp;&nbsp; Pipeline</b></h2></div><div><p>The data pipeline is used for preprocessing of incoming data before accessing datomic. Different stages of the pipeline can be seen below:</p></div><div class="figure"><a id="img-img--spirit-pipeline-png"></a><div class="img"><img line="{:row 277, :col 1, :end-row 277, :end-col 59}" src="img/spirit-pipeline.png" width="250px" /></div><p></p></div><div><span id="pre-process"></span><h3>7.1 &nbsp;&nbsp; :pre-process</h3></div><div><p>Manipulation of the datastructure before going into the pipeline. Takes one function the first the data structure</p></div><div class="code"><pre><code class="clojure">(datomic/select school-ds
             {:student/name &quot;Charlie&quot;}
             {:pipeline {:pre-process
                         (fn [x]
@@ -713,47 +768,30 @@
               (fn [x _]
                 (assoc-in x [:student :name] #{&quot;Bob&quot;}))}})
 =&gt; #{{:student {:name &quot;Bob&quot;}}}</code></pre></div>
-      </section>
+        </div>
+      </div>
     </div>
+
+    <label for="sidebar-checkbox" class="sidebar-toggle"></label>
+
   </body>
-  
-  <script type="text/javascript">
-    if (true) {
-      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-      ga('create', 'UA-31320512-2', 'caudate.me');
-      ga('send', 'pageview');
-    }
+
+  <script>
+  if (true) {
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-31320512-2', 'caudate.me');
+    ga('send', 'pageview');
+  }
   </script>
   
   <script type="text/javascript">
-    var metas = document.getElementsByTagName('meta');
-    var i;
-    if (navigator.userAgent.match(/iPhone/i)) {
-      for (i=0; i<metas.length; i++) {
-        if (metas[i].name == "viewport") {
-          metas[i].content = "width=device-width, minimum-scale=1.0, maximum-scale=1.0";
-        }
-      }
-      document.addEventListener("gesturestart", gestureStart, false);
-    }
-    function gestureStart() {
-      for (i=0; i<metas.length; i++) {
-        if (metas[i].name == "viewport") {
-          metas[i].content = "width=device-width, minimum-scale=0.25, maximum-scale=1.6";
-        }
-      }
-    }
-  </script>
+    smoothScroll.init();
+    gumshoe.init({});
   
-  <script type="text/javascript">
-    
-    //smoothScroll.init();
-    //gumshoe.init();
-    
     hljs.registerLanguage("clojure",function(e){var t={"builtin-name":"def defonce cond apply if-not if-let if not not= = < > <= >= == + / * - rem quot neg? pos? delay? symbol? keyword? true? false? integer? empty? coll? list? set? ifn? fn? associative? sequential? sorted? counted? reversible? number? decimal? class? distinct? isa? float? rational? reduced? ratio? odd? even? char? seq? vector? string? map? nil? contains? zero? instance? not-every? not-any? libspec? -> ->> .. . inc compare do dotimes mapcat take remove take-while drop letfn drop-last take-last drop-while while intern condp case reduced cycle split-at split-with repeat replicate iterate range merge zipmap declare line-seq sort comparator sort-by dorun doall nthnext nthrest partition eval doseq await await-for let agent atom send send-off release-pending-sends add-watch mapv filterv remove-watch agent-error restart-agent set-error-handler error-handler set-error-mode! error-mode shutdown-agents quote var fn loop recur throw try monitor-enter monitor-exit defmacro defn defn- macroexpand macroexpand-1 for dosync and or when when-not when-let comp juxt partial sequence memoize constantly complement identity assert peek pop doto proxy defstruct first rest cons defprotocol cast coll deftype defrecord last butlast sigs reify second ffirst fnext nfirst nnext defmulti defmethod meta with-meta ns in-ns create-ns import refer keys select-keys vals key val rseq name namespace promise into transient persistent! conj! assoc! dissoc! pop! disj! use class type num float double short byte boolean bigint biginteger bigdec print-method print-dup throw-if printf format load compile get-in update-in pr pr-on newline flush read slurp read-line subvec with-open memfn time re-find re-groups rand-int rand mod locking assert-valid-fdecl alias resolve ref deref refset swap! reset! set-validator! compare-and-set! alter-meta! reset-meta! commute get-validator alter ref-set ref-history-count ref-min-history ref-max-history ensure sync io! new next conj set! to-array future future-call into-array aset gen-class reduce map filter find empty hash-map hash-set sorted-map sorted-map-by sorted-set sorted-set-by vec vector seq flatten reverse assoc dissoc list disj get union difference intersection extend extend-type extend-protocol int nth delay count concat chunk chunk-buffer chunk-append chunk-first chunk-rest max min dec unchecked-inc-int unchecked-inc unchecked-dec-inc unchecked-dec unchecked-negate unchecked-add-int unchecked-add unchecked-subtract-int unchecked-subtract chunk-next chunk-cons chunked-seq? prn vary-meta lazy-seq spread list* str find-keyword keyword symbol gensym force rationalize"},r="a-zA-Z_\\-!.?+*=<>&#'",n="["+r+"]["+r+"0-9/;:]*",a="[-+]?\\d+(\\.\\d+)?",o={b:n,r:0},s={cN:"number",b:a,r:0},i=e.inherit(e.QSM,{i:null}),c=e.C(";","$",{r:0}),d={cN:"literal",b:/\b(true|false|nil)\b/},l={b:"[\\[\\{]",e:"[\\]\\}]"},m={cN:"comment",b:"\\^"+n},p=e.C("\\^\\{","\\}"),u={cN:"symbol",b:"[:]{1,2}"+n},f={b:"\\(",e:"\\)"},h={eW:!0,r:0},y={k:t,l:n,cN:"name",b:n,starts:h},b=[f,i,m,p,c,u,l,s,d,o];return f.c=[e.C("comment",""),y,h],h.c=b,l.c=b,{aliases:["clj"],i:/\S/,c:[f,i,m,p,c,u,l,s,d]}});
     hljs.initHighlightingOnLoad();
   </script>
-  </html>
+</html>
