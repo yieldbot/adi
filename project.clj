@@ -12,7 +12,7 @@
                  [im.chit/hara.event     "2.5.10"]
                  [im.chit/hara.function  "2.5.10"]
                  [im.chit/hara.string    "2.5.10"]
-                 [com.datomic/datomic-free "0.9.5561.50"]
+                 [com.datomic/datomic-free "0.9.5561.56"]
                  
                  [inflections "0.13.0"]
                  [http-kit "2.2.0"]
@@ -104,10 +104,11 @@
                         :path "src"
                         :standalone #{"common" "datomic" "httpkit" "network" "rabbitmq"}}]}
   
-  :profiles {:dev {:dependencies [[im.chit/lucid.distribute "1.3.13"]
-                                  [im.chit/lucid.mind       "1.3.13"]
-                                  [im.chit/lucid.publish    "1.3.13"]
-                                  [im.chit/lucid.unit       "1.3.13"]
+  :profiles {:dev {:dependencies [[im.chit/lucid.distribute  "1.3.13"]
+                                  [im.chit/lucid.mind        "1.3.13"]
+                                  [im.chit/lucid.publish     "1.3.13"]
+                                  [im.chit/lucid.unit        "1.3.13"]
+                                  [im.chit/lucid.core.inject "1.3.13"]
                                   [im.chit/hara.test  "2.5.10"]
                                   [clj-time "0.13.0"]]
                    :plugins [[lein-ancient "0.6.10"]]}})
