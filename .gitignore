@@ -4,6 +4,7 @@
 /checkouts
 /outputs
 /php
+/docs
 /dev-resources
 pom.xml
 pom.xml.asc
@@ -19,4 +20,3 @@ pom.xml.asc
 .nrepl-port
 \#*
 *\#
-test.*

@@ -1,0 +1,32 @@
+<div id="sidebar-wrapper">
+  <ul class="sidebar">
+    <li class="sidebar-main">
+      <a ng-click="toggleSidebar()">
+        <span style="padding-left:20px">MENU</span>
+        <!--img src="img/logo.png" height=40 style="padding-left:70px"-->
+        <span ng-show="toggle" class="menu-icon glyphicon glyphicon-transfer"></span>
+      </a>
+    </li>
+    <li class="sidebar-list">
+      <a href="index.html">home <span class="menu-icon fa fa-home"></span></a>
+    </li>
+    <!--li class="sidebar-list">
+      <a href="api.html">api reference <span class="menu-icon fa fa-bank"></span></a>
+    </li-->
+    <li class="sidebar-title"><span>guides</span></li>
+    <li class="sidebar-list" ng-show="toggle">
+      <a href="adi-guide.html">&bull;<span class="submenu-item">api</span></a>
+    </li>
+    <li class="sidebar-list" ng-show="toggle">
+      <a href="adi-walkthrough.html">&bull;<span class="submenu-item">walkthrough</span></a>
+    </li>
+    <li class="sidebar-title"><span>links</span></li>
+    <li class="sidebar-list">
+      <a href="http://www.gitter.im/zcaudate/adi" target="_blank">support <span class="menu-icon fa fa-support"></span></a>
+    </li>
+    <li class="sidebar-list">
+      <a href="https://github.com/zcaudate/adi" target="_blank">source code<span class="menu-icon fa fa-github"></span></a>
+    </li>
+
+  </ul>
+  </div>
